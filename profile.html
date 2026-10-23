@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Профиль — Nihongo</title>
+  <meta name="description" content="Твой прогресс в Nihongo: уровень, опыт, достижения и друзья.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛩</text></svg>">
+</head>
+<body>
+
+  <!-- ============ ШАПКА ============ -->
+  <header class="header">
+    <div class="container">
+      <a class="logo" href="index.html">
+        <span class="logo-mark">日</span>
+        <span>Nih<span class="logo-accent">ongo</span></span>
+      </a>
+
+      <nav class="nav">
+        <a class="nav-link" href="index.html">Главная</a>
+        <a class="nav-link" href="#" onclick="event.preventDefault(); showToast('Уроки', 'Раздел откроется после релиза', 'info')">
+          Уроки <span class="nav-soon">скоро</span>
+        </a>
+        <a class="nav-link" href="#" onclick="event.preventDefault(); showToast('Аниме', 'Каталог появится после релиза', 'info')">
+          Аниме <span class="nav-soon">скоро</span>
+        </a>
+        <a class="nav-link" href="about.html">О проекте</a>
+
+        <button class="nav-design" id="designToggle" onclick="toggleDesignPanel()" aria-expanded="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"></circle>
+            <circle cx="8.5" cy="9.5" r="1.2"></circle>
+            <circle cx="15.5" cy="9.5" r="1.2"></circle>
+            <circle cx="9" cy="15" r="1.2"></circle>
+            <circle cx="15" cy="15" r="1.2"></circle>
+          </svg>
+          Дизайн
+        </button>
+      </nav>
+
+      <div class="header-actions">
+        <div class="is-guest">
+          <a class="btn btn-ghost btn-small" href="register.html">Войти</a>
+          <a class="btn btn-primary btn-small" href="register.html">Регистрация</a>
+        </div>
+        <a class="user-chip is-auth" href="profile.html">
+          <img src="assets/images/avatars/avatar1.png" alt="Аватар" data-header-avatar data-avatar-img>
+          <span class="user-name" data-header-nick>Игрок</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ ПАНЕЛЬ ДИЗАЙНА ============ -->
+  <aside class="design-panel" id="designPanel" aria-label="Панель дизайна">
+    <h4>Панель дизайна</h4>
+    <p class="panel-sub">Настрой внешний вид под себя. Изменения сохраняются.</p>
+
+    <div class="theme-grid">
+      <button class="theme-card active" data-theme="default" onclick="setTheme('default')">
+        <div class="theme-preview theme-preview-default"></div>
+        <div class="theme-name">Стандарт</div>
+        <div class="theme-desc">Оранжевый акцент</div>
+      </button>
+      <button class="theme-card" data-theme="sakura" onclick="setTheme('sakura')">
+        <div class="theme-preview theme-preview-sakura"></div>
+        <div class="theme-name">Сакура</div>
+        <div class="theme-desc">Розовый акцент</div>
+      </button>
+    </div>
+
+    <div class="switch-row">
+      <div>
+        <div class="switch-label">Лепестки сакуры</div>
+        <div class="switch-hint">Падающие лепестки поверх страницы</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="sakuraSwitch" onchange="toggleSakura(this)">
+        <span class="track"></span>
+      </label>
+    </div>
+
+    <div class="switch-row">
+      <div>
+        <div class="switch-label">Все настройки</div>
+        <div class="switch-hint">Звук, уведомления, лаунчер</div>
+      </div>
+      <a class="btn btn-ghost btn-small" href="settings.html">Открыть</a>
+    </div>
+  </aside>
+
+  <!-- ============ ПРОФИЛЬ ============ -->
+  <main class="profile-section">
+    <div class="container">
+      <div class="profile-layout">
+
+        <!-- ---------- Левая колонка ---------- -->
+        <aside class="player-card">
+          <div class="avatar-frame">
+            <img src="assets/images/avatars/avatar1.png" alt="Твой аватар" data-avatar-img>
+          </div>
+
+          <h1 class="player-nick" data-username>Игрок</h1>
+          <div class="player-status"><i></i> в сети</div>
+
+          <div class="player-rank">⛩ Уровень <span id="playerLevel">3</span> · Сэмпай</div>
+
+          <div class="xp-block">
+            <div class="xp-top">
+              <span>Опыт</span>
+              <b id="xpText">340 / 500 XP</b>
+            </div>
+            <div class="xp-bar">
+              <span id="xpFill" style="width:0%"></span>
+            </div>
+          </div>
+
+          <button class="btn btn-outline" onclick="openAvatarModal()">Изменить аватар</button>
+
+          <hr class="divider">
+
+          <div class="player-meta">
+            <div>
+              В Nihongo с
+              <b id="joinedDate">сегодня</b>
+            </div>
+            <div>
+              Серия
+              <b>5 дней 🔥</b>
+            </div>
+          </div>
+        </aside>
+
+        <!-- ---------- Правая колонка ---------- -->
+        <div class="profile-main">
+
+          <!-- Статистика -->
+          <section class="block reveal">
+            <div class="block-head">
+              <h3>Твоя статистика</h3>
+              <span class="block-note">обновляется после каждого урока</span>
+            </div>
+
+            <div class="stat-grid">
+              <article class="stat-card">
+                <div class="stat-label">Уроки</div>
+                <div class="stat-value"><span id="statLessons">0</span><small>шт.</small></div>
+                <div class="stat-delta">+2 за неделю</div>
+                <div class="stat-icon">本</div>
+              </article>
+
+              <article class="stat-card">
+                <div class="stat-label">Слова</div>
+                <div class="stat-value"><span id="statWords">0</span><small>слов</small></div>
+                <div class="stat-delta">+18 за неделю</div>
+                <div class="stat-icon">語</div>
+              </article>
+
+              <article class="stat-card">
+                <div class="stat-label">Дней подряд</div>
+                <div class="stat-value"><span id="statDays">0</span><small>дней</small></div>
+                <div class="stat-delta">личный рекорд — 9</div>
+                <div class="stat-icon">火</div>
+              </article>
+            </div>
+          </section>
+
+          <!-- Достижения -->
+          <section class="block reveal">
+            <div class="block-head">
+              <h3>Достижения</h3>
+              <span class="block-note">открыто 1 из 6</span>
+            </div>
+
+            <div class="ach-grid">
+              <div class="ach unlocked" title="Первый шаг — пройден первый урок">
+                <div class="ach-icon">🌸</div>
+                <div class="ach-name">Первый шаг</div>
+              </div>
+
+              <div class="ach" title="Ещё не открыто">
+                <div class="ach-icon">📚</div>
+                <div class="ach-name">10 уроков</div>
+              </div>
+
+              <div class="ach" title="Ещё не открыто">
+                <div class="ach-icon">🗣</div>
+                <div class="ach-name">100 слов</div>
+              </div>
+
+              <div class="ach" title="Ещё не открыто">
+                <div class="ach-icon">🔥</div>
+                <div class="ach-name">7 дней</div>
+              </div>
+
+              <div class="ach" title="Ещё не открыто">
+                <div class="ach-icon">🎌</div>
+                <div class="ach-name">JLPT N5</div>
+              </div>
+
+              <div class="ach" title="Ещё не открыто">
+                <div class="ach-icon">⛩</div>
+                <div class="ach-name">Сэмпай</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Активность -->
+          <section class="block reveal">
+            <div class="block-head">
+              <h3>Активность</h3>
+              <span class="block-note">последние события</span>
+            </div>
+
+            <div class="activity-list">
+              <div class="activity-item">
+                <div class="activity-dot">あ</div>
+                <div class="activity-text">Разобрал фразу из <b>«Клинок, рассекающий демонов»</b></div>
+                <div class="activity-time">2 часа назад</div>
+              </div>
+
+              <div class="activity-item">
+                <div class="activity-dot">✓</div>
+                <div class="activity-text">Достижение <b>«Первый шаг»</b> открыто</div>
+                <div class="activity-time">вчера</div>
+              </div>
+
+              <div class="activity-item">
+                <div class="activity-dot">語</div>
+                <div class="activity-text">Выучил <b>18 новых слов</b> из категории «Быт»</div>
+                <div class="activity-time">вчера</div>
+              </div>
+
+              <div class="activity-item">
+                <div class="activity-dot">巻</div>
+                <div class="activity-text">Добавил в избранное <b>«Врата Штейна»</b></div>
+                <div class="activity-time">3 дня назад</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Друзья -->
+          <section class="block reveal">
+            <div class="block-head">
+              <h3>Друзья</h3>
+              <span class="block-note">учиться веселее вместе</span>
+            </div>
+
+            <div class="friends-row">
+              <div class="friend-avatars">
+                <img src="assets/images/avatars/avatar3.png" alt="Друг 1">
+                <img src="assets/images/avatars/avatar5.png" alt="Друг 2">
+                <img src="assets/images/avatars/avatar7.png" alt="Друг 3">
+              </div>
+
+              <div class="friend-count">
+                <b>3</b>
+                <span>друга уже в Nihongo</span>
+              </div>
+
+              <button class="btn btn-outline btn-small"
+                      onclick="showToast('Друзья', 'Приглашения появятся после релиза', 'info')">
+                Пригласить друга
+              </button>
+            </div>
+          </section>
+
+          <!-- Кнопки -->
+          <div class="profile-actions">
+            <a class="btn btn-outline" href="settings.html">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path>
+              </svg>
+              Настройки
+            </a>
+
+            <button class="btn btn-danger-outline" onclick="showLogoutConfirm()">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <path d="M16 17l5-5-5-5M21 12H9"></path>
+              </svg>
+              Выйти
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ============ МОДАЛКА ВЫБОРА АВАТАРА ============ -->
+  <div class="modal-overlay" id="avatarModal" role="dialog" aria-modal="true" aria-labelledby="avatarModalTitle">
+    <div class="modal modal-wide">
+      <div class="modal-head">
+        <h3 id="avatarModalTitle">Выбери аватар</h3>
+        <button class="modal-close" onclick="closeAvatarModal()" aria-label="Закрыть">×</button>
+      </div>
+      <p class="modal-sub">Восемь готовых образов. Выбор можно поменять в любой момент.</p>
+
+      <!-- Сетка 4x2 заполняется в avatar.js -->
+      <div class="avatar-grid" id="avatarGrid"></div>
+
+      <div class="flex-between mb-16">
+        <span class="small muted">Не можешь выбрать?</span>
+        <button class="btn btn-ghost btn-small" onclick="setRandomAvatar()">🎲 Случайный</button>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-outline" style="flex:1"
+                onclick="showToast('Загрузка аватара', 'Свои картинки появятся в одном из обновлений', 'warning')">
+          Загрузить свою
+        </button>
+        <button class="btn btn-ghost" style="flex:1" onclick="closeAvatarModal()">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ МОДАЛКА ВЫХОДА ============ -->
+  <div class="modal-overlay" id="logoutModal" role="dialog" aria-modal="true" aria-labelledby="logoutModalTitle">
+    <div class="modal">
+      <div class="modal-icon">⏻</div>
+      <div class="modal-head">
+        <h3 id="logoutModalTitle">Выйти из аккаунта?</h3>
+      </div>
+      <p class="modal-sub">
+        Прогресс сохранится — вернуться можно в любой момент.
+        Но серия дней подряд обнулится, если пропустишь день.
+      </p>
+
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeLogoutModal()">Отмена</button>
+        <button class="btn btn-primary" onclick="confirmLogout()">Выйти</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ПОДВАЛ ============ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom" style="border-top:none;padding-top:0">
+        <span>© 2026 Nihongo. Все права защищены.</span>
+        <span class="footer-made">Сделано с <span class="accent">♥</span> для анимешников</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ============ СКРИПТЫ ============ -->
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/avatar.js"></script>
+  <script src="js/profile.js"></script>
+  <script src="js/design.js"></script>
+  <script src="js/translate.js"></script>
+</body>
+</html>

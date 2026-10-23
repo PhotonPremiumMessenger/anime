@@ -1,0 +1,646 @@
+/* ============================================================
+   auth.js — регистрация, вход, сброс пароля, toast-уведомления
+   ============================================================ */
+
+'use strict';
+
+/* ---------- Состояние страницы ---------- */
+
+// Куда положить email, который ждёт подтверждения
+const PENDING_EMAIL_KEY = 'pendingEmail';
+// Временный пароль до подтверждения кода (в localStorage не кладём)
+let pendingPassword = '';
+// На каком шаге находится модалка: 'send' — код ещё не отправлен
+let codeStage = 'send';
+
+/* ---------- Toast-уведомления ---------- */
+
+/**
+ * Показывает всплывающее уведомление справа сверху.
+ *
+ * @param {string} title   — заголовок
+ * @param {string} message — текст
+ * @param {string} type    — success | error | warning | info
+ */
+function showToast(title, message = '', type = 'info') {
+  let container = document.querySelector('.toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
+
+  // Иконка зависит от типа
+  const icons = { success: '✓', error: '!', warning: '!', info: 'i' };
+
+  const toast = document.createElement('div');
+  toast.className = 'toast ' + type;
+  toast.innerHTML = `
+    <div class="toast-icon">${icons[type] || 'i'}</div>
+    <div class="toast-content">
+      <div class="toast-title"></div>
+      <div class="toast-message"></div>
+    </div>
+    <button class="toast-close" aria-label="Закрыть">×</button>
+  `;
+
+  // Текст подставляем через textContent — так безопаснее, чем innerHTML
+  toast.querySelector('.toast-title').textContent = title;
+  toast.querySelector('.toast-message').textContent = message;
+  toast.querySelector('.toast-close').addEventListener('click', () => removeToast(toast));
+
+  container.appendChild(toast);
+
+  // Больше 4 уведомлений одновременно не держим
+  while (container.children.length > 4) {
+    removeToast(container.firstElementChild, true);
+  }
+
+  // Автоматически скрываем через 4.5 секунды
+  const timer = setTimeout(() => removeToast(toast), 4500);
+  toast.dataset.timer = timer;
+}
+
+/**
+ * Убирает уведомление с анимацией.
+ */
+function removeToast(toast, instant = false) {
+  if (!toast || toast.classList.contains('hide')) return;
+  clearTimeout(Number(toast.dataset.timer));
+
+  if (instant) {
+    toast.remove();
+    return;
+  }
+
+  toast.classList.add('hide');
+  setTimeout(() => toast.remove(), 320);
+}
+
+/* ---------- Переключение форм ---------- */
+
+/** Показывает форму входа. */
+function showLogin() {
+  const loginForm = document.getElementById('loginForm');
+  const registerForm = document.getElementById('registerForm');
+  if (!loginForm || !registerForm) return;
+
+  loginForm.classList.add('active');
+  registerForm.classList.remove('active');
+
+  document.querySelectorAll('.auth-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.tab === 'login');
+  });
+
+  // Сбрасываем подсветку ошибок
+  clearFieldErrors();
+  const nick = document.getElementById('loginNickname');
+  if (nick) nick.focus();
+}
+
+/** Показывает форму регистрации. */
+function showRegister() {
+  const loginForm = document.getElementById('loginForm');
+  const registerForm = document.getElementById('registerForm');
+  if (!loginForm || !registerForm) return;
+
+  registerForm.classList.add('active');
+  loginForm.classList.remove('active');
+
+  document.querySelectorAll('.auth-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.tab === 'register');
+  });
+
+  clearFieldErrors();
+  const nick = document.getElementById('regNickname');
+  if (nick) nick.focus();
+}
+
+/* ---------- Валидация ---------- */
+
+/** Убирает все красные рамки и тексты ошибок. */
+function clearFieldErrors() {
+  document.querySelectorAll('.field.invalid').forEach(f => f.classList.remove('invalid'));
+}
+
+/**
+ * Помечает поле как ошибочное.
+ * @param {string} fieldId — id поля ввода
+ * @param {string} text    — текст ошибки
+ */
+function setFieldError(fieldId, text) {
+  const input = document.getElementById(fieldId);
+  if (!input) return;
+  const field = input.closest('.field');
+  if (!field) return;
+
+  field.classList.add('invalid');
+  const errorBox = field.querySelector('.field-error');
+  if (errorBox && text) errorBox.textContent = text;
+}
+
+/** Проверка ника: 3–20 символов, буквы, цифры, _ и - . */
+function isValidNickname(value) {
+  return /^[A-Za-zА-Яа-яЁё0-9_-]{3,20}$/.test(value);
+}
+
+/** Простая проверка почты. */
+function isValidEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[a-zA-Zа-яА-Я]{2,}$/.test(value);
+}
+
+/* ---------- Регистрация ---------- */
+
+/**
+ * Шаг 1: проверяем поля и открываем модалку подтверждения почты.
+ * Сам аккаунт создаётся после успешной проверки кода.
+ */
+function register() {
+  clearFieldErrors();
+
+  const nickInput = document.getElementById('regNickname');
+  const emailInput = document.getElementById('regEmail');
+  const passInput = document.getElementById('regPassword');
+  const agreeInput = document.getElementById('regAgree');
+
+  const nickname = nickInput ? nickInput.value.trim() : '';
+  const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
+  const password = passInput ? passInput.value : '';
+
+  let valid = true;
+
+  if (!isValidNickname(nickname)) {
+    setFieldError('regNickname', 'Ник: 3–20 символов, буквы, цифры, _ или -');
+    valid = false;
+  }
+
+  if (!isValidEmail(email)) {
+    setFieldError('regEmail', 'Введите корректный адрес почты');
+    valid = false;
+  }
+
+  if (password.length < 8) {
+    setFieldError('regPassword', 'Пароль должен быть не короче 8 символов');
+    valid = false;
+  }
+
+  if (agreeInput && !agreeInput.checked) {
+    showToast('Нужно согласие', 'Примите условия использования, чтобы продолжить', 'warning');
+    valid = false;
+  }
+
+  if (!valid) return;
+
+  // Запоминаем данные до подтверждения кода
+  pendingPassword = password;
+  localStorage.setItem(PENDING_EMAIL_KEY, email);
+
+  // Открываем модалку
+  const modal = document.getElementById('emailModal');
+  const emailField = document.getElementById('codeEmail');
+  const codeInput = document.getElementById('codeInput');
+
+  if (emailField) emailField.value = email;
+  if (codeInput) codeInput.value = '';
+  if (modal) modal.classList.add('open');
+
+  // Сбрасываем кнопку в состояние «Отправить код»
+  codeStage = 'send';
+  updateCodeButton();
+  updateCodeSteps(1);
+
+  showToast('Проверьте почту', 'Нажмите «Отправить код», чтобы получить письмо', 'info');
+}
+
+/* ---------- Модалка подтверждения почты ---------- */
+
+/** Меняет текст кнопки в зависимости от шага. */
+function updateCodeButton() {
+  const btn = document.getElementById('codeActionBtn');
+  if (!btn) return;
+  btn.textContent = codeStage === 'send' ? 'Отправить код' : 'Проверить код';
+}
+
+/** Подсвечивает шаги «почта → код → готово». */
+function updateCodeSteps(activeStep) {
+  document.querySelectorAll('.code-step').forEach((step, index) => {
+    const number = index + 1;
+    step.classList.toggle('active', number === activeStep);
+    step.classList.toggle('done', number < activeStep);
+  });
+}
+
+/** Одна кнопка на два действия: сначала отправка, потом проверка. */
+function handleCodeAction() {
+  if (codeStage === 'send') {
+    sendCode();
+  } else {
+    verifyCode();
+  }
+}
+
+/** Отправляет код на почту. */
+async function sendCode() {
+  const email = (document.getElementById('codeEmail') || {}).value || localStorage.getItem(PENDING_EMAIL_KEY);
+  const btn = document.getElementById('codeActionBtn');
+
+  if (!email) {
+    showToast('Ошибка', 'Почта не найдена. Заполните форму заново', 'error');
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Отправляем...';
+  }
+
+  const result = await apiSendCode(email);
+
+  if (btn) btn.disabled = false;
+
+  if (!result.ok) {
+    updateCodeButton();
+    showToast('Не удалось отправить код', result.data.message || 'Попробуйте позже', 'error');
+    startResendCooldown();
+    return;
+  }
+
+  // Переходим к шагу проверки
+  codeStage = 'verify';
+  updateCodeButton();
+  updateCodeSteps(2);
+
+  showToast('Код отправлен', 'Проверьте почту ' + email, 'success');
+
+  const codeInput = document.getElementById('codeInput');
+  if (codeInput) codeInput.focus();
+
+  startResendCooldown();
+}
+
+/** Проверяет введённый код, затем создаёт аккаунт. */
+async function verifyCode() {
+  const email = (document.getElementById('codeEmail') || {}).value || localStorage.getItem(PENDING_EMAIL_KEY);
+  const codeInput = document.getElementById('codeInput');
+  const code = codeInput ? codeInput.value.trim().toUpperCase() : '';
+  const btn = document.getElementById('codeActionBtn');
+
+  if (code.length !== 10) {
+    showToast('Код неполный', 'Код состоит из 10 символов', 'warning');
+    if (codeInput) codeInput.focus();
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Проверяем...';
+  }
+
+  const verifyResult = await apiVerifyCode(email, code);
+
+  if (!verifyResult.ok) {
+    if (btn) {
+      btn.disabled = false;
+      updateCodeButton();
+    }
+    showToast('Код неверный', verifyResult.data.message || 'Проверьте код и попробуйте снова', 'error');
+    return;
+  }
+
+  // Код верный — создаём аккаунт
+  const nickname = (document.getElementById('regNickname') || {}).value || '';
+  const password = pendingPassword || (document.getElementById('regPassword') || {}).value || '';
+
+  const registerResult = await apiRegister(nickname.trim(), email, password);
+
+  if (btn) btn.disabled = false;
+
+  if (!registerResult.ok) {
+    updateCodeButton();
+    showToast('Ошибка регистрации', registerResult.data.message || 'Попробуйте другой ник', 'error');
+    return;
+  }
+
+  updateCodeSteps(3);
+
+  // Если бэкенд сразу вернул токен — входим автоматически
+  const data = registerResult.data || {};
+  if (data.token) {
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('username', data.username || nickname.trim());
+    localStorage.setItem('joinedAt', new Date().toISOString());
+    localStorage.removeItem(PENDING_EMAIL_KEY);
+    pendingPassword = '';
+
+    closeEmailModal();
+    showToast('Готово!', 'Аккаунт создан, входим...', 'success');
+    setTimeout(() => (window.location.href = 'profile.html'), 900);
+    return;
+  }
+
+  // Иначе просим войти вручную
+  localStorage.removeItem(PENDING_EMAIL_KEY);
+  pendingPassword = '';
+  closeEmailModal();
+  showLogin();
+
+  const loginNick = document.getElementById('loginNickname');
+  if (loginNick) loginNick.value = nickname.trim();
+
+  showToast('Аккаунт создан', 'Теперь войдите со своим паролем', 'success');
+}
+
+/** Закрывает модалку подтверждения. */
+function closeEmailModal() {
+  const modal = document.getElementById('emailModal');
+  if (modal) modal.classList.remove('open');
+  codeStage = 'send';
+  updateCodeButton();
+}
+
+/* ---------- Повторная отправка кода ---------- */
+
+let resendTimer = null;
+
+/** Запускает паузу 60 секунд для ссылки «Отправить повторно». */
+function startResendCooldown() {
+  const resendBtn = document.getElementById('resendCodeBtn');
+  if (!resendBtn) return;
+
+  let seconds = 60;
+  clearInterval(resendTimer);
+
+  resendBtn.disabled = true;
+  resendBtn.textContent = 'Отправить повторно (60)';
+
+  resendTimer = setInterval(() => {
+    seconds -= 1;
+    if (seconds <= 0) {
+      clearInterval(resendTimer);
+      resendBtn.disabled = false;
+      resendBtn.textContent = 'Отправить повторно';
+      return;
+    }
+    resendBtn.textContent = 'Отправить повторно (' + seconds + ')';
+  }, 1000);
+}
+
+/** Повторная отправка кода из модалки. */
+async function resendCode() {
+  const email = (document.getElementById('codeEmail') || {}).value;
+  if (!email) return;
+
+  const resendBtn = document.getElementById('resendCodeBtn');
+  if (resendBtn) resendBtn.disabled = true;
+
+  const result = await apiSendCode(email);
+
+  if (result.ok) {
+    showToast('Код отправлен повторно', 'Проверьте почту ' + email, 'success');
+  } else {
+    showToast('Ошибка', result.data.message || 'Не удалось отправить код', 'error');
+  }
+
+  startResendCooldown();
+}
+
+/* ---------- Вход ---------- */
+
+/** Проверяет данные и выполняет вход. */
+async function login() {
+  clearFieldErrors();
+
+  const nickInput = document.getElementById('loginNickname');
+  const passInput = document.getElementById('loginPassword');
+  const btn = document.getElementById('loginBtn');
+
+  const nickname = nickInput ? nickInput.value.trim() : '';
+  const password = passInput ? passInput.value : '';
+
+  if (!nickname) {
+    setFieldError('loginNickname', 'Введите ник');
+    return;
+  }
+
+  if (!password) {
+    setFieldError('loginPassword', 'Введите пароль');
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Входим...';
+  }
+
+  const result = await apiLogin(nickname, password);
+
+  if (btn) {
+    btn.disabled = false;
+    btn.textContent = 'Войти';
+  }
+
+  if (!result.ok) {
+    showToast('Не удалось войти', result.data.message || 'Проверьте ник и пароль', 'error');
+    return;
+  }
+
+  const data = result.data || {};
+  const token = data.token || data.accessToken || '';
+
+  if (!token) {
+    showToast('Ошибка сервера', 'Сервер не вернул токен доступа', 'error');
+    return;
+  }
+
+  // Сохраняем сессию
+  localStorage.setItem('token', token);
+  localStorage.setItem('username', data.username || data.nickname || nickname);
+
+  // Дату первого входа показываем в профиле
+  if (!localStorage.getItem('joinedAt')) {
+    localStorage.setItem('joinedAt', new Date().toISOString());
+  }
+
+  // Если сервер прислал аватар — запоминаем его
+  if (data.avatar) localStorage.setItem('avatar', data.avatar);
+
+  showToast('С возвращением!', 'Рады видеть вас снова, ' + (data.username || nickname), 'success');
+
+  setTimeout(() => (window.location.href = 'profile.html'), 700);
+}
+
+/* ---------- Выход ---------- */
+
+/** Выход — только на клиенте: чистим localStorage и уходим на главную. */
+function logout() {
+  localStorage.removeItem('token');
+  localStorage.removeItem('username');
+  localStorage.removeItem('avatar');
+  localStorage.removeItem(PENDING_EMAIL_KEY);
+  window.location.href = 'index.html';
+}
+
+/* ---------- Сброс пароля ---------- */
+
+/** Открывает/закрывает блок сброса пароля. */
+function toggleResetBox() {
+  const box = document.getElementById('resetBox');
+  if (!box) return;
+
+  box.classList.toggle('open');
+  if (box.classList.contains('open')) {
+    const input = document.getElementById('resetEmail');
+    const loginNick = document.getElementById('loginNickname');
+    if (input && loginNick && loginNick.value.includes('@')) input.value = loginNick.value;
+    if (input) input.focus();
+  }
+}
+
+/** Отправляет запрос на сброс пароля. */
+async function resetPassword() {
+  const emailInput = document.getElementById('resetEmail');
+  const btn = document.getElementById('resetBtn');
+  const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
+
+  if (!isValidEmail(email)) {
+    showToast('Проверьте почту', 'Введите корректный адрес почты', 'warning');
+    if (emailInput) emailInput.focus();
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Отправляем...';
+  }
+
+  const result = await apiResetPassword(email);
+
+  if (btn) {
+    btn.disabled = false;
+    btn.textContent = 'Отправить ссылку';
+  }
+
+  if (!result.ok) {
+    showToast('Ошибка', result.data.message || 'Не удалось отправить письмо', 'error');
+    return;
+  }
+
+  showToast('Письмо отправлено', 'Проверьте почту ' + email + ' — там ссылка для сброса', 'success');
+}
+
+/* ---------- Шапка: состояние авторизации ---------- */
+
+/**
+ * Обновляет шапку: если есть токен — показываем ник и аватар,
+ * иначе — кнопки «Войти» и «Регистрация».
+ */
+function updateHeaderAuth() {
+  const token = localStorage.getItem('token');
+  const nickname = localStorage.getItem('username') || 'Игрок';
+
+  if (token) {
+    document.body.classList.add('logged-in');
+  } else {
+    document.body.classList.remove('logged-in');
+  }
+
+  document.querySelectorAll('[data-header-nick]').forEach(el => {
+    el.textContent = nickname;
+  });
+
+  const avatar = localStorage.getItem('avatar') || 'assets/images/avatars/avatar1.png';
+  document.querySelectorAll('[data-header-avatar]').forEach(img => {
+    img.src = avatar;
+  });
+}
+
+/* ---------- Небольшие помощники форм ---------- */
+
+/** Показать/скрыть пароль по кнопке с глазом. */
+function togglePassword(inputId, button) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+
+  const isPassword = input.type === 'password';
+  input.type = isPassword ? 'text' : 'password';
+
+  if (button) {
+    button.classList.toggle('is-visible', isPassword);
+    button.setAttribute('aria-label', isPassword ? 'Скрыть пароль' : 'Показать пароль');
+  }
+}
+
+/** Индикатор сложности пароля (три полоски). */
+function updatePasswordStrength(value) {
+  const bars = document.querySelectorAll('#regStrength i');
+  if (!bars.length) return;
+
+  let score = 0;
+  if (value.length >= 8) score++;
+  if (/[A-Za-zА-Яа-я]/.test(value) && /\d/.test(value)) score++;
+  if (value.length >= 12 || /[^A-Za-zА-Яа-я0-9]/.test(value)) score++;
+
+  const className = score <= 1 ? 'on-weak' : score === 2 ? 'on-mid' : 'on-good';
+
+  bars.forEach((bar, index) => {
+    bar.className = '';
+    if (index < score) bar.classList.add(className);
+  });
+}
+
+/* ---------- Инициализация страницы входа ---------- */
+
+document.addEventListener('DOMContentLoaded', () => {
+  updateHeaderAuth();
+
+  // Кнопка входа в шапке ведёт на страницу регистрации
+  document.querySelectorAll('[data-goto-login]').forEach(btn => {
+    btn.addEventListener('click', () => (window.location.href = 'register.html'));
+  });
+
+  // Enter в полях формы входа
+  const loginPassword = document.getElementById('loginPassword');
+  if (loginPassword) {
+    loginPassword.addEventListener('keydown', event => {
+      if (event.key === 'Enter') login();
+    });
+  }
+
+  // Поле кода: только заглавные буквы и цифры
+  const codeInput = document.getElementById('codeInput');
+  if (codeInput) {
+    codeInput.addEventListener('input', () => {
+      codeInput.value = codeInput.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10);
+    });
+    codeInput.addEventListener('keydown', event => {
+      if (event.key === 'Enter' && codeStage === 'verify') verifyCode();
+    });
+  }
+
+  // Закрытие модалки по клику на затемнение
+  const emailModal = document.getElementById('emailModal');
+  if (emailModal) {
+    emailModal.addEventListener('click', event => {
+      if (event.target === emailModal) closeEmailModal();
+    });
+  }
+});
+
+/* Экспорт в глобальную область */
+window.showToast = showToast;
+window.showRegister = showRegister;
+window.showLogin = showLogin;
+window.register = register;
+window.login = login;
+window.logout = logout;
+window.resetPassword = resetPassword;
+window.handleCodeAction = handleCodeAction;
+window.sendCode = sendCode;
+window.verifyCode = verifyCode;
+window.closeEmailModal = closeEmailModal;
+window.resendCode = resendCode;
+window.toggleResetBox = toggleResetBox;
+window.updateHeaderAuth = updateHeaderAuth;
+window.togglePassword = togglePassword;
+window.updatePasswordStrength = updatePasswordStrength;
+window.clearFieldErrors = clearFieldErrors;

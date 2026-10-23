@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Регистрация и вход — Nihongo</title>
+  <meta name="description" content="Создай аккаунт Nihongo и начни учить японский через аниме. Первый год бесплатно.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛩</text></svg>">
+</head>
+<body>
+
+  <!-- ============ ШАПКА ============ -->
+  <header class="header">
+    <div class="container">
+      <a class="logo" href="index.html">
+        <span class="logo-mark">日</span>
+        <span>Nih<span class="logo-accent">ongo</span></span>
+      </a>
+
+      <nav class="nav">
+        <a class="nav-link" href="index.html">Главная</a>
+        <a class="nav-link" href="#" onclick="event.preventDefault(); showToast('Уроки', 'Раздел откроется после релиза', 'info')">
+          Уроки <span class="nav-soon">скоро</span>
+        </a>
+        <a class="nav-link" href="#" onclick="event.preventDefault(); showToast('Аниме', 'Каталог появится после релиза', 'info')">
+          Аниме <span class="nav-soon">скоро</span>
+        </a>
+        <a class="nav-link" href="about.html">О проекте</a>
+
+        <button class="nav-design" id="designToggle" onclick="toggleDesignPanel()" aria-expanded="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"></circle>
+            <circle cx="8.5" cy="9.5" r="1.2"></circle>
+            <circle cx="15.5" cy="9.5" r="1.2"></circle>
+            <circle cx="9" cy="15" r="1.2"></circle>
+            <circle cx="15" cy="15" r="1.2"></circle>
+          </svg>
+          Дизайн
+        </button>
+      </nav>
+
+      <div class="header-actions">
+        <div class="is-guest">
+          <button class="btn btn-ghost btn-small" onclick="showLogin()">Войти</button>
+          <button class="btn btn-primary btn-small" onclick="showRegister()">Регистрация</button>
+        </div>
+        <a class="user-chip is-auth" href="profile.html">
+          <img src="assets/images/avatars/avatar1.png" alt="Аватар" data-header-avatar data-avatar-img>
+          <span class="user-name" data-header-nick>Игрок</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ ПАНЕЛЬ ДИЗАЙНА ============ -->
+  <aside class="design-panel" id="designPanel" aria-label="Панель дизайна">
+    <h4>Панель дизайна</h4>
+    <p class="panel-sub">Настрой внешний вид под себя. Изменения сохраняются.</p>
+
+    <div class="theme-grid">
+      <button class="theme-card active" data-theme="default" onclick="setTheme('default')">
+        <div class="theme-preview theme-preview-default"></div>
+        <div class="theme-name">Стандарт</div>
+        <div class="theme-desc">Оранжевый акцент</div>
+      </button>
+      <button class="theme-card" data-theme="sakura" onclick="setTheme('sakura')">
+        <div class="theme-preview theme-preview-sakura"></div>
+        <div class="theme-name">Сакура</div>
+        <div class="theme-desc">Розовый акцент</div>
+      </button>
+    </div>
+
+    <div class="switch-row">
+      <div>
+        <div class="switch-label">Лепестки сакуры</div>
+        <div class="switch-hint">Падающие лепестки поверх страницы</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="sakuraSwitch" onchange="toggleSakura(this)">
+        <span class="track"></span>
+      </label>
+    </div>
+
+    <div class="switch-row">
+      <div>
+        <div class="switch-label">Все настройки</div>
+        <div class="switch-hint">Звук, уведомления, лаунчер</div>
+      </div>
+      <a class="btn btn-ghost btn-small" href="settings.html">Открыть</a>
+    </div>
+  </aside>
+
+  <!-- ============ СОДЕРЖИМОЕ ============ -->
+  <main class="auth-section">
+    <div class="container">
+      <div class="auth-layout">
+
+        <!-- Левая колонка: рассказ о платформе -->
+        <div class="auth-aside">
+          <span class="badge">
+            <span class="badge-dot"></span>
+            Первый год бесплатно
+          </span>
+
+          <h1>Присоединяйся к <span class="accent">Nihongo</span></h1>
+
+          <p>
+            Один аккаунт — и тебе открываются разборы фраз, каталог аниме
+            и подготовка к JLPT. Без рекламы и подписок.
+          </p>
+
+          <div class="auth-points">
+            <div class="auth-point">
+              <span class="point-icon">あ</span>
+              <span>Настоящие фразы из аниме с разбором грамматики</span>
+            </div>
+            <div class="auth-point">
+              <span class="point-icon">謎</span>
+              <span>Пасхалки и культурные отсылки в каждом уроке</span>
+            </div>
+            <div class="auth-point">
+              <span class="point-icon">進</span>
+              <span>Опыт, уровни и достижения за прогресс</span>
+            </div>
+          </div>
+
+          <div class="auth-quote">
+            <div class="quote-jp">一期一会</div>
+            <div class="quote-sub">Ichigo ichie — «одна встреча, один шанс». Та самая философия, с которой начинают учить язык.</div>
+          </div>
+        </div>
+
+        <!-- Правая колонка: формы -->
+        <div class="auth-card">
+          <div class="auth-tabs" role="tablist">
+            <button class="auth-tab" data-tab="login" onclick="showLogin()" role="tab">Вход</button>
+            <button class="auth-tab active" data-tab="register" onclick="showRegister()" role="tab">Регистрация</button>
+          </div>
+
+          <!-- ---------- Форма регистрации ---------- -->
+          <form class="auth-form active" id="registerForm" onsubmit="event.preventDefault(); register()" novalidate>
+            <div class="auth-form-head">
+              <h2>Создать аккаунт</h2>
+              <p>Ник, почта и пароль — этого достаточно.</p>
+            </div>
+
+            <div class="field">
+              <label for="regNickname">Ник</label>
+              <input class="input" type="text" id="regNickname" placeholder="Senpai" maxlength="20" autocomplete="username">
+              <div class="field-error">Ник: 3–20 символов, буквы, цифры, _ или -</div>
+            </div>
+
+            <div class="field">
+              <label for="regEmail">Почта</label>
+              <input class="input" type="email" id="regEmail" placeholder="you@mail.ru" autocomplete="email">
+              <div class="field-error">Введите корректный адрес почты</div>
+            </div>
+
+            <div class="field">
+              <label for="regPassword">Пароль</label>
+              <div class="input-wrap">
+                <input class="input" type="password" id="regPassword" placeholder="Минимум 8 символов"
+                       autocomplete="new-password" oninput="updatePasswordStrength(this.value)">
+                <button class="input-suffix" type="button" onclick="togglePassword('regPassword', this)" aria-label="Показать пароль">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+              </div>
+              <div class="strength" id="regStrength">
+                <i></i><i></i><i></i>
+              </div>
+              <div class="field-error">Пароль должен быть не короче 8 символов</div>
+            </div>
+
+            <label class="checkbox mb-16">
+              <input type="checkbox" id="regAgree">
+              <span>Мне есть 12 лет, и я принимаю условия использования и политику конфиденциальности</span>
+            </label>
+
+            <button class="btn btn-primary btn-block" type="submit">Зарегистрироваться</button>
+
+            <div class="auth-links">
+              <span class="muted">Уже есть аккаунт?</span>
+              <button type="button" onclick="showLogin()">Войти</button>
+            </div>
+          </form>
+
+          <!-- ---------- Форма входа ---------- -->
+          <form class="auth-form" id="loginForm" onsubmit="event.preventDefault(); login()" novalidate>
+            <div class="auth-form-head">
+              <h2>С возвращением</h2>
+              <p>Войди, чтобы продолжить учиться.</p>
+            </div>
+
+            <div class="field">
+              <label for="loginNickname">Ник</label>
+              <input class="input" type="text" id="loginNickname" placeholder="Senpai" autocomplete="username">
+              <div class="field-error">Введите ник</div>
+            </div>
+
+            <div class="field">
+              <label for="loginPassword">Пароль</label>
+              <div class="input-wrap">
+                <input class="input" type="password" id="loginPassword" placeholder="Твой пароль" autocomplete="current-password">
+                <button class="input-suffix" type="button" onclick="togglePassword('loginPassword', this)" aria-label="Показать пароль">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+              </div>
+              <div class="field-error">Введите пароль</div>
+            </div>
+
+            <div class="auth-row">
+              <label class="checkbox">
+                <input type="checkbox" id="rememberMe" checked>
+                <span>Запомнить меня</span>
+              </label>
+              <button class="btn btn-ghost btn-small" type="button" onclick="toggleResetBox()">Забыли пароль?</button>
+            </div>
+
+            <button class="btn btn-primary btn-block" type="submit" id="loginBtn">Войти</button>
+
+            <div class="auth-links">
+              <span class="muted">Нет аккаунта?</span>
+              <button type="button" onclick="showRegister()">Зарегистрироваться</button>
+            </div>
+
+            <!-- ---------- Сброс пароля ---------- -->
+            <div class="reset-box" id="resetBox">
+              <p>Укажи почту, на которую зарегистрирован аккаунт. Пришлём ссылку для сброса пароля.</p>
+              <div class="field mb-0">
+                <label for="resetEmail">Почта</label>
+                <input class="input" type="email" id="resetEmail" placeholder="you@mail.ru" autocomplete="email">
+              </div>
+              <button class="btn btn-outline btn-block btn-small" type="button" id="resetBtn" onclick="resetPassword()">Отправить ссылку</button>
+              <div class="auth-links">
+                <span class="muted">Вспомнил пароль?</span>
+                <button type="button" onclick="toggleResetBox()">Сбросить</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ============ МОДАЛКА ПОДТВЕРЖДЕНИЯ ПОЧТЫ ============ -->
+  <div class="modal-overlay" id="emailModal" role="dialog" aria-modal="true" aria-labelledby="emailModalTitle">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 id="emailModalTitle">Подтверждение почты</h3>
+        <button class="modal-close" onclick="closeEmailModal()" aria-label="Закрыть">×</button>
+      </div>
+      <p class="modal-sub">Мы отправим код из 10 символов. Введи его, чтобы активировать аккаунт.</p>
+
+      <div class="code-steps">
+        <span class="code-step active"><i>1</i> Почта</span>
+        <span class="code-step-line"></span>
+        <span class="code-step"><i>2</i> Код</span>
+        <span class="code-step-line"></span>
+        <span class="code-step"><i>3</i> Готово</span>
+      </div>
+
+      <div class="field">
+        <label for="codeEmail">Почта</label>
+        <input class="input" type="email" id="codeEmail" readonly>
+      </div>
+
+      <div class="field">
+        <label for="codeInput">Код из письма</label>
+        <input class="input code-input" type="text" id="codeInput" maxlength="10"
+               placeholder="XXXXXXXXXX" autocomplete="one-time-code">
+        <div class="field-hint">10 символов. Буквы вводятся автоматически заглавными.</div>
+      </div>
+
+      <button class="btn btn-primary btn-block" type="button" id="codeActionBtn" onclick="handleCodeAction()">
+        Отправить код
+      </button>
+
+      <div class="code-resend">
+        Не пришло письмо?
+        <button type="button" id="resendCodeBtn" onclick="resendCode()">Отправить повторно</button>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-ghost" type="button" onclick="closeEmailModal()">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ПОДВАЛ ============ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom" style="border-top:none;padding-top:0">
+        <span>© 2026 Nihongo. Все права защищены.</span>
+        <span class="footer-made">
+          <a href="https://www.tiktok.com/" target="_blank" rel="noopener">TikTok</a> ·
+          <a href="https://www.youtube.com/" target="_blank" rel="noopener">YouTube</a> ·
+          <a href="https://www.instagram.com/" target="_blank" rel="noopener">Instagram</a> ·
+          <a href="https://discord.com/" target="_blank" rel="noopener">Discord</a>
+        </span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ============ СКРИПТЫ ============ -->
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/avatar.js"></script>
+  <script src="js/design.js"></script>
+  <script src="js/translate.js"></script>
+</body>
+</html>
