@@ -18,16 +18,25 @@
   <!-- ============ ШАПКА ============ -->
   <header class="header">
     <div class="container">
-      <a class="logo" href="index.html">
-        <span class="logo-mark">日</span>
-        <span>Nih<span class="logo-accent">ongo</span></span>
+      <a class="logo" href="index.html" aria-label="Nihongo — на главную">
+        <span class="logo-badge">
+          <svg viewBox="0 0 48 48" aria-hidden="true">
+            <rect x="6" y="10" width="36" height="4.5" rx="2.2" fill="currentColor"></rect>
+            <rect x="10" y="18" width="28" height="3.2" rx="1.6" fill="currentColor" opacity="0.85"></rect>
+            <rect x="14" y="16" width="4.2" height="24" rx="1.6" fill="currentColor"></rect>
+            <rect x="29.8" y="16" width="4.2" height="24" rx="1.6" fill="currentColor"></rect>
+            <rect x="20" y="24" width="8" height="3" rx="1.5" fill="currentColor" opacity="0.7"></rect>
+          </svg>
+        </span>
+        <span class="logo-text">
+          <span class="logo-jp">日本語</span>
+          <span class="logo-en">NIHONGO</span>
+        </span>
       </a>
 
       <nav class="nav">
         <a class="nav-link" href="index.html">Главная</a>
-        <a class="nav-link" href="#" onclick="event.preventDefault(); showToast('Уроки', 'Раздел откроется после релиза', 'info')">
-          Уроки <span class="nav-soon">скоро</span>
-        </a>
+        <a class="nav-link" href="lessons.html">Уроки</a>
         <a class="nav-link" href="#" onclick="event.preventDefault(); showToast('Аниме', 'Каталог появится после релиза', 'info')">
           Аниме <span class="nav-soon">скоро</span>
         </a>
@@ -73,6 +82,11 @@
         <div class="theme-preview theme-preview-sakura"></div>
         <div class="theme-name">Сакура</div>
         <div class="theme-desc">Розовый акцент</div>
+      </button>
+      <button class="theme-card" data-theme="light" onclick="setTheme('light')">
+        <div class="theme-preview theme-preview-light"></div>
+        <div class="theme-name">Светлая</div>
+        <div class="theme-desc">Дневной режим</div>
       </button>
     </div>
 
@@ -133,7 +147,7 @@
             </div>
             <div>
               Серия
-              <b>5 дней 🔥</b>
+              <b id="streakDays">0 дней 🔥</b>
             </div>
           </div>
         </aside>
@@ -176,40 +190,11 @@
           <section class="block reveal">
             <div class="block-head">
               <h3>Достижения</h3>
-              <span class="block-note">открыто 1 из 6</span>
+              <span class="block-note" id="achNote">открыто 0 из 6</span>
             </div>
 
-            <div class="ach-grid">
-              <div class="ach unlocked" title="Первый шаг — пройден первый урок">
-                <div class="ach-icon">🌸</div>
-                <div class="ach-name">Первый шаг</div>
-              </div>
-
-              <div class="ach" title="Ещё не открыто">
-                <div class="ach-icon">📚</div>
-                <div class="ach-name">10 уроков</div>
-              </div>
-
-              <div class="ach" title="Ещё не открыто">
-                <div class="ach-icon">🗣</div>
-                <div class="ach-name">100 слов</div>
-              </div>
-
-              <div class="ach" title="Ещё не открыто">
-                <div class="ach-icon">🔥</div>
-                <div class="ach-name">7 дней</div>
-              </div>
-
-              <div class="ach" title="Ещё не открыто">
-                <div class="ach-icon">🎌</div>
-                <div class="ach-name">JLPT N5</div>
-              </div>
-
-              <div class="ach" title="Ещё не открыто">
-                <div class="ach-icon">⛩</div>
-                <div class="ach-name">Сэмпай</div>
-              </div>
-            </div>
+            <!-- Сетку достижений рисует profile.js -->
+            <div class="ach-grid" id="achGrid"></div>
           </section>
 
           <!-- Активность -->
@@ -219,31 +204,8 @@
               <span class="block-note">последние события</span>
             </div>
 
-            <div class="activity-list">
-              <div class="activity-item">
-                <div class="activity-dot">あ</div>
-                <div class="activity-text">Разобрал фразу из <b>«Клинок, рассекающий демонов»</b></div>
-                <div class="activity-time">2 часа назад</div>
-              </div>
-
-              <div class="activity-item">
-                <div class="activity-dot">✓</div>
-                <div class="activity-text">Достижение <b>«Первый шаг»</b> открыто</div>
-                <div class="activity-time">вчера</div>
-              </div>
-
-              <div class="activity-item">
-                <div class="activity-dot">語</div>
-                <div class="activity-text">Выучил <b>18 новых слов</b> из категории «Быт»</div>
-                <div class="activity-time">вчера</div>
-              </div>
-
-              <div class="activity-item">
-                <div class="activity-dot">巻</div>
-                <div class="activity-text">Добавил в избранное <b>«Врата Штейна»</b></div>
-                <div class="activity-time">3 дня назад</div>
-              </div>
-            </div>
+            <!-- Ленту активности рисует profile.js -->
+            <div class="activity-list" id="activityList"></div>
           </section>
 
           <!-- Друзья -->
@@ -274,6 +236,8 @@
 
           <!-- Кнопки -->
           <div class="profile-actions">
+            <a class="btn btn-primary" href="lessons.html">К урокам</a>
+
             <a class="btn btn-outline" href="settings.html">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <circle cx="12" cy="12" r="3"></circle>
@@ -355,6 +319,8 @@
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/avatar.js"></script>
+  <script src="js/progress.js"></script>
+  <script src="js/lessons-data.js"></script>
   <script src="js/profile.js"></script>
   <script src="js/design.js"></script>
   <script src="js/translate.js"></script>

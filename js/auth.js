@@ -209,7 +209,7 @@ function register() {
   updateCodeButton();
   updateCodeSteps(1);
 
-  showToast('Проверьте почту', 'Нажмите «Отправить код», чтобы получить письмо', 'info');
+  showToast('Проверьте почту', 'Нажмите «Отправить код», чтобы получить код', 'info');
 }
 
 /* ---------- Модалка подтверждения почты ---------- */
@@ -270,9 +270,19 @@ async function sendCode() {
   updateCodeButton();
   updateCodeSteps(2);
 
-  showToast('Код отправлен', 'Проверьте почту ' + email, 'success');
-
   const codeInput = document.getElementById('codeInput');
+
+  // Демо-режим: письмо не отправляется, код возвращается в ответе
+  const demoCode = result.data && result.data.code;
+
+  if (demoCode) {
+    showToast('Ваш код: ' + demoCode, 'Демо-режим: письмо не отправляется, код действует 10 минут', 'success');
+    // Подставляем код в поле — на GitHub Pages почты нет, зато всё работает
+    if (codeInput) codeInput.value = demoCode;
+  } else {
+    showToast('Код отправлен', 'Проверьте почту ' + email, 'success');
+  }
+
   if (codeInput) codeInput.focus();
 
   startResendCooldown();
@@ -323,31 +333,15 @@ async function verifyCode() {
 
   updateCodeSteps(3);
 
-  // Если бэкенд сразу вернул токен — входим автоматически
+  // Аккаунт создан, сессия уже записана в localStorage — входим автоматически
   const data = registerResult.data || {};
-  if (data.token) {
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('username', data.username || nickname.trim());
-    localStorage.setItem('joinedAt', new Date().toISOString());
-    localStorage.removeItem(PENDING_EMAIL_KEY);
-    pendingPassword = '';
-
-    closeEmailModal();
-    showToast('Готово!', 'Аккаунт создан, входим...', 'success');
-    setTimeout(() => (window.location.href = 'profile.html'), 900);
-    return;
-  }
-
-  // Иначе просим войти вручную
   localStorage.removeItem(PENDING_EMAIL_KEY);
   pendingPassword = '';
+
   closeEmailModal();
-  showLogin();
+  showToast('Готово!', 'Аккаунт создан, добро пожаловать, ' + (data.username || nickname.trim()), 'success');
 
-  const loginNick = document.getElementById('loginNickname');
-  if (loginNick) loginNick.value = nickname.trim();
-
-  showToast('Аккаунт создан', 'Теперь войдите со своим паролем', 'success');
+  setTimeout(() => (window.location.href = 'profile.html'), 900);
 }
 
 /** Закрывает модалку подтверждения. */
@@ -444,38 +438,25 @@ async function login() {
     return;
   }
 
+  // Токен и ник уже записаны в localStorage внутри apiLogin
   const data = result.data || {};
-  const token = data.token || data.accessToken || '';
-
-  if (!token) {
-    showToast('Ошибка сервера', 'Сервер не вернул токен доступа', 'error');
-    return;
-  }
-
-  // Сохраняем сессию
-  localStorage.setItem('token', token);
-  localStorage.setItem('username', data.username || data.nickname || nickname);
-
-  // Дату первого входа показываем в профиле
-  if (!localStorage.getItem('joinedAt')) {
-    localStorage.setItem('joinedAt', new Date().toISOString());
-  }
-
-  // Если сервер прислал аватар — запоминаем его
-  if (data.avatar) localStorage.setItem('avatar', data.avatar);
 
   showToast('С возвращением!', 'Рады видеть вас снова, ' + (data.username || nickname), 'success');
 
-  setTimeout(() => (window.location.href = 'profile.html'), 700);
+  // Если пользователя выкинуло с защищённой страницы — возвращаем его туда
+  const redirect = sessionStorage.getItem('redirectAfterLogin');
+  sessionStorage.removeItem('redirectAfterLogin');
+
+  setTimeout(() => (window.location.href = redirect || 'profile.html'), 700);
 }
 
 /* ---------- Выход ---------- */
 
 /** Выход — только на клиенте: чистим localStorage и уходим на главную. */
 function logout() {
-  localStorage.removeItem('token');
-  localStorage.removeItem('username');
-  localStorage.removeItem('avatar');
+  // Очищаем сессию: nihongo_current_user и nihongo_token
+  clearSession();
+  localStorage.removeItem(STORAGE_KEYS.avatar);
   localStorage.removeItem(PENDING_EMAIL_KEY);
   window.location.href = 'index.html';
 }
@@ -521,11 +502,19 @@ async function resetPassword() {
   }
 
   if (!result.ok) {
-    showToast('Ошибка', result.data.message || 'Не удалось отправить письмо', 'error');
+    showToast('Ошибка', result.data.message || 'Не удалось отправить код', 'error');
     return;
   }
 
-  showToast('Письмо отправлено', 'Проверьте почту ' + email + ' — там ссылка для сброса', 'success');
+  const temporary = result.data && result.data.temporaryPassword;
+
+  if (temporary) {
+    showToast('Новый пароль: ' + temporary, 'Демо-режим: сохраните пароль и войдите с ним', 'success');
+    const passInput = document.getElementById('loginPassword');
+    if (passInput) passInput.value = temporary;
+  } else {
+    showToast('Пароль обновлён', 'Войдите с новым паролем', 'success');
+  }
 }
 
 /* ---------- Шапка: состояние авторизации ---------- */
@@ -535,20 +524,19 @@ async function resetPassword() {
  * иначе — кнопки «Войти» и «Регистрация».
  */
 function updateHeaderAuth() {
-  const token = localStorage.getItem('token');
-  const nickname = localStorage.getItem('username') || 'Игрок';
+  const user = getCurrentUser();
+  const authorized = isAuthorized();
+  const nickname = user ? user.username : 'Игрок';
 
-  if (token) {
-    document.body.classList.add('logged-in');
-  } else {
-    document.body.classList.remove('logged-in');
-  }
+  document.body.classList.toggle('logged-in', authorized);
 
   document.querySelectorAll('[data-header-nick]').forEach(el => {
     el.textContent = nickname;
   });
 
-  const avatar = localStorage.getItem('avatar') || 'assets/images/avatars/avatar1.png';
+  const avatar = (user && user.avatar) ||
+    localStorage.getItem(STORAGE_KEYS.avatar) ||
+    'assets/images/avatars/avatar1.png';
   document.querySelectorAll('[data-header-avatar]').forEach(img => {
     img.src = avatar;
   });

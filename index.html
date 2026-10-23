@@ -19,16 +19,25 @@
   <!-- ============ ШАПКА ============ -->
   <header class="header">
     <div class="container">
-      <a class="logo" href="index.html">
-        <span class="logo-mark">日</span>
-        <span>Nih<span class="logo-accent">ongo</span></span>
+      <a class="logo" href="index.html" aria-label="Nihongo — на главную">
+        <span class="logo-badge">
+          <svg viewBox="0 0 48 48" aria-hidden="true">
+            <rect x="6" y="10" width="36" height="4.5" rx="2.2" fill="currentColor"></rect>
+            <rect x="10" y="18" width="28" height="3.2" rx="1.6" fill="currentColor" opacity="0.85"></rect>
+            <rect x="14" y="16" width="4.2" height="24" rx="1.6" fill="currentColor"></rect>
+            <rect x="29.8" y="16" width="4.2" height="24" rx="1.6" fill="currentColor"></rect>
+            <rect x="20" y="24" width="8" height="3" rx="1.5" fill="currentColor" opacity="0.7"></rect>
+          </svg>
+        </span>
+        <span class="logo-text">
+          <span class="logo-jp">日本語</span>
+          <span class="logo-en">NIHONGO</span>
+        </span>
       </a>
 
       <nav class="nav">
         <a class="nav-link active" href="index.html">Главная</a>
-        <a class="nav-link" href="#" onclick="event.preventDefault(); showToast('Уроки', 'Раздел откроется после релиза', 'info')">
-          Уроки <span class="nav-soon">скоро</span>
-        </a>
+        <a class="nav-link" href="lessons.html">Уроки</a>
         <a class="nav-link" href="#" onclick="event.preventDefault(); showToast('Аниме', 'Каталог появится после релиза', 'info')">
           Аниме <span class="nav-soon">скоро</span>
         </a>
@@ -75,6 +84,11 @@
         <div class="theme-preview theme-preview-sakura"></div>
         <div class="theme-name">Сакура</div>
         <div class="theme-desc">Розовый акцент</div>
+      </button>
+      <button class="theme-card" data-theme="light" onclick="setTheme('light')">
+        <div class="theme-preview theme-preview-light"></div>
+        <div class="theme-name">Светлая</div>
+        <div class="theme-desc">Дневной режим</div>
       </button>
     </div>
 
@@ -238,10 +252,11 @@
                 <span class="badge-dot"></span>
                 В разработке
               </span>
-              <h2>Сайт скоро откроется</h2>
+              <h2>Платформа растёт</h2>
               <p>
-                Мы собираем первую версию платформы: уроки, каталог и разборы.
-                Зарегистрируйся сейчас — первый год будет бесплатным для всех, кто зашёл первым.
+                Пять уроков уже открыты: слова с озвучкой, грамматика и тесты.
+                Каталог аниме и разборы пасхалок — на подходе.
+                Зарегистрируйся сейчас: первый год бесплатный для всех, кто зашёл первым.
               </p>
             </div>
 
@@ -278,7 +293,8 @@
           </div>
 
           <div class="btn-row mt-24">
-            <a class="btn btn-primary" href="register.html">Занять место</a>
+            <a class="btn btn-primary" href="lessons.html">Открыть уроки</a>
+            <a class="btn btn-ghost" href="register.html">Занять место</a>
             <a class="btn btn-ghost" href="about.html">Как это работает</a>
           </div>
         </div>
@@ -304,10 +320,21 @@
     <div class="container">
       <div class="footer-top">
         <div class="footer-brand">
-          <a class="logo" href="index.html">
-            <span class="logo-mark">日</span>
-            <span>Nih<span class="logo-accent">ongo</span></span>
-          </a>
+          <a class="logo" href="index.html" aria-label="Nihongo — на главную">
+        <span class="logo-badge">
+          <svg viewBox="0 0 48 48" aria-hidden="true">
+            <rect x="6" y="10" width="36" height="4.5" rx="2.2" fill="currentColor"></rect>
+            <rect x="10" y="18" width="28" height="3.2" rx="1.6" fill="currentColor" opacity="0.85"></rect>
+            <rect x="14" y="16" width="4.2" height="24" rx="1.6" fill="currentColor"></rect>
+            <rect x="29.8" y="16" width="4.2" height="24" rx="1.6" fill="currentColor"></rect>
+            <rect x="20" y="24" width="8" height="3" rx="1.5" fill="currentColor" opacity="0.7"></rect>
+          </svg>
+        </span>
+        <span class="logo-text">
+          <span class="logo-jp">日本語</span>
+          <span class="logo-en">NIHONGO</span>
+        </span>
+      </a>
           <p>Платформа для изучения японского через аниме: фразы, пасхалки и культурные отсылки.</p>
 
           <div class="socials mt-16">

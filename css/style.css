@@ -3589,3 +3589,1140 @@ textarea:focus-visible {
   caret-color: var(--text-main);
   transition: background-color 5000s ease-in-out 0s;
 }
+
+/* ============================================================
+   ЧАСТЬ 4. ПРЕМИАЛЬНЫЙ ДИЗАЙН, 3D И УРОКИ
+   ============================================================ */
+
+/* ---------- 35. Новый логотип ---------- */
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  flex-shrink: 0;
+  transition: var(--transition);
+}
+
+.logo-badge {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: var(--accent);
+  background: linear-gradient(150deg, rgba(255, 179, 71, 0.16), rgba(255, 179, 71, 0.04));
+  border: 1px solid rgba(255, 179, 71, 0.35);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 6px 18px rgba(255, 179, 71, 0.16);
+  transition: var(--transition);
+}
+
+.logo-badge svg {
+  width: 24px;
+  height: 24px;
+  filter: drop-shadow(0 0 6px rgba(255, 179, 71, 0.75));
+}
+
+.logo:hover .logo-badge {
+  transform: translateY(-2px) rotate(-6deg) scale(1.04);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 10px 26px rgba(255, 179, 71, 0.3);
+}
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.05;
+}
+
+.logo-jp {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 3.5px;
+  color: var(--accent);
+  text-shadow: 0 0 10px rgba(255, 179, 71, 0.65);
+}
+
+.logo-en {
+  font-family: var(--font-head);
+  font-size: 17px;
+  letter-spacing: 1.6px;
+  color: var(--text-main);
+  text-shadow: 0 0 18px rgba(255, 179, 71, 0.28);
+}
+
+.logo:hover .logo-en {
+  color: var(--accent);
+  text-shadow: 0 0 20px rgba(255, 179, 71, 0.6);
+}
+
+/* ---------- 36. Три темы в панели дизайна ---------- */
+.design-panel {
+  width: 340px;
+}
+
+.theme-grid {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 9px;
+}
+
+.theme-card {
+  padding: 9px;
+}
+
+.theme-preview {
+  height: 42px;
+}
+
+.theme-card .theme-name {
+  font-size: 11.5px;
+}
+
+.theme-card .theme-desc {
+  font-size: 9.5px;
+  line-height: 1.3;
+}
+
+.theme-preview-light {
+  background: linear-gradient(135deg, #ffffff, #f1ece4 60%, rgba(255, 179, 71, 0.5));
+  color: #B7410E;
+}
+
+/* ---------- 37. Кнопки: объём, свечение, нажатие ---------- */
+.btn {
+  position: relative;
+  transform: translateZ(0);
+  transition:
+    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-primary {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -2px 0 rgba(120, 60, 0, 0.28),
+    0 6px 18px rgba(255, 179, 71, 0.22);
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    inset 0 -2px 0 rgba(120, 60, 0, 0.28),
+    0 12px 30px rgba(255, 179, 71, 0.42),
+    0 0 26px rgba(255, 179, 71, 0.28);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+  box-shadow:
+    inset 0 2px 6px rgba(90, 45, 0, 0.35),
+    0 4px 12px rgba(255, 179, 71, 0.25);
+}
+
+.btn-outline {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.btn-outline:hover:not(:disabled) {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 179, 71, 0.25),
+    0 10px 26px rgba(255, 179, 71, 0.2),
+    0 0 20px rgba(255, 179, 71, 0.16);
+}
+
+.btn-outline:active:not(:disabled),
+.btn-ghost:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.btn-icon:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 22px rgba(255, 179, 71, 0.22);
+}
+
+/* ---------- 38. Карточки: 3D-наклон ---------- */
+.card,
+.lesson-card,
+.stat-card,
+.ach,
+.about-cards .card {
+  transform-style: preserve-3d;
+  transition:
+    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card:hover {
+  transform: perspective(900px) translateY(-6px) rotateX(2.4deg) rotateY(-1.2deg);
+  border-color: rgba(255, 179, 71, 0.4);
+  box-shadow:
+    0 20px 44px rgba(0, 0, 0, 0.45),
+    0 0 34px rgba(255, 179, 71, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.card:hover .feature-icon {
+  transform: translateZ(18px) scale(1.08) rotate(-4deg);
+}
+
+.card .feature-icon {
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease;
+}
+
+.stat-card:hover {
+  transform: perspective(700px) translateY(-4px) rotateX(3deg);
+}
+
+/* ---------- 39. Объёмные лепестки сакуры ---------- */
+.petal {
+  width: 12px;
+  height: 13px;
+  border-radius: 62% 12% 62% 12%;
+  background:
+    radial-gradient(circle at 32% 28%, #ffe3ee 0%, #ffb6cd 42%, #f07fa6 100%);
+  box-shadow:
+    inset -2px -3px 5px rgba(190, 60, 110, 0.35),
+    inset 2px 3px 5px rgba(255, 255, 255, 0.55),
+    0 6px 12px rgba(0, 0, 0, 0.28),
+    0 0 14px rgba(255, 150, 190, 0.25);
+  border: none;
+  opacity: 0.92;
+  animation-name: petalFall3d;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+
+/* Полёт с вращением по трём осям — появляется объём */
+@keyframes petalFall3d {
+  0% {
+    transform: translate3d(0, -6vh, 0) rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+  }
+  25% {
+    transform: translate3d(46px, 24vh, 40px) rotateX(140deg) rotateY(90deg) rotateZ(90deg);
+  }
+  50% {
+    transform: translate3d(-34px, 50vh, -30px) rotateX(280deg) rotateY(180deg) rotateZ(200deg);
+  }
+  75% {
+    transform: translate3d(52px, 76vh, 30px) rotateX(420deg) rotateY(270deg) rotateZ(300deg);
+  }
+  100% {
+    transform: translate3d(-12px, 108vh, 0) rotateX(560deg) rotateY(360deg) rotateZ(420deg);
+  }
+}
+
+/* ---------- 40. Светлая тема ---------- */
+body.theme-light {
+  --bg-dark: #f6f3ee;
+  --bg-elev: #ffffff;
+  --bg-card: rgba(255, 255, 255, 0.72);
+  --bg-card-hover: #ffffff;
+  --text-main: #16161d;
+  --text-gray: #4b4b57;
+  --text-dim: #86868f;
+  --border: rgba(20, 20, 30, 0.10);
+  --border-strong: rgba(20, 20, 30, 0.16);
+  --accent-soft: rgba(255, 179, 71, 0.18);
+  --shadow-card: 0 10px 30px rgba(40, 30, 10, 0.10);
+}
+
+body.theme-light::before {
+  opacity: 0.16;
+  filter: saturate(0.7) brightness(1.25);
+}
+
+body.theme-light::after {
+  background:
+    radial-gradient(900px 500px at 12% 0%, rgba(255, 179, 71, 0.20), transparent 70%),
+    radial-gradient(800px 600px at 88% 12%, rgba(255, 196, 120, 0.18), transparent 70%),
+    linear-gradient(180deg, rgba(246, 243, 238, 0.90) 0%, rgba(246, 243, 238, 0.96) 55%, #f6f3ee 100%);
+}
+
+body.theme-light .header {
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 1px 0 rgba(20, 20, 30, 0.06);
+}
+
+body.theme-light .nav-link:hover,
+body.theme-light .btn-ghost:hover {
+  background: rgba(20, 20, 30, 0.05);
+  color: var(--text-main);
+}
+
+body.theme-light .nav-link.active {
+  color: #8a4b06;
+  background: rgba(255, 179, 71, 0.22);
+}
+
+body.theme-light .nav-design {
+  color: var(--text-gray);
+}
+
+body.theme-light .design-panel,
+body.theme-light .modal,
+body.theme-light .toast {
+  background: #ffffff;
+  border-color: var(--border-strong);
+  box-shadow: 0 24px 60px rgba(20, 20, 30, 0.16);
+}
+
+body.theme-light .modal-overlay {
+  background: rgba(30, 26, 20, 0.35);
+}
+
+body.theme-light .input,
+body.theme-light .select,
+body.theme-light .textarea {
+  background: #ffffff;
+  border-color: var(--border-strong);
+  color: var(--text-main);
+}
+
+body.theme-light .input:focus,
+body.theme-light .select:focus {
+  background: #fffdf9;
+}
+
+body.theme-light .input[readonly],
+body.theme-light .input:disabled {
+  background: #f1eee8;
+  color: var(--text-dim);
+}
+
+body.theme-light .select option {
+  background: #ffffff;
+  color: var(--text-main);
+}
+
+body.theme-light .card,
+body.theme-light .block,
+body.theme-light .lesson-card,
+body.theme-light .stat-card,
+body.theme-light .settings-menu,
+body.theme-light .settings-content,
+body.theme-light .player-card,
+body.theme-light .auth-card,
+body.theme-light .hero-card,
+body.theme-light .progress-card,
+body.theme-light .search,
+body.theme-light .faq-item {
+  background: rgba(255, 255, 255, 0.86);
+  border-color: var(--border);
+}
+
+body.theme-light .hero-card,
+body.theme-light .player-card,
+body.theme-light .progress-card {
+  box-shadow: 0 20px 50px rgba(40, 30, 10, 0.10);
+}
+
+body.theme-light .settings-content {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+body.theme-light .cta {
+  background: linear-gradient(140deg, rgba(255, 179, 71, 0.22), rgba(255, 255, 255, 0.6));
+  border-color: rgba(255, 179, 71, 0.4);
+}
+
+body.theme-light .footer {
+  background: rgba(255, 255, 255, 0.72);
+  border-color: var(--border);
+}
+
+body.theme-light .logo-en {
+  color: var(--text-main);
+  text-shadow: none;
+}
+
+body.theme-light .btn-primary {
+  color: #2a1600;
+}
+
+body.theme-light .btn-ghost {
+  color: var(--text-gray);
+}
+
+body.theme-light .theme-card {
+  background: rgba(20, 20, 30, 0.03);
+}
+
+body.theme-light .theme-card.active {
+  background: rgba(255, 179, 71, 0.18);
+}
+
+body.theme-light .switch .track {
+  background: rgba(20, 20, 30, 0.12);
+}
+
+body.theme-light .switch .track::after {
+  background: #ffffff;
+}
+
+body.theme-light .switch input:checked + .track::after {
+  background: var(--accent);
+}
+
+body.theme-light .xp-bar,
+body.theme-light .progress-bar,
+body.theme-light .lesson-progress-bar,
+body.theme-light .strength i {
+  background: rgba(20, 20, 30, 0.10);
+}
+
+body.theme-light .toast-title {
+  color: var(--text-main);
+}
+
+body.theme-light .toast-message {
+  color: #55555f;
+}
+
+body.theme-light .activity-item,
+body.theme-light .setting-row,
+body.theme-light .why-item,
+body.theme-light .link-row {
+  border-color: var(--border);
+}
+
+body.theme-light .sunken,
+body.theme-light .timer-unit {
+  background: rgba(255, 255, 255, 0.75);
+}
+
+body.theme-light .petal {
+  opacity: 0.85;
+}
+
+/* ---------- 41. Каталог уроков ---------- */
+.catalog-hero {
+  padding: 58px 0 30px;
+}
+
+.catalog-hero h1 {
+  font-size: 46px;
+  margin-bottom: 12px;
+}
+
+.catalog-hero > .container > p {
+  max-width: 620px;
+  font-size: 15.5px;
+}
+
+.catalog-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 150px)) 1fr;
+  align-items: center;
+  gap: 26px;
+  margin-top: 30px;
+  padding: 22px 26px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  backdrop-filter: blur(14px);
+}
+
+.catalog-stat b {
+  display: block;
+  font-family: var(--font-head);
+  font-size: 24px;
+  line-height: 1.2;
+  color: var(--text-main);
+}
+
+.catalog-stat span {
+  font-size: 11.5px;
+  color: var(--text-dim);
+}
+
+.catalog-progress-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11.5px;
+  color: var(--text-gray);
+  margin-bottom: 8px;
+}
+
+.catalog-progress-top b {
+  color: var(--accent);
+}
+
+.catalog-progress .progress-bar {
+  margin-bottom: 0;
+}
+
+.catalog-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 26px;
+}
+
+.filter-chips {
+  display: flex;
+  gap: 8px;
+}
+
+.filter-chips .chip {
+  cursor: pointer;
+  padding: 8px 16px;
+  font-size: 12.5px;
+}
+
+.lessons-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.lesson-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  overflow: hidden;
+  transition:
+    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.lesson-card:hover {
+  transform: perspective(900px) translateY(-7px) rotateX(2.2deg);
+  border-color: rgba(255, 179, 71, 0.45);
+  box-shadow:
+    0 22px 46px rgba(0, 0, 0, 0.45),
+    0 0 34px rgba(255, 179, 71, 0.14);
+}
+
+.lesson-cover {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+
+.lesson-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.lesson-card:hover .lesson-cover img {
+  transform: scale(1.06);
+}
+
+.lesson-cover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(10, 10, 16, 0.05) 30%, rgba(10, 10, 16, 0.85) 100%);
+}
+
+.lesson-level {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 2;
+  padding: 4px 11px;
+  border-radius: 100px;
+  background: rgba(10, 10, 16, 0.72);
+  border: 1px solid rgba(255, 179, 71, 0.4);
+  color: var(--accent);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  backdrop-filter: blur(8px);
+}
+
+.lesson-status {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  padding: 4px 11px;
+  border-radius: 100px;
+  background: rgba(10, 10, 16, 0.72);
+  border: 1px solid var(--border-strong);
+  color: var(--text-gray);
+  font-size: 10.5px;
+  font-weight: 700;
+  backdrop-filter: blur(8px);
+}
+
+.lesson-status.progress {
+  color: var(--accent);
+  border-color: rgba(255, 179, 71, 0.45);
+}
+
+.lesson-status.done {
+  color: #4ADE80;
+  border-color: rgba(74, 222, 128, 0.45);
+}
+
+.lesson-card-body {
+  padding: 18px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.lesson-title {
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+
+.lesson-desc {
+  font-size: 12.5px;
+  color: var(--text-gray);
+  min-height: 38px;
+  margin-bottom: 14px;
+}
+
+.lesson-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.lesson-chips .chip {
+  font-size: 10.5px;
+  padding: 4px 9px;
+}
+
+.lesson-progress {
+  margin-top: auto;
+}
+
+.lesson-progress-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+}
+
+.lesson-progress-top b {
+  color: var(--accent);
+}
+
+.lesson-progress-bar {
+  height: 6px;
+  border-radius: 100px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.lesson-progress-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent-dark), var(--accent));
+  box-shadow: 0 0 12px rgba(255, 179, 71, 0.55);
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ---------- 42. Страница урока ---------- */
+.lesson-page {
+  padding: 34px 0 70px;
+}
+
+.lesson-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-strong);
+  margin-bottom: 26px;
+  isolation: isolate;
+}
+
+.lesson-hero-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  transform: scale(1.02);
+  z-index: -2;
+}
+
+.lesson-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(10, 10, 16, 0.94) 12%, rgba(10, 10, 16, 0.72) 55%, rgba(10, 10, 16, 0.35) 100%);
+  z-index: -1;
+}
+
+.lesson-hero-inner {
+  padding: 42px 40px;
+  max-width: 720px;
+}
+
+.lesson-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--text-gray);
+  margin-bottom: 16px;
+  transition: var(--transition);
+}
+
+.lesson-back:hover {
+  color: var(--accent);
+  transform: translateX(-3px);
+}
+
+.lesson-hero h1 {
+  font-size: 42px;
+  margin-bottom: 10px;
+}
+
+.lesson-hero p {
+  font-size: 15px;
+  max-width: 520px;
+  margin-bottom: 20px;
+}
+
+.lesson-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.lesson-best {
+  margin-left: auto;
+  padding: 5px 13px;
+  border-radius: 100px;
+  border: 1px dashed var(--border-strong);
+  font-size: 11.5px;
+  color: var(--text-dim);
+}
+
+.lesson-best.is-done {
+  border-style: solid;
+  border-color: rgba(74, 222, 128, 0.4);
+  background: rgba(74, 222, 128, 0.08);
+  color: #4ADE80;
+}
+
+.lesson-layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 24px;
+  align-items: start;
+}
+
+.lesson-main {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+.lesson-side {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  position: sticky;
+  top: 86px;
+}
+
+.word-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.word-row {
+  display: grid;
+  grid-template-columns: 92px 120px 1fr 42px;
+  align-items: center;
+  gap: 14px;
+  padding: 11px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.02);
+  transition: var(--transition);
+}
+
+.word-row:hover {
+  border-color: rgba(255, 179, 71, 0.4);
+  background: rgba(255, 179, 71, 0.05);
+  transform: translateX(3px);
+}
+
+.word-jp {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 25px;
+  font-weight: 900;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+
+.word-row:hover .word-jp {
+  color: var(--accent);
+  text-shadow: 0 0 16px rgba(255, 179, 71, 0.35);
+}
+
+.word-romaji {
+  font-size: 12.5px;
+  color: var(--accent);
+  letter-spacing: 0.4px;
+}
+
+.word-ru {
+  font-size: 13.5px;
+  color: var(--text-gray);
+}
+
+.speak-btn {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 15px;
+  transition: var(--transition);
+}
+
+.speak-btn:hover {
+  border-color: rgba(255, 179, 71, 0.5);
+  background: var(--accent-soft);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 20px rgba(255, 179, 71, 0.2);
+}
+
+.speak-btn:active {
+  transform: scale(0.94);
+}
+
+.speak-btn.speaking {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 6px rgba(255, 179, 71, 0.12), 0 0 22px rgba(255, 179, 71, 0.35);
+  animation: pulse 1s ease-out;
+}
+
+.grammar-text {
+  font-size: 14.5px;
+  line-height: 1.85;
+  color: var(--text-gray);
+}
+
+.example-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.example-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  border-left: 3px solid rgba(255, 179, 71, 0.5);
+  background: rgba(255, 255, 255, 0.02);
+  transition: var(--transition);
+}
+
+.example-row:hover {
+  border-left-color: var(--accent);
+  background: rgba(255, 179, 71, 0.05);
+}
+
+.example-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.example-jp {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 19px;
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+
+.example-romaji {
+  font-size: 12px;
+  color: var(--accent);
+  margin-bottom: 2px;
+}
+
+.example-ru {
+  font-size: 12.5px;
+  color: var(--text-dim);
+}
+
+/* Тест */
+.test-box .block-head {
+  margin-bottom: 16px;
+}
+
+.test-question {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.test-question:first-child {
+  padding-top: 0;
+}
+
+.test-question:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.test-question-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.test-options {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.test-option {
+  padding: 9px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-gray);
+  font-size: 13px;
+  text-align: left;
+  transition: var(--transition);
+}
+
+.test-option:hover:not(:disabled) {
+  border-color: rgba(255, 179, 71, 0.45);
+  color: var(--text-main);
+  background: rgba(255, 179, 71, 0.06);
+  transform: translateX(3px);
+}
+
+.test-option.selected {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.test-option.correct {
+  border-color: rgba(74, 222, 128, 0.6);
+  background: rgba(74, 222, 128, 0.12);
+  color: #4ADE80;
+  font-weight: 700;
+}
+
+.test-option.wrong {
+  border-color: rgba(248, 113, 113, 0.6);
+  background: rgba(248, 113, 113, 0.1);
+  color: #F87171;
+}
+
+.test-option:disabled {
+  cursor: default;
+  opacity: 0.9;
+}
+
+.test-result {
+  margin-top: 14px;
+  font-size: 13px;
+  font-weight: 700;
+  display: none;
+}
+
+.test-result.is-good,
+.test-result.is-bad {
+  display: block;
+}
+
+.test-result.is-good {
+  color: #4ADE80;
+}
+
+.test-result.is-bad {
+  color: #FBBF24;
+}
+
+.lesson-tip h3 {
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+.lesson-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.lesson-nav-right {
+  display: flex;
+  gap: 10px;
+}
+
+/* ---------- 43. Светлая тема: точечные правки уроков ---------- */
+body.theme-light .lesson-hero::before {
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.97) 10%, rgba(255, 255, 255, 0.86) 52%, rgba(255, 255, 255, 0.35) 100%);
+}
+
+body.theme-light .lesson-hero h1,
+body.theme-light .lesson-hero p {
+  color: #16161d;
+}
+
+body.theme-light .lesson-hero p {
+  color: #4b4b57;
+}
+
+body.theme-light .lesson-cover::after {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 30%, rgba(255, 255, 255, 0.55) 100%);
+}
+
+body.theme-light .word-row,
+body.theme-light .example-row,
+body.theme-light .test-option {
+  background: rgba(255, 255, 255, 0.75);
+}
+
+body.theme-light .word-jp,
+body.theme-light .example-jp {
+  color: #16161d;
+}
+
+body.theme-light .speak-btn {
+  background: #ffffff;
+}
+
+body.theme-light .lesson-best {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+/* ---------- 44. Светлая тема: контраст акцентных элементов ---------- */
+body.theme-light {
+  --accent-ink: #8A4B06;
+}
+
+body.theme-light .nav-link.active,
+body.theme-light .menu-item.active,
+body.theme-light .chip-active,
+body.theme-light .auth-tab.active {
+  color: #7A3F00;
+}
+
+body.theme-light .menu-item.active {
+  background: rgba(255, 179, 71, 0.24);
+  box-shadow: inset 0 0 0 1px rgba(183, 65, 14, 0.25);
+}
+
+body.theme-light .btn-outline {
+  color: #8A4B06;
+  border-color: rgba(183, 65, 14, 0.45);
+}
+
+body.theme-light .btn-outline:hover:not(:disabled) {
+  background: rgba(255, 179, 71, 0.18);
+  border-color: #B7410E;
+}
+
+body.theme-light .badge {
+  color: #7A3F00;
+  border-color: rgba(183, 65, 14, 0.35);
+  background: rgba(255, 179, 71, 0.22);
+}
+
+body.theme-light .badge-muted {
+  color: #55555f;
+  border-color: rgba(20, 20, 30, 0.16);
+  background: rgba(20, 20, 30, 0.04);
+}
+
+body.theme-light .accent,
+body.theme-light .phrase-romaji,
+body.theme-light .stat-card .stat-delta,
+body.theme-light .lesson-progress-top b,
+body.theme-light .catalog-progress-top b,
+body.theme-light .word-romaji,
+body.theme-light .example-romaji {
+  color: #8A4B06;
+}
+
+body.theme-light .lesson-level {
+  background: rgba(255, 255, 255, 0.92);
+  color: #7A3F00;
+  border-color: rgba(183, 65, 14, 0.35);
+}
+
+body.theme-light .lesson-status {
+  background: rgba(255, 255, 255, 0.92);
+  color: #4b4b57;
+}
+
+body.theme-light .faq-item.open {
+  background: rgba(255, 179, 71, 0.14);
+  border-color: rgba(183, 65, 14, 0.35);
+}
+
+body.theme-light .auth-quote {
+  background: rgba(255, 255, 255, 0.8);
+}
+
+body.theme-light .player-card {
+  background: linear-gradient(170deg, rgba(255, 179, 71, 0.22), rgba(255, 255, 255, 0.9) 45%);
+}
+
+body.theme-light .progress-card {
+  background: linear-gradient(135deg, rgba(255, 179, 71, 0.2), rgba(255, 255, 255, 0.86) 60%);
+}
+
+body.theme-light .hero-card::before {
+  background: radial-gradient(400px 200px at 70% 0%, rgba(255, 179, 71, 0.22), transparent 70%);
+}
+
+body.theme-light .timer-unit {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(20, 20, 30, 0.1);
+}
+
+body.theme-light .search input {
+  color: #16161d;
+}
+
+body.theme-light .search-hint {
+  color: #86868f;
+}
+
+body.theme-light .theme-preview {
+  border-color: rgba(20, 20, 30, 0.12);
+}

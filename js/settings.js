@@ -71,7 +71,7 @@ const SETTINGS_CONTENT = {
         <h4>Смена почты</h4>
         <div class="notice">
           <span class="notice-icon">✉</span>
-          <span>На новую почту придёт код из 10 символов. Пока код не подтверждён, адрес не меняется.</span>
+          <span>Код из 10 символов подтверждает новую почту. В демо-режиме письмо не отправляется — код покажется в уведомлении.</span>
         </div>
         <div class="form-grid">
           <div class="field full">
@@ -282,13 +282,26 @@ const SETTINGS_CONTENT = {
         </div>
         <div class="setting-row">
           <div class="setting-info">
-            <div class="setting-name">Тема</div>
-            <div class="setting-desc">Стандарт — оранжевая, Сакура — розовая</div>
+            <div class="setting-name">Светлая тема</div>
+            <div class="setting-desc">Дневное оформление вместо тёмного</div>
+          </div>
+          <div class="setting-control">
+            <label class="switch">
+              <input type="checkbox" id="lightThemeSwitch" onchange="toggleLightTheme(this)">
+              <span class="track"></span>
+            </label>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Тема оформления</div>
+            <div class="setting-desc">Стандарт — оранжевая, Сакура — розовая, Светлая — дневная</div>
           </div>
           <div class="setting-control">
             <select class="select" data-setting="interface.theme" onchange="applyInterfaceSetting('theme', this.value)">
               <option value="default">Стандарт</option>
               <option value="sakura">Сакура</option>
+              <option value="light">Светлая</option>
             </select>
           </div>
         </div>
@@ -501,7 +514,7 @@ const SETTINGS_CONTENT = {
             <div class="setting-desc">Адрес прокси-сервера, если провайдер блокирует запросы</div>
           </div>
           <div class="setting-control">
-            <input class="input" type="text" placeholder="http://127.0.0.1:8080" data-setting="launcher.proxy">
+            <input class="input" type="text" placeholder="http://127.0.0.1:1080" data-setting="launcher.proxy">
           </div>
         </div>
         <div class="setting-row">
@@ -693,6 +706,13 @@ function restoreSettingsValues(container) {
 
 /** Дополнительные обработчики конкретной вкладки. */
 function bindSettingsTab(tabId) {
+  // В разделе «Интерфейс» отражаем текущую тему в переключателе
+  if (tabId === 'interface') {
+    const lightSwitch = document.getElementById('lightThemeSwitch');
+    if (lightSwitch) lightSwitch.checked = document.body.classList.contains('theme-light');
+    return;
+  }
+
   if (tabId !== 'account') return;
 
   // Код подтверждения почты — автоматически в верхний регистр
@@ -714,7 +734,8 @@ function bindSettingsTab(tabId) {
 
 /** Заполняет ник и срок блокировки смены ника. */
 function fillAccountInfo() {
-  const nickname = localStorage.getItem('username') || 'Игрок';
+  const user = getCurrentUser();
+  const nickname = user ? user.username : 'Игрок';
   const nickEl = document.getElementById('currentNickname');
   if (nickEl) nickEl.textContent = nickname;
 
@@ -824,13 +845,8 @@ function stubToggle(input, name) {
 
 /** Скачивает JSON с данными аккаунта из localStorage. */
 function downloadMyData() {
-  const data = {
-    username: localStorage.getItem('username') || null,
-    avatar: localStorage.getItem('avatar') || null,
-    joinedAt: localStorage.getItem('joinedAt') || null,
-    settings: getSettings(),
-    exportedAt: new Date().toISOString()
-  };
+  // getAccountData() собирает аккаунт, прогресс, достижения и настройки
+  const data = getAccountData();
 
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -915,7 +931,8 @@ async function changeNickname() {
     return;
   }
 
-  if (nickname === (localStorage.getItem('username') || '')) {
+  const current = getCurrentUser();
+  if (current && nickname === current.username) {
     showToast('Ничего не изменилось', 'Это ваш текущий ник', 'info');
     return;
   }
@@ -938,8 +955,8 @@ async function changeNickname() {
     return;
   }
 
-  // Обновляем ник на клиенте и запоминаем дату смены
-  localStorage.setItem('username', nickname);
+  // Ник в аккаунте уже обновлён внутри apiChangeNickname,
+  // остаётся запомнить дату смены
   localStorage.setItem(NICK_CHANGED_KEY, String(Date.now()));
 
   input.value = '';
@@ -990,9 +1007,16 @@ async function changeEmailRequest() {
   if (block) block.classList.remove('hidden');
   if (confirmBtn) confirmBtn.classList.remove('hidden');
 
-  showToast('Код отправлен', 'Проверьте ' + email, 'success');
-
+  const demoCode = result.data && result.data.code;
   const code = document.getElementById('emailCode');
+
+  if (demoCode) {
+    showToast('Ваш код: ' + demoCode, 'Демо-режим: письмо не отправляется, код действует 10 минут', 'success');
+    if (code) code.value = demoCode;
+  } else {
+    showToast('Код отправлен', 'Проверьте ' + email, 'success');
+  }
+
   if (code) code.focus();
 }
 
@@ -1049,6 +1073,12 @@ async function changeEmailConfirm() {
 /* ---------- Инициализация ---------- */
 
 document.addEventListener('DOMContentLoaded', () => {
+  // settings.html — защищённая страница: без сессии уводим на регистрацию
+  if (typeof isAuthorized === 'function' && !isAuthorized()) {
+    window.location.href = 'register.html';
+    return;
+  }
+
   updateHeaderAuth();
 
   // Открываем вкладку из адреса (#sound) или последнюю сохранённую

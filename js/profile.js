@@ -6,16 +6,6 @@
 
 'use strict';
 
-// Базовые значения прогресса (пока бэкенд не отдаёт статистику)
-const DEFAULT_STATS = {
-  lessons: 12,
-  words: 148,
-  days: 5,
-  level: 3,
-  xp: 340,
-  xpMax: 500
-};
-
 /* ---------- Защита страницы ---------- */
 
 /**
@@ -23,9 +13,9 @@ const DEFAULT_STATS = {
  * Возвращает true, если пользователь авторизован.
  */
 function checkAuth() {
-  const token = localStorage.getItem('token');
+  const authorized = isAuthorized();
 
-  if (!token) {
+  if (!authorized) {
     // Запоминаем, куда пользователь хотел попасть
     sessionStorage.setItem('redirectAfterLogin', 'profile.html');
     window.location.href = 'register.html';
@@ -37,23 +27,15 @@ function checkAuth() {
 
 /* ---------- Заполнение страницы ---------- */
 
-/** Читает статистику из localStorage, недостающее берёт из DEFAULT_STATS. */
-function readStats() {
-  let saved = {};
-
-  try {
-    saved = JSON.parse(localStorage.getItem('stats') || '{}') || {};
-  } catch (e) {
-    saved = {};
-  }
-
-  return Object.assign({}, DEFAULT_STATS, saved);
-}
-
-/** Заполняет ник, аватар, уровень и XP. */
+/**
+ * Заполняет ник, аватар, уровень и XP.
+ * Статистика считается по прогрессу уроков (js/progress.js).
+ */
 function fillProfile() {
-  const username = localStorage.getItem('username') || 'Игрок';
-  const stats = readStats();
+  const user = getCurrentUser();
+  const username = user ? user.username : 'Игрок';
+  const stats = getStats();
+  const achievements = getUnlockedAchievements();
 
   // Ник встречается в нескольких местах страницы
   document.querySelectorAll('[data-username]').forEach(el => {
@@ -80,15 +62,154 @@ function fillProfile() {
   animateNumber('statWords', stats.words);
   animateNumber('statDays', stats.days);
 
-  // Дата регистрации (если сохранена при входе)
-  const joined = localStorage.getItem('joinedAt');
+  // Дата регистрации хранится в аккаунте (createdAt)
   const joinedEl = document.getElementById('joinedDate');
   if (joinedEl) {
-    joinedEl.textContent = joined ? formatDate(new Date(joined)) : 'сегодня';
+    const created = user && user.createdAt ? new Date(user.createdAt) : new Date();
+    joinedEl.textContent = formatDate(created);
   }
+
+  // Почта в карточке профиля
+  const emailEl = document.getElementById('playerEmail');
+  if (emailEl) emailEl.textContent = user ? user.email : '';
+
+  // Серия дней подряд
+  const streakEl = document.getElementById('streakDays');
+  if (streakEl) {
+    streakEl.textContent = stats.days > 0
+      ? stats.days + ' ' + pluralDays(stats.days) + ' 🔥'
+      : 'пока нет 🔥';
+  }
+
+  // Достижения и активность
+  renderAchievements(achievements);
+  renderActivity(stats);
 
   // Аватар
   updateAllAvatars();
+}
+
+/**
+ * Рисует сетку достижений: открытые светятся, закрытые — приглушены.
+ * @param {Array<string>} unlockedIds
+ */
+function renderAchievements(unlockedIds) {
+  const grid = document.getElementById('achGrid');
+  if (!grid) return;
+
+  grid.innerHTML = '';
+
+  ACHIEVEMENTS.forEach(achievement => {
+    const unlocked = unlockedIds.includes(achievement.id);
+
+    const item = document.createElement('div');
+    item.className = 'ach' + (unlocked ? ' unlocked' : '');
+    item.title = achievement.description;
+
+    const icon = document.createElement('div');
+    icon.className = 'ach-icon';
+    icon.textContent = achievement.icon;
+
+    const name = document.createElement('div');
+    name.className = 'ach-name';
+    name.textContent = achievement.name;
+
+    item.appendChild(icon);
+    item.appendChild(name);
+    grid.appendChild(item);
+  });
+
+  // Счётчик в заголовке блока
+  const note = document.getElementById('achNote');
+  if (note) note.textContent = 'открыто ' + unlockedIds.length + ' из ' + ACHIEVEMENTS.length;
+}
+
+/**
+ * Лента активности: пройденные уроки из прогресса + достижения.
+ * Если прогресса нет — показываем подсказку.
+ */
+function renderActivity(stats) {
+  const list = document.getElementById('activityList');
+  if (!list) return;
+
+  const progress = getProgress();
+  const lessons = window.nihongo_lessons || [];
+  const events = [];
+
+  Object.keys(progress.lessons).forEach(id => {
+    const record = progress.lessons[id];
+    const lesson = lessons.find(item => String(item.id) === id);
+
+    if (record && record.completed && lesson) {
+      events.push({
+        icon: 'あ',
+        text: 'Пройден урок «' + lesson.title + '» — ' + record.best + '%',
+        time: record.updatedAt ? timeAgo(new Date(record.updatedAt)) : 'недавно',
+        sort: record.updatedAt ? new Date(record.updatedAt).getTime() : 0
+      });
+    }
+  });
+
+  if (stats.words > 0) {
+    events.push({
+      icon: '語',
+      text: 'В копилке ' + stats.words + ' слов',
+      time: 'всего',
+      sort: 1
+    });
+  }
+
+  list.innerHTML = '';
+
+  if (!events.length) {
+    list.innerHTML = '<div class="empty-state">Пока пусто. Пройди первый урок — и здесь появится история.</div>';
+    return;
+  }
+
+  events
+    .sort((a, b) => b.sort - a.sort)
+    .slice(0, 5)
+    .forEach(event => {
+      const item = document.createElement('div');
+      item.className = 'activity-item';
+      item.innerHTML = `
+        <div class="activity-dot"></div>
+        <div class="activity-text"></div>
+        <div class="activity-time"></div>
+      `;
+      item.querySelector('.activity-dot').textContent = event.icon;
+      item.querySelector('.activity-text').textContent = event.text;
+      item.querySelector('.activity-time').textContent = event.time;
+      list.appendChild(item);
+    });
+}
+
+/** Склонение слова «день»: 1 день, 2 дня, 5 дней. */
+function pluralDays(count) {
+  const mod10 = count % 10;
+  const mod100 = count % 100;
+
+  if (mod10 === 1 && mod100 !== 11) return 'день';
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'дня';
+  return 'дней';
+}
+
+/** «2 часа назад», «вчера» — для ленты активности. */
+function timeAgo(date) {
+  const diff = Date.now() - date.getTime();
+  const minutes = Math.floor(diff / 60000);
+
+  if (minutes < 1) return 'только что';
+  if (minutes < 60) return minutes + ' мин назад';
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return hours + ' ч назад';
+
+  const days = Math.floor(hours / 24);
+  if (days === 1) return 'вчера';
+  if (days < 30) return days + ' дн назад';
+
+  return formatDate(date);
 }
 
 /** Красиво «докручивает» число от нуля до значения. */

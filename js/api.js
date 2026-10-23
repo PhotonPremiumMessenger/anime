@@ -1,219 +1,484 @@
 /* ============================================================
-   api.js — слой работы с бэкендом Nihongo
-   Все запросы к серверу идут только отсюда.
-   Каждая функция возвращает объект { ok, data }:
-     ok   — true, если сервер ответил успешно (HTTP 2xx)
-     data — тело ответа (объект) либо описание ошибки
+   api.js — слой «сервера» на localStorage
+   Сайт работает на GitHub Pages без бэкенда: все данные
+   (пользователи, сессия, прогресс) хранятся в браузере.
+   Названия функций сохранены прежними, чтобы остальной код
+   не пришлось переписывать.
    ============================================================ */
 
 'use strict';
 
-// Адрес бэкенда (Node.js + Express + SQLite на отдельном сервере).
-// Если сервер переедет — меняем только эту строку.
-const API_URL = 'http://194.55.236.245:8080';
+/* ---------- Ключи localStorage ---------- */
 
-// Сколько ждём ответ, прежде чем показать ошибку (в миллисекундах)
-const API_TIMEOUT = 12000;
+const STORAGE_KEYS = {
+  users: 'nihongo_users',            // массив аккаунтов
+  currentUser: 'nihongo_current_user', // ник активного пользователя
+  token: 'nihongo_token',            // псевдо-токен сессии
+  progress: 'nihongo_progress',      // прогресс по урокам и словам
+  achievements: 'nihongo_achievements', // открытые достижения
+  pendingCode: 'nihongo_pending_code',  // код подтверждения почты
+  pendingEmail: 'nihongo_pending_email', // почта, ожидающая подтверждения
+  avatar: 'avatar'                   // выбранный аватар (для гостя)
+};
 
-/* ---------- Вспомогательные функции ---------- */
+// Сколько живёт код подтверждения (10 минут)
+const CODE_TTL = 10 * 60 * 1000;
 
-/**
- * Достаёт токен из localStorage.
- * Токен кладёт туда auth.js после успешного входа.
- */
-function getToken() {
-  return localStorage.getItem('token') || '';
-}
-
-/**
- * Достаёт имя пользователя из localStorage.
- */
-function getUsername() {
-  return localStorage.getItem('username') || '';
-}
+/* ---------- Работа с localStorage ---------- */
 
 /**
- * Базовый запрос к API.
- *
- * @param {string} path   — путь, например '/login'
- * @param {object} body   — тело запроса (уйдёт как JSON)
- * @param {object} options — { auth: true } добавит заголовок Authorization
- * @returns {Promise<{ok: boolean, data: any}>}
+ * Читает JSON из localStorage. Если данных нет или они битые —
+ * возвращает значение по умолчанию.
  */
-async function apiRequest(path, body = {}, options = {}) {
-  const headers = {
-    'Content-Type': 'application/json',
-    Accept: 'application/json'
-  };
-
-  // Для защищённых ручек прикладываем JWT
-  if (options.auth) {
-    const token = getToken();
-    if (token) headers.Authorization = 'Bearer ' + token;
-  }
-
-  // AbortController не даёт запросу «висеть» вечно
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), API_TIMEOUT);
-
+function readJSON(key, fallback) {
   try {
-    const response = await fetch(API_URL + path, {
-      method: options.method || 'POST',
-      headers: headers,
-      body: options.method === 'GET' ? undefined : JSON.stringify(body),
-      signal: controller.signal
-    });
-
-    clearTimeout(timer);
-
-    // Пытаемся прочитать JSON, даже если сервер вернул ошибку
-    let data = null;
-    const text = await response.text();
-    if (text) {
-      try {
-        data = JSON.parse(text);
-      } catch (e) {
-        // Сервер ответил не JSON — отдаём текст как есть
-        data = { message: text };
-      }
-    }
-
-    if (!response.ok) {
-      return {
-        ok: false,
-        data: {
-          message: (data && (data.message || data.error)) || 'Ошибка сервера (' + response.status + ')',
-          status: response.status,
-          raw: data
-        }
-      };
-    }
-
-    return { ok: true, data: data || {} };
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    const parsed = JSON.parse(raw);
+    return parsed === null || parsed === undefined ? fallback : parsed;
   } catch (error) {
-    clearTimeout(timer);
-
-    // Отдельно обрабатываем два частых случая: таймаут и сеть
-    const isTimeout = error.name === 'AbortError';
-    return {
-      ok: false,
-      data: {
-        message: isTimeout
-          ? 'Сервер не отвечает. Попробуйте ещё раз через минуту.'
-          : 'Нет связи с сервером. Проверьте интернет-соединение.',
-        network: true
-      }
-    };
+    return fallback;
   }
 }
 
-/* ---------- Публичные функции API ---------- */
+/** Записывает значение в localStorage как JSON. */
+function writeJSON(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch (error) {
+    // Например, переполнение хранилища или запрет приватного режима
+    return false;
+  }
+}
+
+/* ---------- Пользователи ---------- */
+
+/** Возвращает массив всех аккаунтов. */
+function getUsers() {
+  const users = readJSON(STORAGE_KEYS.users, []);
+  return Array.isArray(users) ? users : [];
+}
+
+/** Сохраняет массив аккаунтов. */
+function saveUsers(users) {
+  writeJSON(STORAGE_KEYS.users, users);
+}
+
+/** Ищет пользователя по нику без учёта регистра. */
+function findUserByNickname(nickname) {
+  const needle = String(nickname || '').trim().toLowerCase();
+  return getUsers().find(user => String(user.username).toLowerCase() === needle) || null;
+}
+
+/** Ищет пользователя по почте без учёта регистра. */
+function findUserByEmail(email) {
+  const needle = String(email || '').trim().toLowerCase();
+  return getUsers().find(user => String(user.email).toLowerCase() === needle) || null;
+}
+
+/** Обновляет запись пользователя (по прежнему нику). */
+function updateUser(oldNickname, patch) {
+  const users = getUsers();
+  const index = users.findIndex(
+    user => String(user.username).toLowerCase() === String(oldNickname).toLowerCase()
+  );
+
+  if (index === -1) return null;
+
+  users[index] = Object.assign({}, users[index], patch);
+  saveUsers(users);
+  return users[index];
+}
+
+/* ---------- Сессия ---------- */
+
+/** Генерирует случайный токен (32 символа). */
+function generateToken() {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz0123456789';
+  let token = '';
+
+  // crypto.getRandomValues есть во всех современных браузерах
+  if (window.crypto && window.crypto.getRandomValues) {
+    const bytes = new Uint32Array(32);
+    window.crypto.getRandomValues(bytes);
+    for (let i = 0; i < 32; i++) token += alphabet[bytes[i] % alphabet.length];
+    return token;
+  }
+
+  // Запасной вариант
+  for (let i = 0; i < 32; i++) {
+    token += alphabet[Math.floor(Math.random() * alphabet.length)];
+  }
+  return token;
+}
+
+/** Записывает сессию: токен и ник текущего пользователя. */
+function setSession(user) {
+  const token = generateToken();
+
+  localStorage.setItem(STORAGE_KEYS.currentUser, user.username);
+  localStorage.setItem(STORAGE_KEYS.token, token);
+
+  // Старые ключи мог оставить предыдущий вариант сайта — убираем
+  localStorage.removeItem('token');
+  localStorage.removeItem('username');
+
+  return token;
+}
+
+/** Очищает сессию. */
+function clearSession() {
+  localStorage.removeItem(STORAGE_KEYS.currentUser);
+  localStorage.removeItem(STORAGE_KEYS.token);
+  localStorage.removeItem('token');
+  localStorage.removeItem('username');
+}
+
+/** Текущий пользователь или null. */
+function getCurrentUser() {
+  const nickname = localStorage.getItem(STORAGE_KEYS.currentUser);
+  if (!nickname) return null;
+  return findUserByNickname(nickname);
+}
+
+/** Ник текущего пользователя. */
+function getUsername() {
+  const user = getCurrentUser();
+  return user ? user.username : '';
+}
+
+/** Токен сессии. */
+function getToken() {
+  return localStorage.getItem(STORAGE_KEYS.token) || '';
+}
 
 /**
- * Отправка кода подтверждения на почту.
- * @param {string} email
+ * Авторизован ли пользователь.
+ * Проверяем и токен, и запись пользователя: если аккаунт удалён
+ * из хранилища, сессия считается недействительной.
+ */
+function isAuthorized() {
+  return Boolean(getToken()) && Boolean(getCurrentUser());
+}
+
+/* ---------- Коды подтверждения ---------- */
+
+/** Генерирует код из 10 символов (латиница и цифры). */
+function generateCode() {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < 10; i++) {
+    code += alphabet[Math.floor(Math.random() * alphabet.length)];
+  }
+  return code;
+}
+
+/** Сохраняет код и почту, для которой он выпущен. */
+function savePendingCode(email, code) {
+  writeJSON(STORAGE_KEYS.pendingCode, {
+    email: String(email).toLowerCase(),
+    code: code,
+    createdAt: Date.now()
+  });
+  localStorage.setItem(STORAGE_KEYS.pendingEmail, email);
+}
+
+/** Проверяет код: совпадение, срок жизни и почту. */
+function checkPendingCode(email, code) {
+  const pending = readJSON(STORAGE_KEYS.pendingCode, null);
+
+  if (!pending) {
+    return { ok: false, message: 'Код не найден. Запросите новый.' };
+  }
+
+  if (Date.now() - pending.createdAt > CODE_TTL) {
+    return { ok: false, message: 'Код истёк. Запросите новый.' };
+  }
+
+  if (String(pending.email) !== String(email).toLowerCase()) {
+    return { ok: false, message: 'Код выпущен для другой почты.' };
+  }
+
+  if (String(pending.code).toUpperCase() !== String(code).toUpperCase()) {
+    return { ok: false, message: 'Код неверный.' };
+  }
+
+  return { ok: true };
+}
+
+/* ---------- Регистрация и вход ---------- */
+
+/**
+ * «Отправка» кода на почту.
+ * В демо-режиме письмо не уходит: код возвращается в ответе,
+ * а страница показывает его в уведомлении.
  */
 async function apiSendCode(email) {
-  return apiRequest('/send-code', { email: email });
+  const cleanEmail = String(email || '').trim().toLowerCase();
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(cleanEmail)) {
+    return { ok: false, data: { message: 'Введите корректный адрес почты' } };
+  }
+
+  const code = generateCode();
+  savePendingCode(cleanEmail, code);
+
+  return {
+    ok: true,
+    data: {
+      demo: true,
+      code: code,
+      message: 'Код готов. В демо-режиме письмо не отправляется — код показан на экране.'
+    }
+  };
 }
 
-/**
- * Проверка кода из письма.
- * @param {string} email
- * @param {string} code — 10 символов
- */
+/** Проверка кода подтверждения. */
 async function apiVerifyCode(email, code) {
-  return apiRequest('/verify-code', { email: email, code: code });
+  const result = checkPendingCode(email, code);
+
+  if (!result.ok) {
+    return { ok: false, data: { message: result.message } };
+  }
+
+  return { ok: true, data: { verified: true } };
 }
 
 /**
- * Регистрация нового пользователя.
- * Отправляем и username, и nickname: бэкенд может ждать любое из полей.
- * @param {string} nickname
- * @param {string} email
- * @param {string} password
+ * Регистрация нового аккаунта.
+ * Проверяет занятость ника и почты, затем сразу входит.
  */
 async function apiRegister(nickname, email, password) {
-  return apiRequest('/register', {
-    username: nickname,
-    nickname: nickname,
-    email: email,
-    password: password
-  });
+  const nick = String(nickname || '').trim();
+  const mail = String(email || '').trim().toLowerCase();
+
+  if (!/^[A-Za-zА-Яа-яЁё0-9_-]{3,20}$/.test(nick)) {
+    return { ok: false, data: { message: 'Ник: 3–20 символов, буквы, цифры, _ или -' } };
+  }
+
+  if (findUserByNickname(nick)) {
+    return { ok: false, data: { message: 'Этот ник уже занят' } };
+  }
+
+  if (findUserByEmail(mail)) {
+    return { ok: false, data: { message: 'На эту почту уже есть аккаунт' } };
+  }
+
+  if (String(password || '').length < 8) {
+    return { ok: false, data: { message: 'Пароль должен быть не короче 8 символов' } };
+  }
+
+  // Создаём запись аккаунта
+  const user = {
+    username: nick,
+    email: mail,
+    password: String(password),
+    avatar: localStorage.getItem(STORAGE_KEYS.avatar) || 'assets/images/avatars/avatar1.png',
+    createdAt: new Date().toISOString()
+  };
+
+  const users = getUsers();
+  users.push(user);
+  saveUsers(users);
+
+  // Сразу авторизуем
+  const token = setSession(user);
+  localStorage.removeItem(STORAGE_KEYS.pendingCode);
+
+  return {
+    ok: true,
+    data: { token: token, username: user.username, avatar: user.avatar }
+  };
 }
 
 /**
- * Вход в аккаунт. В ответе ожидаем { token, username }.
- * @param {string} nickname
- * @param {string} password
+ * Вход по нику и паролю.
+ * Дополнительно принимает почту вместо ника — так удобнее.
  */
 async function apiLogin(nickname, password) {
-  return apiRequest('/login', {
-    username: nickname,
-    nickname: nickname,
-    password: password
-  });
+  const login = String(nickname || '').trim();
+  const pass = String(password || '');
+
+  const user = login.includes('@') ? findUserByEmail(login) : findUserByNickname(login);
+
+  if (!user) {
+    return { ok: false, data: { message: 'Пользователь с таким ником не найден' } };
+  }
+
+  if (String(user.password) !== pass) {
+    return { ok: false, data: { message: 'Неверный пароль' } };
+  }
+
+  const token = setSession(user);
+
+  return {
+    ok: true,
+    data: { token: token, username: user.username, avatar: user.avatar }
+  };
 }
 
+/** Выход: чистим сессию, данные аккаунтов остаются. */
+async function apiLogout() {
+  clearSession();
+  return { ok: true, data: { loggedOut: true } };
+}
+
+/* ---------- Сброс и смена пароля ---------- */
+
 /**
- * Сброс пароля. Если бэкенд ждёт только email — лишние поля он проигнорирует.
- * @param {string} email
- * @param {string} newPassword — может быть пустым, если сброс идёт по коду
+ * Сброс забытого пароля.
+ * В демо-режиме новый пароль генерируется и показывается
+ * пользователю, чтобы он мог войти.
  */
 async function apiResetPassword(email, newPassword) {
-  const body = { email: email };
-  if (newPassword) body.newPassword = newPassword;
-  return apiRequest('/reset-password', body);
+  const user = findUserByEmail(email);
+
+  if (!user) {
+    return { ok: false, data: { message: 'Аккаунт с такой почтой не найден' } };
+  }
+
+  // Если пароль не передан — генерируем временный из 8 символов
+  const temporary = newPassword || generateCode().slice(0, 8).toLowerCase();
+
+  updateUser(user.username, { password: String(temporary) });
+
+  return {
+    ok: true,
+    data: {
+      temporaryPassword: temporary,
+      message: 'Пароль обновлён'
+    }
+  };
 }
 
-/* ---------- Ручки настроек ---------- */
-
-/**
- * Смена пароля: старый → новый.
- */
+/** Смена пароля: старый → новый. */
 async function apiChangePassword(oldPassword, newPassword) {
-  return apiRequest('/change-password', {
-    oldPassword: oldPassword,
-    newPassword: newPassword
-  }, { auth: true });
+  const user = getCurrentUser();
+
+  if (!user) {
+    return { ok: false, data: { message: 'Нужно войти в аккаунт' } };
+  }
+
+  if (String(user.password) !== String(oldPassword || '')) {
+    return { ok: false, data: { message: 'Текущий пароль указан неверно' } };
+  }
+
+  if (String(newPassword || '').length < 8) {
+    return { ok: false, data: { message: 'Новый пароль должен быть не короче 8 символов' } };
+  }
+
+  updateUser(user.username, { password: String(newPassword) });
+  return { ok: true, data: { changed: true } };
 }
 
-/**
- * Смена ника (доступна раз в 30 дней).
- */
+/* ---------- Смена ника и почты ---------- */
+
+/** Смена ника с проверкой занятости. */
 async function apiChangeNickname(nickname) {
-  return apiRequest('/change-nickname', { nickname: nickname, username: nickname }, { auth: true });
+  const user = getCurrentUser();
+  const nick = String(nickname || '').trim();
+
+  if (!user) {
+    return { ok: false, data: { message: 'Нужно войти в аккаунт' } };
+  }
+
+  if (!/^[A-Za-zА-Яа-яЁё0-9_-]{3,20}$/.test(nick)) {
+    return { ok: false, data: { message: 'Ник: 3–20 символов, буквы, цифры, _ или -' } };
+  }
+
+  const busy = findUserByNickname(nick);
+  if (busy && busy.username !== user.username) {
+    return { ok: false, data: { message: 'Этот ник уже занят' } };
+  }
+
+  updateUser(user.username, { username: nick });
+  localStorage.setItem(STORAGE_KEYS.currentUser, nick);
+
+  return { ok: true, data: { username: nick } };
 }
 
-/**
- * Запрос кода на новую почту.
- */
+/** Запрос кода на новую почту. */
 async function apiChangeEmailRequest(newEmail) {
-  return apiRequest('/change-email-request', { newEmail: newEmail, email: newEmail }, { auth: true });
+  const user = getCurrentUser();
+  const mail = String(newEmail || '').trim().toLowerCase();
+
+  if (!user) {
+    return { ok: false, data: { message: 'Нужно войти в аккаунт' } };
+  }
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(mail)) {
+    return { ok: false, data: { message: 'Введите корректный адрес почты' } };
+  }
+
+  const busy = findUserByEmail(mail);
+  if (busy && busy.username !== user.username) {
+    return { ok: false, data: { message: 'Эта почта уже используется' } };
+  }
+
+  const code = generateCode();
+  savePendingCode(mail, code);
+
+  return { ok: true, data: { demo: true, code: code } };
 }
 
-/**
- * Подтверждение новой почты кодом из письма.
- */
+/** Подтверждение новой почты кодом. */
 async function apiChangeEmailConfirm(newEmail, code) {
-  return apiRequest('/change-email-confirm', {
-    newEmail: newEmail,
-    email: newEmail,
-    code: code
-  }, { auth: true });
+  const user = getCurrentUser();
+  const mail = String(newEmail || '').trim().toLowerCase();
+
+  if (!user) {
+    return { ok: false, data: { message: 'Нужно войти в аккаунт' } };
+  }
+
+  const result = checkPendingCode(mail, code);
+  if (!result.ok) {
+    return { ok: false, data: { message: result.message } };
+  }
+
+  updateUser(user.username, { email: mail });
+  localStorage.removeItem(STORAGE_KEYS.pendingCode);
+
+  return { ok: true, data: { email: mail } };
 }
 
-/* Экспорт в глобальную область — проект без сборщика, модули не используем */
-window.API_URL = API_URL;
-window.apiRequest = apiRequest;
+/* ---------- Выгрузка данных ---------- */
+
+/** Все данные аккаунта для кнопки «Скачать мои данные». */
+function getAccountData() {
+  const user = getCurrentUser();
+
+  return {
+    account: user
+      ? { username: user.username, email: user.email, avatar: user.avatar, createdAt: user.createdAt }
+      : null,
+    progress: readJSON(STORAGE_KEYS.progress, {}),
+    achievements: readJSON(STORAGE_KEYS.achievements, []),
+    settings: readJSON('settings', {}),
+    exportedAt: new Date().toISOString()
+  };
+}
+
+/* Экспорт в глобальную область — проект без сборщика */
+window.STORAGE_KEYS = STORAGE_KEYS;
+window.readJSON = readJSON;
+window.writeJSON = writeJSON;
+window.getUsers = getUsers;
+window.updateUserRecord = updateUser;
+window.findUserByNickname = findUserByNickname;
+window.getCurrentUser = getCurrentUser;
+window.getUsername = getUsername;
+window.getToken = getToken;
+window.isAuthorized = isAuthorized;
+window.generateToken = generateToken;
 window.apiSendCode = apiSendCode;
 window.apiVerifyCode = apiVerifyCode;
 window.apiRegister = apiRegister;
 window.apiLogin = apiLogin;
+window.apiLogout = apiLogout;
 window.apiResetPassword = apiResetPassword;
 window.apiChangePassword = apiChangePassword;
 window.apiChangeNickname = apiChangeNickname;
 window.apiChangeEmailRequest = apiChangeEmailRequest;
 window.apiChangeEmailConfirm = apiChangeEmailConfirm;
-window.getToken = getToken;
-window.getUsername = getUsername;
+window.getAccountData = getAccountData;

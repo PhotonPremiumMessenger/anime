@@ -57,9 +57,11 @@ function closeDesignPanel() {
  * @param {boolean} notify — показывать ли toast
  */
 function setTheme(theme, notify = true) {
-  const themeName = theme === 'sakura' ? 'sakura' : 'default';
+  // Три допустимые темы: default (тёмная), sakura (розовая), light (светлая)
+  const themeName = ['sakura', 'light'].includes(theme) ? theme : 'default';
 
   document.body.classList.toggle('theme-sakura', themeName === 'sakura');
+  document.body.classList.toggle('theme-light', themeName === 'light');
   localStorage.setItem(THEME_KEY, themeName);
 
   // Держим настройки интерфейса и панель дизайна синхронными,
@@ -73,13 +75,24 @@ function setTheme(theme, notify = true) {
     card.classList.toggle('active', card.dataset.theme === themeName);
   });
 
+  // Синхронизируем переключатель «Светлая тема» в настройках
+  const lightSwitch = document.getElementById('lightThemeSwitch');
+  if (lightSwitch) lightSwitch.checked = themeName === 'light';
+
   if (notify && typeof showToast === 'function') {
-    showToast(
-      'Тема изменена',
-      themeName === 'sakura' ? 'Включена тема «Сакура»' : 'Включена стандартная тема',
-      'success'
-    );
+    const messages = {
+      default: 'Включена стандартная тема',
+      sakura: 'Включена тема «Сакура»',
+      light: 'Включена светлая тема'
+    };
+
+    showToast('Тема изменена', messages[themeName], 'success');
   }
+}
+
+/** Переключатель «Светлая тема» в настройках. */
+function toggleLightTheme(checkbox) {
+  setTheme(checkbox.checked ? 'light' : 'default');
 }
 
 /* ---------- Сакура ---------- */
@@ -200,7 +213,7 @@ function readSettingsSafe() {
 function applyStoredSettings() {
   const settings = readSettingsSafe();
 
-  // Тема
+  // Тема: настройки важнее отдельного ключа
   const theme = settings['interface.theme'] || localStorage.getItem(THEME_KEY) || 'default';
   setTheme(theme, false);
 
@@ -343,6 +356,7 @@ document.addEventListener('DOMContentLoaded', () => {
 window.toggleDesignPanel = toggleDesignPanel;
 window.closeDesignPanel = closeDesignPanel;
 window.setTheme = setTheme;
+window.toggleLightTheme = toggleLightTheme;
 window.startSakura = startSakura;
 window.stopSakura = stopSakura;
 window.toggleSakura = toggleSakura;

@@ -25,7 +25,10 @@ const AVATAR_KEY = 'avatar';
  * Если ничего не выбрано — первый из набора.
  */
 function getCurrentAvatar() {
-  const saved = localStorage.getItem(AVATAR_KEY);
+  // Сначала смотрим аватар в аккаунте, потом в отдельном ключе (для гостя)
+  const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+  const saved = (user && user.avatar) || localStorage.getItem(AVATAR_KEY);
+
   return AVATARS.includes(saved) ? saved : AVATARS[0];
 }
 
@@ -40,6 +43,13 @@ function setAvatar(path) {
   }
 
   localStorage.setItem(AVATAR_KEY, path);
+
+  // Сохраняем аватар в аккаунт, чтобы он пережил выход и повторный вход
+  const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+  if (user && typeof updateUserRecord === 'function') {
+    updateUserRecord(user.username, { avatar: path });
+  }
+
   updateAllAvatars();
 
   showToast('Аватар обновлён', 'Новый образ уже в профиле', 'success');
