@@ -65,6 +65,24 @@ const SETTINGS_CONTENT = {
           </div>
         </div>
         <button class="btn btn-primary btn-small" onclick="changePassword()">Сохранить пароль</button>
+
+      <div class="settings-group">
+        <h4>Перенос прогресса</h4>
+        <p class="custom-hint">Один файл со всем: опыт, уроки, слова, достижения, покупки, друзья и оформление.
+           Пригодится при смене браузера или компьютера.</p>
+
+        <div class="backup-actions">
+          <button class="btn btn-primary btn-small" onclick="exportProgress()">Скачать прогресс</button>
+          <label class="btn btn-outline btn-small file-btn">
+            Загрузить прогресс
+            <input type="file" accept="application/json,.json" onchange="importProgressFile(this)" hidden>
+          </label>
+        </div>
+
+        <p class="muted small" id="backupInfo"></p>
+
+        <button class="btn btn-ghost btn-small backup-danger" onclick="resetProgress()">Сбросить всё</button>
+      </div>
       </div>
 
       <div class="settings-group">
