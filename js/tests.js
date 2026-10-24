@@ -341,6 +341,12 @@ function answerTest(optionIndex, button) {
   testState.answers.push({ question: question.question, correct: isCorrect });
   if (isCorrect) testState.correct += 1;
 
+  // Ошибка уходит в аналитику слабых мест
+  if (!isCorrect && typeof recordMistake === 'function') {
+    recordMistake('Тесты', testState.test.level || 'Тест', question.question,
+      question.options[question.correct], question.options[optionIndex]);
+  }
+
   document.querySelectorAll('.test-option-lg').forEach((element, index) => {
     element.disabled = true;
     if (index === question.correct) element.classList.add('is-right');

@@ -447,6 +447,12 @@ function renderGrammarList() {
     card.querySelector('.grammar-card-short').textContent = rule.short;
     card.querySelector('.grammar-tag').textContent = rule.tag;
 
+    // Звёздочка избранного (пункт 43)
+    if (typeof favoriteButtonMarkup === 'function') {
+      card.insertAdjacentHTML('beforeend',
+        favoriteButtonMarkup('grammar', rule.id, rule.title, 'grammar.html?rule=' + rule.id));
+    }
+
     card.addEventListener('click', () => openGrammarRule(rule.id));
     grid.appendChild(card);
   });

@@ -395,6 +395,12 @@ function renderAnimeCatalog() {
     card.querySelector('.anime-phrase-jp').textContent = anime.phrase.jp;
     card.querySelector('.anime-phrase-ru').textContent = anime.phrase.ru;
 
+    // Звёздочка избранного (пункт 43)
+    if (typeof favoriteButtonMarkup === 'function') {
+      card.insertAdjacentHTML('beforeend',
+        favoriteButtonMarkup('anime', anime.id, anime.title, 'anime.html?title=' + anime.id));
+    }
+
     card.addEventListener('click', () => openAnimeCard(anime.id));
     grid.appendChild(card);
   });
@@ -523,6 +529,11 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!document.getElementById('animeGrid')) return;
 
   renderAnimeCatalog();
+
+  // Переход из общего поиска: anime.html?title=id
+  const params = new URLSearchParams(window.location.search);
+  const wanted = params.get('title');
+  if (wanted && ANIME_CATALOG.some(item => item.id === wanted)) openAnimeCard(wanted);
 
   const modal = document.getElementById('animeModal');
   if (modal) {
