@@ -1,58 +1,17 @@
 /* ============================================================
-   progress.js — прогресс уроков, достижения и озвучка слов
+   progress.js — прогресс уроков и озвучка слов
    Всё хранится в localStorage под ключами nihongo_progress
-   и nihongo_achievements.
+   и nihongo_achievements. Достижения — в js/achievements.js,
+   опыт, уровни и стрик — в js/xp.js.
    ============================================================ */
 
 'use strict';
 
 /* ---------- Достижения ---------- */
 
-// Шесть достижений. Проверка условий — в checkAchievements().
-const ACHIEVEMENTS = [
-  {
-    id: 'first_step',
-    name: 'Первый шаг',
-    icon: '👣',
-    description: 'Выучи первое слово',
-    color: '#7DB7FF'
-  },
-  {
-    id: 'first_lesson',
-    name: 'Первый урок',
-    icon: '🌸',
-    description: 'Пройди первый урок до конца',
-    color: '#FFB347'
-  },
-  {
-    id: 'words_10',
-    name: '10 слов',
-    icon: '📚',
-    description: 'В копилке 10 японских слов',
-    color: '#4ADE80'
-  },
-  {
-    id: 'words_100',
-    name: '100 слов',
-    icon: '🗣',
-    description: 'В копилке 100 японских слов',
-    color: '#C084FC'
-  },
-  {
-    id: 'week_streak',
-    name: 'Неделя подряд',
-    icon: '🔥',
-    description: 'Занимайся 7 дней подряд',
-    color: '#FB7185'
-  },
-  {
-    id: 'anime_master',
-    name: 'Мастер аниме',
-    icon: '🎌',
-    description: 'Пройди все уроки курса',
-    color: '#FFD166'
-  }
-];
+// Раньше здесь был список из шести достижений.
+// Теперь все 100 достижений живут в js/achievements.js,
+// а прогресс только сообщает о событиях (урок, слова, стрик).
 
 /* ---------- Базовые функции прогресса ---------- */
 
@@ -130,10 +89,23 @@ function touchStreak(progress) {
   }
 
   progress.streak.last = today;
+
+  // Дублируем серию в новый ключ nihongo_streak (если модуль XP подключён)
+  if (typeof saveStreak === 'function') {
+    saveStreak({
+      count: progress.streak.count,
+      best: Math.max(progress.streak.count, progress.streak.best || 0),
+      last: today
+    });
+  }
+
   return progress.streak;
 }
 
-/* ---------- Достижения: чтение и выдача ---------- */
+/* ---------- Достижения: совместимость ---------- */
+
+// Основная логика — в js/achievements.js.
+// Обёртки оставлены, чтобы старый код продолжал работать.
 
 /** Массив id открытых достижений. */
 function getUnlockedAchievements() {
@@ -146,51 +118,17 @@ function hasAchievement(id) {
   return getUnlockedAchievements().includes(id);
 }
 
-/**
- * Проверяет все условия и открывает новые достижения.
- * @returns {Array} список только что открытых достижений
- */
-function checkAchievements() {
-  const progress = getProgress();
-  const completed = countCompletedLessons(progress);
-  const words = progress.words.length;
-  const totalLessons = Array.isArray(window.nihongo_lessons) ? window.nihongo_lessons.length : 5;
-
-  const conditions = {
-    first_step: words >= 1,
-    first_lesson: completed >= 1,
-    words_10: words >= 10,
-    words_100: words >= 100,
-    week_streak: progress.streak.count >= 7,
-    anime_master: completed >= totalLessons && totalLessons > 0
-  };
-
-  const unlocked = getUnlockedAchievements();
-  const fresh = [];
-
-  ACHIEVEMENTS.forEach(achievement => {
-    if (conditions[achievement.id] && !unlocked.includes(achievement.id)) {
-      unlocked.push(achievement.id);
-      fresh.push(achievement);
-    }
-  });
-
-  if (fresh.length) writeJSON(STORAGE_KEYS.achievements, unlocked);
-
-  return fresh;
+/** Проверка достижений: передаём управление модулю achievements.js. */
+function checkAchievements(silent) {
+  if (typeof window.checkAchievements === 'function' && window.checkAchievements !== checkAchievements) {
+    return window.checkAchievements(silent);
+  }
+  return [];
 }
 
-/** Показывает toast о новых достижениях (если есть showToast). */
-function announceAchievements(list) {
-  if (!list || !list.length) return;
-
-  list.forEach((achievement, index) => {
-    setTimeout(() => {
-      if (typeof showToast === 'function') {
-        showToast(achievement.icon + ' Достижение: ' + achievement.name, achievement.description, 'success');
-      }
-    }, index * 700);
-  });
+/** Старые всплывашки больше не нужны: toast показывает achievements.js. */
+function announceAchievements() {
+  return [];
 }
 
 /* ---------- Подсчёт статистики ---------- */
@@ -209,16 +147,22 @@ function getStats() {
   const progress = getProgress();
   const lessons = countCompletedLessons(progress);
   const words = progress.words.length;
-  const xp = lessons * 120 + words * 5;
-  const level = Math.floor(xp / 500) + 1;
+
+  // Опыт теперь единый: из системы XP (js/xp.js)
+  const xp = typeof getXP === 'function' ? getXP() : lessons * 120 + words * 5;
+  const info = typeof getLevelInfo === 'function'
+    ? getLevelInfo(xp)
+    : { level: Math.floor(xp / 500) + 1, nextAt: (Math.floor(xp / 500) + 1) * 500 };
+
+  const streak = typeof getStreak === 'function' ? getStreak().count : progress.streak.count;
 
   return {
     lessons: lessons,
     words: words,
-    days: progress.streak.count,
+    days: streak,
     xp: xp,
-    xpMax: level * 500,
-    level: level,
+    xpMax: info.nextAt,
+    level: info.level,
     achievements: getUnlockedAchievements()
   };
 }
@@ -263,8 +207,14 @@ function completeLesson(lessonId, correct, total) {
   touchStreak(progress);
   saveProgress(progress);
 
-  const fresh = checkAchievements();
-  announceAchievements(fresh);
+  // Новые слова — в счётчики, XP и ежедневные задания
+  if (typeof notifyAction === 'function') {
+    notifyAction('lesson', 1, { lessonId: id, percent: percent });
+    if (newWords > 0) notifyAction('word', newWords, { reason: 'Новые слова' });
+  }
+
+  // Достижения проверяет модуль achievements.js
+  const fresh = typeof window.checkAchievements === 'function' ? window.checkAchievements() : [];
 
   return { percent: percent, newWords: newWords, achievements: fresh };
 }
@@ -341,7 +291,6 @@ function speakJapanese(text) {
 }
 
 /* Экспорт в глобальную область */
-window.ACHIEVEMENTS = ACHIEVEMENTS;
 window.getProgress = getProgress;
 window.saveProgress = saveProgress;
 window.getLessonProgress = getLessonProgress;

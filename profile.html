@@ -121,10 +121,13 @@
             <img src="assets/images/avatars/avatar1.png" alt="Твой аватар" data-avatar-img>
           </div>
 
-          <h1 class="player-nick" data-username>Игрок</h1>
+          <h1 class="player-nick">
+            <span data-username>Игрок</span>
+            <span class="player-badge-icon hidden" data-profile-badge></span>
+          </h1>
           <div class="player-status"><i></i> в сети</div>
 
-          <div class="player-rank">⛩ Уровень <span id="playerLevel">3</span> · Сэмпай</div>
+          <div class="player-rank">⛩ Уровень <span id="playerLevel">1</span> · <span id="profileTitle">Новичок</span></div>
 
           <div class="xp-block">
             <div class="xp-top">
@@ -136,7 +139,13 @@
             </div>
           </div>
 
-          <button class="btn btn-outline" onclick="openAvatarModal()">Изменить аватар</button>
+          <div class="btn-row">
+            <button class="btn btn-outline btn-small" style="flex:1" onclick="openAvatarModal()">Аватар</button>
+            <a class="btn btn-primary btn-small" style="flex:1" href="shop.html">Магазин</a>
+          </div>
+
+          <!-- Мини-сетка достижений -->
+          <div class="ach-preview" id="achPreview"></div>
 
           <hr class="divider">
 
@@ -186,15 +195,62 @@
             </div>
           </section>
 
+          <!-- Уровень и награды -->
+          <section class="block reveal">
+            <div class="block-head">
+              <h3>Уровень и опыт</h3>
+              <span class="block-note" id="profileXPTotal">0 XP</span>
+            </div>
+
+            <div class="level-card">
+              <div class="level-circle">
+                <span>уровень</span>
+                <b id="profileLevelBig">1</b>
+              </div>
+
+              <div class="level-info">
+                <div class="level-top">
+                  <b id="profileTitle">Новичок</b>
+                  <span id="profileXPText">0 / 100 XP</span>
+                </div>
+                <div class="progress-bar progress-thick">
+                  <span id="profileXPFill" style="width:0%"></span>
+                </div>
+                <div class="level-bottom">
+                  <span id="profileXPLeft">до 2 уровня: 100 XP</span>
+                  <a class="small accent" href="speed.html">Проверить скорость →</a>
+                </div>
+                <div id="profileNextReward" class="level-next-reward"></div>
+              </div>
+            </div>
+
+            <div class="level-road" id="levelRoad"></div>
+          </section>
+
+          <!-- Стрик -->
+          <section class="block reveal">
+            <div class="block-head">
+              <h3>Серия дней</h3>
+              <span class="block-note">заходи каждый день</span>
+            </div>
+            <div class="streak-block streak-inner" id="streakBlock"></div>
+          </section>
+
           <!-- Достижения -->
           <section class="block reveal">
             <div class="block-head">
               <h3>Достижения</h3>
-              <span class="block-note" id="achNote">открыто 0 из 6</span>
+              <span class="block-note" id="achNote">открыто 0 из 100</span>
             </div>
 
-            <!-- Сетку достижений рисует profile.js -->
-            <div class="ach-grid" id="achGrid"></div>
+            <div class="ach-filter">
+              <button class="chip chip-active" onclick="filterAchievements('all', this)">Все</button>
+              <button class="chip" onclick="filterAchievements('unlocked', this)">Открытые</button>
+              <button class="chip" onclick="filterAchievements('locked', this)">Закрытые</button>
+            </div>
+
+            <!-- Сетку достижений из 100 штук рисует achievements.js -->
+            <div class="ach-grid ach-grid-100" id="achGrid"></div>
           </section>
 
           <!-- Активность -->
@@ -237,6 +293,8 @@
           <!-- Кнопки -->
           <div class="profile-actions">
             <a class="btn btn-primary" href="lessons.html">К урокам</a>
+            <a class="btn btn-outline" href="rating.html">Рейтинг игроков</a>
+            <a class="btn btn-outline" href="shop.html">Магазин</a>
 
             <a class="btn btn-outline" href="settings.html">
               <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -318,9 +376,14 @@
   <!-- ============ СКРИПТЫ ============ -->
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
-  <script src="js/avatar.js"></script>
   <script src="js/progress.js"></script>
   <script src="js/lessons-data.js"></script>
+  <script src="js/xp.js"></script>
+  <script src="js/achievements.js"></script>
+  <script src="js/daily.js"></script>
+  <script src="js/quiz.js"></script>
+  <script src="js/shop.js"></script>
+  <script src="js/avatar.js"></script>
   <script src="js/profile.js"></script>
   <script src="js/design.js"></script>
   <script src="js/translate.js"></script>

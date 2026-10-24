@@ -38,6 +38,8 @@
       <nav class="nav">
         <a class="nav-link active" href="index.html">Главная</a>
         <a class="nav-link" href="lessons.html">Уроки</a>
+        <a class="nav-link" href="rating.html">Рейтинг</a>
+        <a class="nav-link" href="shop.html">Магазин</a>
         <a class="nav-link" href="#" onclick="event.preventDefault(); showToast('Аниме', 'Каталог появится после релиза', 'info')">
           Аниме <span class="nav-soon">скоро</span>
         </a>
@@ -140,6 +142,13 @@
             <a class="btn btn-outline btn-large" href="about.html">Узнать больше</a>
           </div>
 
+          <!-- Уровень и опыт игрока -->
+          <a class="hero-level is-auth" href="profile.html" aria-label="Открыть профиль">
+            <span class="hero-level-badge">Ур. <b id="heroLevel">1</b></span>
+            <span class="hero-level-bar"><i id="heroXPBar" style="width:0%"></i></span>
+            <span class="hero-level-xp" id="heroXPText">0 XP</span>
+          </a>
+
           <div class="hero-stats">
             <div class="hero-stat">
               <b>120+</b>
@@ -186,6 +195,31 @@
             <span class="mini-key">Контекст</span>
             <span>Так говорят, когда уверены в победе</span>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ТВОЙ ДЕНЬ: ЗАДАНИЯ, СТРИК, ЧЕЛЛЕНДЖ, ВИКТОРИНА ============ -->
+    <section class="section game-hub" id="today">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="badge badge-muted">Каждый день</span>
+          <h2 class="mt-16">Твой <span class="accent">день</span> в Nihongo</h2>
+          <p>Задания, серия дней, челлендж недели и викторина. Всё обновляется автоматически.</p>
+        </div>
+
+        <div class="game-grid">
+          <!-- Ежедневные задания -->
+          <section class="block game-col game-col-wide reveal" id="dailyBlock"></section>
+
+          <!-- Стрик -->
+          <section class="block streak-block-wrap reveal" id="streakBlock"></section>
+
+          <!-- Челлендж недели -->
+          <section class="block weekly-block reveal" id="weeklyBlock"></section>
+
+          <!-- Викторина дня -->
+          <section class="block quiz-block reveal" id="quizBlock"></section>
         </div>
       </div>
     </section>
@@ -388,6 +422,13 @@
   <!-- ============ СКРИПТЫ ============ -->
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/progress.js"></script>
+  <script src="js/lessons-data.js"></script>
+  <script src="js/xp.js"></script>
+  <script src="js/achievements.js"></script>
+  <script src="js/daily.js"></script>
+  <script src="js/quiz.js"></script>
+  <script src="js/shop.js"></script>
   <script src="js/avatar.js"></script>
   <script src="js/design.js"></script>
   <script src="js/translate.js"></script>
