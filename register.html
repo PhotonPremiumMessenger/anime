@@ -12,6 +12,7 @@
 
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/style.css">
+  <script src="js/loader.js"></script>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛩</text></svg>">
 </head>
 <body>
@@ -47,20 +48,62 @@
             Ещё <span class="nav-more-caret">▾</span>
           </button>
           <div class="nav-more-panel" id="navMorePanel">
-            <a href="search.html"><b>Поиск</b><span>По всему сайту</span></a>
-            <a href="flashcards.html"><b>Флешкарты</b><span>Повторения по системе</span></a>
-            <a href="match.html"><b>Кандзи-пары</b><span>Мини-игра на память</span></a>
-            <a href="listening.html"><b>Аудирование</b><span>Слова на слух</span></a>
-            <a href="exam.html"><b>Пробный JLPT</b><span>20 вопросов на время</span></a>
-            <a href="dictionary.html"><b>Словарь</b><span>140 слов с поиском и переводом</span></a>
-            <a href="video.html"><b>Видео-уроки</b><span>5 видео и слайд-режим</span></a>
-            <a href="rating.html"><b>Рейтинг</b><span>ТОП-100 по опыту</span></a>
-            <a href="shop.html"><b>Магазин</b><span>Аватары, темы, рамки, значки</span></a>
-            <a href="speed.html"><b>Скорость</b><span>60 секунд на реакцию</span></a>
-            <a href="favorites.html"><b>Избранное</b><span>Отложенное</span></a>
-            <a href="weakspots.html"><b>Слабые места</b><span>Разбор ошибок</span></a>
-            <a href="updates.html"><b>Обновления</b><span>Что нового</span></a>
-            <a href="about.html"><b>О проекте</b><span>Что это и зачем</span></a>
+            <div class="nav-group" data-group="study">
+              <button class="nav-group-btn" type="button" onclick="toggleNavGroup(event, this)" aria-expanded="false">
+                <span class="nav-group-icon">📚</span>
+                <b>Учёба</b>
+                <span class="nav-group-count">4</span>
+                <span class="nav-group-caret">▾</span>
+              </button>
+              <div class="nav-group-list">
+                <a href="dictionary.html"><b>Словарь</b><span>слова и перевод</span></a>
+                <a href="video.html"><b>Видео-уроки</b><span>5 видео</span></a>
+                <a href="exam.html"><b>Пробный JLPT</b><span>20 вопросов</span></a>
+                <a href="search.html"><b>Поиск</b><span>по всему сайту</span></a>
+              </div>
+            </div>
+            <div class="nav-group" data-group="practice">
+              <button class="nav-group-btn" type="button" onclick="toggleNavGroup(event, this)" aria-expanded="false">
+                <span class="nav-group-icon">🎯</span>
+                <b>Практика</b>
+                <span class="nav-group-count">5</span>
+                <span class="nav-group-caret">▾</span>
+              </button>
+              <div class="nav-group-list">
+                <a href="flashcards.html"><b>Флешкарты</b><span>повторения</span></a>
+                <a href="match.html"><b>Кандзи-пары</b><span>мини-игра</span></a>
+                <a href="listening.html"><b>Аудирование</b><span>слова на слух</span></a>
+                <a href="speed.html"><b>Скорость</b><span>60 секунд</span></a>
+                <a href="weakspots.html"><b>Слабые места</b><span>разбор ошибок</span></a>
+              </div>
+            </div>
+            <div class="nav-group" data-group="progress">
+              <button class="nav-group-btn" type="button" onclick="toggleNavGroup(event, this)" aria-expanded="false">
+                <span class="nav-group-icon">🏆</span>
+                <b>Прогресс</b>
+                <span class="nav-group-count">4</span>
+                <span class="nav-group-caret">▾</span>
+              </button>
+              <div class="nav-group-list">
+                <a href="profile.html"><b>Профиль</b><span>уровень и статистика</span></a>
+                <a href="rating.html"><b>Рейтинг</b><span>ТОП-100</span></a>
+                <a href="shop.html"><b>Магазин</b><span>аватары и темы</span></a>
+                <a href="favorites.html"><b>Избранное</b><span>отложенное</span></a>
+              </div>
+            </div>
+            <div class="nav-group" data-group="other">
+              <button class="nav-group-btn" type="button" onclick="toggleNavGroup(event, this)" aria-expanded="false">
+                <span class="nav-group-icon">✨</span>
+                <b>Разное</b>
+                <span class="nav-group-count">3</span>
+                <span class="nav-group-caret">▾</span>
+              </button>
+              <div class="nav-group-list">
+                <a href="updates.html"><b>Обновления</b><span>что нового</span></a>
+                <a href="about.html"><b>О проекте</b><span>о проекте</span></a>
+                <a href="settings.html"><b>Настройки</b><span>параметры</span></a>
+              </div>
+            </div>
           </div>
         </div>
 
