@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 
+  <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛩</text></svg>">
 </head>
@@ -46,7 +47,10 @@
             Ещё <span class="nav-more-caret">▾</span>
           </button>
           <div class="nav-more-panel" id="navMorePanel">
-            <a href="dictionary.html"><b>Словарь</b><span>130 слов с поиском и переводом</span></a>
+            <a href="flashcards.html"><b>Флешкарты</b><span>Повторения по системе</span></a>
+            <a href="listening.html"><b>Аудирование</b><span>Слова на слух</span></a>
+            <a href="exam.html"><b>Пробный JLPT</b><span>20 вопросов на время</span></a>
+            <a href="dictionary.html"><b>Словарь</b><span>140 слов с поиском и переводом</span></a>
             <a href="video.html"><b>Видео-уроки</b><span>5 видео и слайд-режим</span></a>
             <a href="rating.html"><b>Рейтинг</b><span>ТОП-100 по опыту</span></a>
             <a href="shop.html"><b>Магазин</b><span>Аватары, темы, рамки, значки</span></a>
@@ -282,6 +286,16 @@
             <div class="ach-grid ach-grid-100" id="achGrid"></div>
           </section>
 
+          <!-- Недельный отчёт (пункт 39) -->
+          <section class="block reveal">
+            <div class="block-head">
+              <h3>Недельный отчёт</h3>
+              <span class="block-note">последние 7 дней</span>
+            </div>
+
+            <div class="weekly-report" id="weeklyReport"></div>
+          </section>
+
           <!-- Графики -->
           <section class="block reveal">
             <div class="block-head">
@@ -293,6 +307,14 @@
 
             <div class="study-rings" id="studyRings"></div>
             <div class="ach-donut-wrap" id="achDonut"></div>
+
+            <div class="cert-row">
+              <div>
+                <b>Сертификат об учёбе</b>
+                <span class="muted small">Картинка PNG с ником, уровнем и достижениями</span>
+              </div>
+              <button class="btn btn-outline btn-small" onclick="previewCertificate()">Открыть</button>
+            </div>
           </section>
 
           <!-- История активности -->
@@ -401,6 +423,23 @@
   </div>
 
   <!-- ============ МОДАЛКА ОФОРМЛЕНИЯ ============ -->
+  <!-- Просмотр сертификата (пункт 40) -->
+  <div class="modal-overlay" id="certificateModal" role="dialog" aria-modal="true">
+    <div class="modal certificate-modal">
+      <div class="modal-head">
+        <h3>Сертификат Nihongo</h3>
+        <button class="modal-close" onclick="closeCertificate()" aria-label="Закрыть">✕</button>
+      </div>
+
+      <div class="certificate-preview" id="certificatePreview"></div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="downloadCertificate()">Скачать PNG</button>
+        <button class="btn btn-outline" onclick="closeCertificate()">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="customModal" role="dialog" aria-modal="true">
     <div class="modal modal-wide">
       <div class="modal-head">
@@ -497,6 +536,12 @@
   <script src="js/romaji.js"></script>
   <script src="js/voice.js"></script>
   <script src="js/nav.js"></script>
+  <script src="js/report.js"></script>
+  <script src="js/certificate.js"></script>
+  <script src="js/notify.js"></script>
+  <script src="js/hotkeys.js"></script>
+  <script src="js/pwa.js"></script>
+  <script src="js/backup.js"></script>
   <script src="js/easter.js"></script>
 </body>
 </html>

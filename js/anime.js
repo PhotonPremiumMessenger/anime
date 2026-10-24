@@ -251,6 +251,20 @@ const ANIME_CATALOG = [
   }
 ];
 
+/* ---------- Постеры ---------- */
+
+/**
+ * Локальные постеры лежат в assets/images/posters/<id>.jpg.
+ * Свои файлы выбраны специально: официальные японские CDN у части
+ * провайдеров в РФ не открываются, а с GitHub Pages картинка
+ * прогружается при любом IP и без внешних запросов.
+ * Ссылка на файл отдаётся один раз — дальше работают кеш браузера
+ * и loading="lazy", поэтому 24 карточки не тянут всё сразу.
+ */
+function animePosterPath(anime) {
+  return 'assets/images/posters/' + anime.id + '.jpg';
+}
+
 /* ---------- Ромадзи фраз ---------- */
 
 // Кандзи нельзя автоматически перевести в ромадзи, поэтому чтения заданы вручную
@@ -355,6 +369,10 @@ function renderAnimeCatalog() {
 
     card.innerHTML = `
       <div class="anime-poster">
+        <img class="anime-img" src="${animePosterPath(anime)}" alt="${anime.title} — постер"
+             loading="lazy" decoding="async" width="620" height="930"
+             onerror="this.closest('.anime-poster').classList.add('is-empty'); this.remove();">
+        <span class="anime-poster-jp">${anime.jp}</span>
         <span class="anime-kanji">${anime.kanji}</span>
         <span class="anime-year">${anime.year}</span>
         <span class="anime-badge">${anime.level}</span>
@@ -416,6 +434,8 @@ function openAnimeCard(id) {
 
   body.innerHTML = `
     <div class="anime-modal-head" style="--poster-1:${anime.color1};--poster-2:${anime.color2}">
+      <img class="anime-modal-poster" src="${animePosterPath(anime)}" alt="${anime.title} — постер"
+           onerror="this.remove();">
       <span class="anime-modal-kanji">${anime.kanji}</span>
       <div>
         <h2>${anime.title}</h2>
@@ -521,6 +541,7 @@ window.ANIME_CATALOG = ANIME_CATALOG;
 window.ANIME_ROMAJI = ANIME_ROMAJI;
 window.animePhraseRomaji = animePhraseRomaji;
 window.renderAnimeCatalog = renderAnimeCatalog;
+window.animePosterPath = animePosterPath;
 window.filterAnimeGenre = filterAnimeGenre;
 window.filterAnimeLevel = filterAnimeLevel;
 window.onAnimeSearch = onAnimeSearch;
