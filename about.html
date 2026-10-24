@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>О проекте — Nihongo</title>
+  <meta name="description" content="Что такое Nihongo, как проходят уроки и почему учить японский через аниме эффективно.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛩</text></svg>">
+</head>
+<body>
+
+  <!-- ============ ШАПКА ============ -->
+  <header class="header">
+    <div class="container">
+      <a class="logo" href="index.html" aria-label="Nihongo — на главную">
+        <span class="logo-badge">
+          <svg viewBox="0 0 48 48" aria-hidden="true">
+            <rect x="6" y="10" width="36" height="4.5" rx="2.2" fill="currentColor"></rect>
+            <rect x="10" y="18" width="28" height="3.2" rx="1.6" fill="currentColor" opacity="0.85"></rect>
+            <rect x="14" y="16" width="4.2" height="24" rx="1.6" fill="currentColor"></rect>
+            <rect x="29.8" y="16" width="4.2" height="24" rx="1.6" fill="currentColor"></rect>
+            <rect x="20" y="24" width="8" height="3" rx="1.5" fill="currentColor" opacity="0.7"></rect>
+          </svg>
+        </span>
+        <span class="logo-text">
+          <span class="logo-jp">日本語</span>
+          <span class="logo-en">NIHONGO</span>
+        </span>
+      </a>
+
+      <nav class="nav">
+        <a class="nav-link" href="index.html">Главная</a>
+        <a class="nav-link" href="lessons.html">Уроки</a>
+        <a class="nav-link" href="#" onclick="event.preventDefault(); showToast('Аниме', 'Каталог появится после релиза', 'info')">
+          Аниме <span class="nav-soon">скоро</span>
+        </a>
+        <a class="nav-link active" href="about.html">О проекте</a>
+
+        <button class="nav-design" id="designToggle" onclick="toggleDesignPanel()" aria-expanded="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"></circle>
+            <circle cx="8.5" cy="9.5" r="1.2"></circle>
+            <circle cx="15.5" cy="9.5" r="1.2"></circle>
+            <circle cx="9" cy="15" r="1.2"></circle>
+            <circle cx="15" cy="15" r="1.2"></circle>
+          </svg>
+          Дизайн
+        </button>
+      </nav>
+
+      <div class="header-actions">
+        <div class="is-guest">
+          <a class="btn btn-ghost btn-small" href="register.html">Войти</a>
+          <a class="btn btn-primary btn-small" href="register.html">Регистрация</a>
+        </div>
+        <a class="user-chip is-auth" href="profile.html">
+          <img src="assets/images/avatars/avatar1.png" alt="Аватар" data-header-avatar data-avatar-img>
+          <span class="user-name" data-header-nick>Игрок</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ ПАНЕЛЬ ДИЗАЙНА ============ -->
+  <aside class="design-panel" id="designPanel" aria-label="Панель дизайна">
+    <h4>Панель дизайна</h4>
+    <p class="panel-sub">Настрой внешний вид под себя. Изменения сохраняются.</p>
+
+    <div class="theme-grid">
+      <button class="theme-card active" data-theme="default" onclick="setTheme('default')">
+        <div class="theme-preview theme-preview-default"></div>
+        <div class="theme-name">Стандарт</div>
+        <div class="theme-desc">Оранжевый акцент</div>
+      </button>
+      <button class="theme-card" data-theme="sakura" onclick="setTheme('sakura')">
+        <div class="theme-preview theme-preview-sakura"></div>
+        <div class="theme-name">Сакура</div>
+        <div class="theme-desc">Розовый акцент</div>
+      </button>
+      <button class="theme-card" data-theme="light" onclick="setTheme('light')">
+        <div class="theme-preview theme-preview-light"></div>
+        <div class="theme-name">Светлая</div>
+        <div class="theme-desc">Дневной режим</div>
+      </button>
+    </div>
+
+    <div class="switch-row">
+      <div>
+        <div class="switch-label">Лепестки сакуры</div>
+        <div class="switch-hint">Падающие лепестки поверх страницы</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="sakuraSwitch" onchange="toggleSakura(this)">
+        <span class="track"></span>
+      </label>
+    </div>
+
+    <div class="switch-row">
+      <div>
+        <div class="switch-label">Все настройки</div>
+        <div class="switch-hint">Звук, уведомления, лаунчер</div>
+      </div>
+      <a class="btn btn-ghost btn-small" href="settings.html">Открыть</a>
+    </div>
+  </aside>
+
+  <main>
+    <!-- ============ HERO ============ -->
+    <section class="about-hero">
+      <div class="container">
+        <span class="badge">
+          <span class="badge-dot"></span>
+          О проекте
+        </span>
+
+        <h1>Аниме, которое учит <span class="accent">японскому</span></h1>
+
+        <p>
+          Nihongo — платформа для русскоязычных анимешников. Мы берём любимые сцены,
+          разбираем каждую фразу и объясняем не только перевод, но и то, что осталось
+          за кадром: оттенки, культурные отсылки и языковые пасхалки.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============ ЧТО ТАКОЕ NIHONGO ============ -->
+    <section class="section" style="padding-top:20px">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="badge badge-muted">Что такое Nihongo</span>
+          <h2 class="mt-16">Четыре причины <span class="accent">остаться</span></h2>
+          <p>Не курс на 500 часов, а короткие разборы, которые встраиваются в привычку смотреть аниме.</p>
+        </div>
+
+        <div class="about-cards">
+          <article class="card reveal">
+            <span class="card-index">01</span>
+            <div class="feature-icon">あ</div>
+            <h3>Японский через аниме</h3>
+            <p>Живые реплики вместо учебных диалогов. Ты слышишь интонацию, контекст и ситуацию — язык запоминается сам.</p>
+          </article>
+
+          <article class="card reveal">
+            <span class="card-index">02</span>
+            <div class="feature-icon">謎</div>
+            <h3>Пасхалки и отсылки</h3>
+            <p>«Почему герой так сказал?» — разбираем скрытые смыслы, игру слов и отсылки к культуре Японии.</p>
+          </article>
+
+          <article class="card reveal">
+            <span class="card-index">03</span>
+            <div class="feature-icon">巻</div>
+            <h3>Каталог аниме</h3>
+            <p>Тайтлы отсортированы по сложности языка. Начинаешь с простых бытовых сцен и растёшь до философских монологов.</p>
+          </article>
+
+          <article class="card reveal">
+            <span class="card-index">04</span>
+            <div class="feature-icon">合</div>
+            <h3>Подготовка к JLPT</h3>
+            <p>Каждая фраза помечена уровнем N5–N1. Готовиться к экзамену можно без отдельных скучных списков.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ПОЧЕМУ МЫ ============ -->
+    <section class="section" style="padding-top:0">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="badge badge-muted">Почему мы</span>
+          <h2 class="mt-16">Наш подход</h2>
+          <p>Три принципа, по которым строится каждый урок.</p>
+        </div>
+
+        <div class="why-list">
+          <div class="why-item reveal">
+            <div class="why-number">01</div>
+            <div class="why-body">
+              <h3>Сначала интерес, потом грамматика</h3>
+              <p>Мы начинаем со сцены, которая цепляет, и только потом объясняем, как эта фраза устроена. Так правило запоминается через эмоцию, а не через зубрёжку.</p>
+            </div>
+            <div class="why-arrow">→</div>
+          </div>
+
+          <div class="why-item reveal">
+            <div class="why-number">02</div>
+            <div class="why-body">
+              <h3>Контекст вместо словарных столбиков</h3>
+              <p>Одно и то же слово звучит по-разному в зависимости от вежливости и ситуации. Мы показываем, кто говорит, кому и почему — это и есть настоящий язык.</p>
+            </div>
+            <div class="why-arrow">→</div>
+          </div>
+
+          <div class="why-item reveal">
+            <div class="why-number">03</div>
+            <div class="why-body">
+              <h3>Маленькие шаги, понятный прогресс</h3>
+              <p>Опыт, уровни и достижения превращают учёбу в игру. Каждые пять минут — новый шаг, а не «когда-нибудь потом». Первый год полностью бесплатный.</p>
+            </div>
+            <div class="why-arrow">→</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ КАК ЭТО РАБОТАЕТ ============ -->
+    <section class="section" style="padding-top:0">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="badge badge-muted">Как это работает</span>
+          <h2 class="mt-16">Три шага до первого <span class="accent">урока</span></h2>
+        </div>
+
+        <div class="steps">
+          <div class="step reveal">
+            <div class="step-circle">01</div>
+            <h3>Зарегистрируйся</h3>
+            <p>Ник, почта и пароль. Подтверди почту кодом — и аккаунт готов.</p>
+          </div>
+
+          <div class="step reveal">
+            <div class="step-circle">02</div>
+            <h3>Выбери аниме</h3>
+            <p>Возьми тайтл по сложности или из любимого жанра. Каждая сцена — отдельный урок.</p>
+          </div>
+
+          <div class="step reveal">
+            <div class="step-circle">03</div>
+            <h3>Учись и играй</h3>
+            <p>Разбирай фразы, собирай достижения и следи за серией дней. Прогресс всегда виден.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FAQ ============ -->
+    <section class="section" style="padding-top:0">
+      <div class="container">
+        <div class="section-head reveal" style="margin-left:auto;margin-right:auto;text-align:center">
+          <span class="badge badge-muted">FAQ</span>
+          <h2 class="mt-16">Частые вопросы</h2>
+          <p class="muted">Если ответа нет — напиши нам в Discord.</p>
+        </div>
+
+        <div class="faq">
+          <div class="faq-item">
+            <button class="faq-question" onclick="toggleFaq(this)" aria-expanded="false">
+              Это правда бесплатно?
+              <span class="faq-toggle">+</span>
+            </button>
+            <div class="faq-answer">
+              <div class="faq-answer-inner">
+                Да. Первый год после запуска платформа работает без подписки — весь функционал доступен всем, кто зарегистрируется. Дальше базовые уроки останутся бесплатными, а платными будут только косметика: темы, оформление профиля и дополнительные дизайны.
+              </div>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question" onclick="toggleFaq(this)" aria-expanded="false">
+              Нужно ли знать японский с нуля?
+              <span class="faq-toggle">+</span>
+            </button>
+            <div class="faq-answer">
+              <div class="faq-answer-inner">
+                Нет. Уроки стартуют с самых простых фраз и ромадзи, поэтому начать можно без единого известного слова. Если база уже есть — фильтруй разборы по уровню N5–N1 и сразу переходи к сложным сценам.
+              </div>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question" onclick="toggleFaq(this)" aria-expanded="false">
+              Как проходит урок?
+              <span class="faq-toggle">+</span>
+            </button>
+            <div class="faq-answer">
+              <div class="faq-answer-inner">
+                Сначала сцена из аниме с японской репликой, её чтением и переводом. Затем разбор: грамматика, лексика, вежливость и культурный контекст. В конце — короткая практика, чтобы сразу закрепить фразу и получить опыт.
+              </div>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question" onclick="toggleFaq(this)" aria-expanded="false">
+              Что такое пасхалки и отсылки?
+              <span class="faq-toggle">+</span>
+            </button>
+            <div class="faq-answer">
+              <div class="faq-answer-inner">
+                Это скрытые смыслы, которые теряются при обычном переводе: игра слов, отсылки к японской культуре, названиям, историческим событиям или другим аниме. Мы показываем, почему фраза звучит именно так, и что за ней стоит.
+              </div>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question" onclick="toggleFaq(this)" aria-expanded="false">
+              Обязательно ли смотреть аниме перед уроком?
+              <span class="faq-toggle">+</span>
+            </button>
+            <div class="faq-answer">
+              <div class="faq-answer-inner">
+                Нет, но со спойлерами осторожно: в разборах встречаются сцены из середины и финалов. Если боишься испортить впечатление — отметь тайтл как «смотрю» и пропусти разборы с пометкой «спойлер».
+              </div>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question" onclick="toggleFaq(this)" aria-expanded="false">
+              Когда откроется сайт?
+              <span class="faq-toggle">+</span>
+            </button>
+            <div class="faq-answer">
+              <div class="faq-answer-inner">
+                Ориентируемся на срок около шести месяцев с момента первого визита — точное время показывает таймер на главной странице. Зарегистрируйся заранее: первый год бесплатно получат все, кто занял место до релиза.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CTA ============ -->
+    <section class="section" style="padding-top:0">
+      <div class="container">
+        <div class="cta reveal">
+          <h2>Готов начать?</h2>
+          <p>Регистрация занимает минуту, а первый разбор уже ждёт внутри.</p>
+          <a class="btn btn-primary btn-large" href="register.html">Начать бесплатно</a>
+          <div class="cta-note">Без карты. Косметика появится только после первого года.</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ ПОДВАЛ ============ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <a class="logo" href="index.html" aria-label="Nihongo — на главную">
+        <span class="logo-badge">
+          <svg viewBox="0 0 48 48" aria-hidden="true">
+            <rect x="6" y="10" width="36" height="4.5" rx="2.2" fill="currentColor"></rect>
+            <rect x="10" y="18" width="28" height="3.2" rx="1.6" fill="currentColor" opacity="0.85"></rect>
+            <rect x="14" y="16" width="4.2" height="24" rx="1.6" fill="currentColor"></rect>
+            <rect x="29.8" y="16" width="4.2" height="24" rx="1.6" fill="currentColor"></rect>
+            <rect x="20" y="24" width="8" height="3" rx="1.5" fill="currentColor" opacity="0.7"></rect>
+          </svg>
+        </span>
+        <span class="logo-text">
+          <span class="logo-jp">日本語</span>
+          <span class="logo-en">NIHONGO</span>
+        </span>
+      </a>
+          <p>Платформа для изучения японского через аниме: фразы, пасхалки и культурные отсылки.</p>
+
+          <div class="socials mt-16">
+            <a class="social-link" href="https://www.tiktok.com/" target="_blank" rel="noopener" aria-label="TikTok">
+              <img src="assets/images/tiktok.png" alt="TikTok">
+            </a>
+            <a class="social-link" href="https://www.youtube.com/" target="_blank" rel="noopener" aria-label="YouTube">
+              <img src="assets/images/youtube.png" alt="YouTube">
+            </a>
+            <a class="social-link" href="https://www.instagram.com/" target="_blank" rel="noopener" aria-label="Instagram">
+              <img src="assets/images/instagram.png" alt="Instagram">
+            </a>
+            <a class="social-link" href="https://discord.com/" target="_blank" rel="noopener" aria-label="Discord">
+              <img src="assets/images/discord.png" alt="Discord">
+            </a>
+          </div>
+        </div>
+
+        <div class="footer-cols">
+          <div class="footer-col">
+            <h5>Платформа</h5>
+            <a href="index.html">Главная</a>
+            <a href="about.html">О проекте</a>
+            <a href="register.html">Регистрация</a>
+            <a href="settings.html">Настройки</a>
+          </div>
+          <div class="footer-col">
+            <h5>Аккаунт</h5>
+            <a href="register.html">Вход</a>
+            <a href="profile.html">Профиль</a>
+            <a href="register.html">Сброс пароля</a>
+          </div>
+          <div class="footer-col">
+            <h5>Соцсети</h5>
+            <a href="https://www.tiktok.com/" target="_blank" rel="noopener">TikTok</a>
+            <a href="https://www.youtube.com/" target="_blank" rel="noopener">YouTube</a>
+            <a href="https://www.instagram.com/" target="_blank" rel="noopener">Instagram</a>
+            <a href="https://discord.com/" target="_blank" rel="noopener">Discord</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>© 2026 Nihongo. Все права защищены.</span>
+        <span class="footer-made">Сделано с <span class="accent">♥</span> для анимешников</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/avatar.js"></script>
+  <script src="js/design.js"></script>
+  <script src="js/translate.js"></script>
+
+  <!-- Аккордеон FAQ: открывает один вопрос, закрывает остальные -->
+  <script>
+    function toggleFaq(button) {
+      const item = button.closest('.faq-item');
+      const answer = item.querySelector('.faq-answer');
+      const isOpen = item.classList.contains('open');
+
+      // Сначала закрываем все открытые вопросы
+      document.querySelectorAll('.faq-item.open').forEach(openItem => {
+        openItem.classList.remove('open');
+        openItem.querySelector('.faq-answer').style.maxHeight = '0px';
+        openItem.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
+      });
+
+      // Если нажали на закрытый — открываем его
+      if (!isOpen) {
+        item.classList.add('open');
+        // scrollHeight может быть нулевым до первой отрисовки — берём запас
+        answer.style.maxHeight = (answer.scrollHeight || 600) + 'px';
+        button.setAttribute('aria-expanded', 'true');
+      }
+    }
+  </script>
+</body>
+</html>

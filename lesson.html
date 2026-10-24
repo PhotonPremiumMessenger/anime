@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Урок — Nihongo</title>
+  <meta name="description" content="Урок японского с озвучкой слов, грамматикой и тестом.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛩</text></svg>">
+</head>
+<body>
+
+  <!-- ============ ШАПКА ============ -->
+  <header class="header">
+    <div class="container">
+      <a class="logo" href="index.html" aria-label="Nihongo — на главную">
+        <span class="logo-badge">
+          <svg viewBox="0 0 48 48" aria-hidden="true">
+            <rect x="6" y="10" width="36" height="4.5" rx="2.2" fill="currentColor"></rect>
+            <rect x="10" y="18" width="28" height="3.2" rx="1.6" fill="currentColor" opacity="0.85"></rect>
+            <rect x="14" y="16" width="4.2" height="24" rx="1.6" fill="currentColor"></rect>
+            <rect x="29.8" y="16" width="4.2" height="24" rx="1.6" fill="currentColor"></rect>
+            <rect x="20" y="24" width="8" height="3" rx="1.5" fill="currentColor" opacity="0.7"></rect>
+          </svg>
+        </span>
+        <span class="logo-text">
+          <span class="logo-jp">日本語</span>
+          <span class="logo-en">NIHONGO</span>
+        </span>
+      </a>
+
+      <nav class="nav">
+        <a class="nav-link" href="index.html">Главная</a>
+        <a class="nav-link active" href="lessons.html">Уроки</a>
+        <a class="nav-link" href="#" onclick="event.preventDefault(); showToast('Аниме', 'Каталог появится после релиза', 'info')">
+          Аниме <span class="nav-soon">скоро</span>
+        </a>
+        <a class="nav-link" href="about.html">О проекте</a>
+
+        <button class="nav-design" id="designToggle" onclick="toggleDesignPanel()" aria-expanded="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"></circle>
+            <circle cx="8.5" cy="9.5" r="1.2"></circle>
+            <circle cx="15.5" cy="9.5" r="1.2"></circle>
+            <circle cx="9" cy="15" r="1.2"></circle>
+            <circle cx="15" cy="15" r="1.2"></circle>
+          </svg>
+          Дизайн
+        </button>
+      </nav>
+
+      <div class="header-actions">
+        <div class="is-guest">
+          <a class="btn btn-ghost btn-small" href="register.html">Войти</a>
+          <a class="btn btn-primary btn-small" href="register.html">Регистрация</a>
+        </div>
+        <a class="user-chip is-auth" href="profile.html">
+          <img src="assets/images/avatars/avatar1.png" alt="Аватар" data-header-avatar data-avatar-img>
+          <span class="user-name" data-header-nick>Игрок</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ ПАНЕЛЬ ДИЗАЙНА ============ -->
+  <aside class="design-panel" id="designPanel" aria-label="Панель дизайна">
+    <h4>Панель дизайна</h4>
+    <p class="panel-sub">Настрой внешний вид под себя. Изменения сохраняются.</p>
+
+    <div class="theme-grid">
+      <button class="theme-card active" data-theme="default" onclick="setTheme('default')">
+        <div class="theme-preview theme-preview-default"></div>
+        <div class="theme-name">Стандарт</div>
+        <div class="theme-desc">Оранжевый акцент</div>
+      </button>
+      <button class="theme-card" data-theme="sakura" onclick="setTheme('sakura')">
+        <div class="theme-preview theme-preview-sakura"></div>
+        <div class="theme-name">Сакура</div>
+        <div class="theme-desc">Розовый акцент</div>
+      </button>
+      <button class="theme-card" data-theme="light" onclick="setTheme('light')">
+        <div class="theme-preview theme-preview-light"></div>
+        <div class="theme-name">Светлая</div>
+        <div class="theme-desc">Дневной режим</div>
+      </button>
+    </div>
+
+    <div class="switch-row">
+      <div>
+        <div class="switch-label">Лепестки сакуры</div>
+        <div class="switch-hint">Падающие лепестки поверх страницы</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="sakuraSwitch" onchange="toggleSakura(this)">
+        <span class="track"></span>
+      </label>
+    </div>
+
+    <div class="switch-row">
+      <div>
+        <div class="switch-label">Все настройки</div>
+        <div class="switch-hint">Звук, уведомления, лаунчер</div>
+      </div>
+      <a class="btn btn-ghost btn-small" href="settings.html">Открыть</a>
+    </div>
+  </aside>
+
+  <!-- ============ УРОК ============ -->
+  <main class="lesson-page" id="lessonRoot">
+    <div class="container">
+
+      <!-- Обложка урока -->
+      <section class="lesson-hero">
+        <div class="lesson-hero-bg" id="lessonCover"></div>
+        <div class="lesson-hero-inner">
+          <a class="lesson-back" href="lessons.html">← Все уроки</a>
+
+          <h1 id="lessonTitle">Урок</h1>
+          <p id="lessonDescription"></p>
+
+          <div class="lesson-meta">
+            <span class="chip chip-active" id="lessonLevel">N5</span>
+            <span class="chip">⏱ <span id="lessonDuration">15 мин</span></span>
+            <span class="chip">語 <span id="lessonWordsCount">10 слов</span></span>
+            <span class="lesson-best" id="lessonBest">Ещё не пройден</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="lesson-layout">
+        <div class="lesson-main">
+
+          <!-- Слова -->
+          <section class="block">
+            <div class="block-head">
+              <h3>Слова урока</h3>
+              <span class="block-note" id="speakHint">Нажми 🔊 рядом со словом, чтобы услышать произношение.</span>
+            </div>
+            <div class="word-list" id="wordList"></div>
+          </section>
+
+          <!-- Грамматика -->
+          <section class="block">
+            <div class="block-head">
+              <h3>Грамматика и контекст</h3>
+            </div>
+            <p class="grammar-text" id="grammarText"></p>
+          </section>
+
+          <!-- Примеры -->
+          <section class="block">
+            <div class="block-head">
+              <h3>Примеры</h3>
+              <span class="block-note">нажми 🔊 для озвучки</span>
+            </div>
+            <div class="example-list" id="exampleList"></div>
+          </section>
+        </div>
+
+        <!-- Тест -->
+        <aside class="lesson-side">
+          <section class="block test-box">
+            <div class="block-head">
+              <h3>Проверь себя</h3>
+              <span class="block-note">нужно 70% для зачёта</span>
+            </div>
+
+            <div id="testBox"></div>
+
+            <div class="test-result" id="testResult"></div>
+
+            <button class="btn btn-primary btn-block mt-16" id="checkBtn" onclick="checkTest()">
+              Проверить ответы
+            </button>
+
+            <button class="btn btn-primary btn-block mt-16 hidden" id="finishBtn" onclick="finishLesson()">
+              Завершить урок
+            </button>
+
+            <p class="small muted mt-16" id="learnedWords"></p>
+          </section>
+
+          <section class="block lesson-tip">
+            <h3>Как учиться</h3>
+            <p class="small">
+              Прослушай каждое слово вслух за диктором, затем закрой перевод и проверь себя.
+              В конце пройди тест — прогресс сохранится в браузере.
+            </p>
+          </section>
+        </aside>
+      </div>
+
+      <!-- Навигация по урокам -->
+      <nav class="lesson-nav" id="lessonNav"></nav>
+    </div>
+  </main>
+
+  <!-- ============ ПОДВАЛ ============ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom" style="border-top:none;padding-top:0">
+        <span>© 2026 Nihongo. Все права защищены.</span>
+        <span class="footer-made">Сделано с <span class="accent">♥</span> для анимешников</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ============ СКРИПТЫ ============ -->
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/avatar.js"></script>
+  <script src="js/design.js"></script>
+  <script src="js/progress.js"></script>
+  <script src="js/lessons-data.js"></script>
+  <script src="js/lesson.js"></script>
+  <script src="js/translate.js"></script>
+</body>
+</html>
