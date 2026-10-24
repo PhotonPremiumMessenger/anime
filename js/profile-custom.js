@@ -215,10 +215,6 @@ function renderCustomPanel() {
       </div>
     </div>
 
-    <div class="btn-row">
-      <button class="btn btn-primary" style="flex:1" onclick="closeCustomPanel()">Готово</button>
-      <button class="btn btn-ghost" onclick="resetCustom()">Сбросить</button>
-    </div>
   `;
 }
 
