@@ -14379,3 +14379,464 @@ html {
   display: grid;
   place-items: center;
 }
+
+/* ============================================================
+   ЧАСТЬ 14. Единый каркас модальных окон
+   Любое окно: шапка сверху, тело со скроллом, кнопки внизу.
+   Ничего не уезжает за экран, кнопки всегда на виду.
+   ============================================================ */
+
+/* ---------- 14.1 Каркас ---------- */
+.modal {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  max-height: min(86vh, 760px);
+  overflow: hidden;
+}
+
+/* Пока скрипт не разобрал окно — ведём себя как раньше */
+.modal:not([data-modal-ready]) {
+  padding: 26px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* Шапка не скроллится */
+.modal > .modal-head {
+  flex: 0 0 auto;
+  align-items: center;
+  margin: 0;
+  padding: 20px 26px 10px;
+}
+
+.modal > .modal-head h3 {
+  font-size: 18px;
+  line-height: 1.3;
+  padding-right: 8px;
+}
+
+.modal > .modal-icon {
+  flex: 0 0 auto;
+  margin: 22px 26px 0;
+}
+
+/* Крестик в окнах без шапки — в углу, поверх содержимого */
+.modal > .modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 4;
+  background: rgba(10, 10, 16, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* Тело — единственное, что скроллится */
+.modal > .modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 2px 26px 16px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
+}
+
+.modal > .modal-close + .modal-body {
+  padding-top: 14px;
+}
+
+.modal > .modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal > .modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal > .modal-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+}
+
+.modal > .modal-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.26);
+}
+
+.modal > .modal-body.is-empty {
+  padding-bottom: 4px;
+}
+
+/* Нижняя панель с кнопками */
+.modal > .modal-foot {
+  flex: 0 0 auto;
+  padding: 12px 26px 18px;
+  border-top: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(16, 16, 24, 0), rgba(16, 16, 24, 0.82) 45%);
+}
+
+.modal > .modal-foot .btn-row,
+.modal > .modal-foot .modal-actions,
+.modal > .modal-foot .cookie-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 10px;
+  margin: 0;
+}
+
+.modal > .modal-foot .btn {
+  flex: 1 1 0;
+  min-width: 0;
+  justify-content: center;
+}
+
+/* Мелкая подпись под кнопками остаётся читаемой, но не растягивает низ */
+.modal > .modal-foot .donate-fine,
+.modal > .modal-foot p {
+  margin: 2px 0 0;
+  text-align: center;
+}
+
+/* ---------- 14.2 Кнопки в окнах — компактные ---------- */
+.modal .btn {
+  padding: 10px 16px;
+  font-size: 13.5px;
+  border-radius: 10px;
+}
+
+.modal .btn-small {
+  padding: 7px 12px;
+  font-size: 12px;
+}
+
+.modal .btn-row {
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Равные по ширине кнопки вместо «одна огромная, вторая мелкая» */
+.modal .btn-row .btn {
+  flex: 1 1 140px;
+  width: auto;
+}
+
+.modal .btn-block {
+  width: 100%;
+}
+
+.modal .modal-sub {
+  margin-bottom: 14px;
+}
+
+/* ---------- 14.3 Окно аниме ---------- */
+#animeModal .modal {
+  max-height: min(88vh, 780px);
+}
+
+#animeModal .modal-body {
+  margin-right: 0;
+  padding-right: 26px;
+}
+
+#animeModal .modal-head {
+  padding-bottom: 6px;
+}
+
+/* ---------- 14.4 Боковые панели: прокрутка вместо обрезки ---------- */
+.design-panel {
+  max-height: calc(100vh - 92px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.command-box {
+  display: flex;
+  flex-direction: column;
+  max-height: min(72vh, 620px);
+}
+
+.command-results {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+}
+
+.command-foot {
+  flex: 0 0 auto;
+}
+
+#hotkeyHelpBody {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 2px 12px 12px;
+}
+
+.notify-panel-body {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* ---------- 14.5 Светлая тема ---------- */
+body.theme-light .modal > .modal-foot {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0), rgba(250, 247, 242, 0.92) 45%);
+}
+
+body.theme-light .modal > .modal-close {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+body.theme-light .modal > .modal-body::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.16);
+}
+
+body.theme-light .command-box {
+  background: rgba(255, 255, 255, 0.99);
+}
+
+/* ---------- 14.6 Телефоны ---------- */
+@media (max-width: 760px) {
+  .modal {
+    max-height: 92vh;
+  }
+
+  .modal:not([data-modal-ready]) {
+    padding: 18px 16px;
+  }
+
+  .modal > .modal-head {
+    padding: 16px 52px 8px 16px;
+  }
+
+  .modal > .modal-head h3 {
+    font-size: 16.5px;
+  }
+
+  .modal > .modal-icon {
+    margin: 16px 16px 0;
+    width: 46px;
+    height: 46px;
+  }
+
+  .modal > .modal-close {
+    top: 10px;
+    right: 10px;
+  }
+
+  .modal > .modal-body {
+    padding: 2px 16px 12px;
+  }
+
+  .modal > .modal-close + .modal-body {
+    padding-top: 10px;
+  }
+
+  .modal > .modal-foot {
+    padding: 10px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .modal > .modal-foot .btn {
+    padding: 10px 8px;
+    font-size: 12.5px;
+  }
+
+  .modal .btn {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .modal .btn-row {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .modal .btn-row .btn {
+    flex: 1 1 130px;
+    width: auto;
+  }
+
+  #animeModal .modal-body {
+    padding-right: 16px;
+  }
+
+  .command-overlay {
+    padding: 7vh 12px 12px;
+  }
+
+  .command-box {
+    max-height: 78vh;
+  }
+
+  .design-panel {
+    left: 12px;
+    right: 12px;
+    width: auto;
+    max-height: calc(100vh - 84px);
+  }
+
+  .notify-panel {
+    top: 66px;
+    right: 12px;
+    max-height: min(76vh, 560px);
+  }
+}
+
+@media (max-width: 380px) {
+  .modal > .modal-foot .btn {
+    padding: 9px 6px;
+    font-size: 11.5px;
+  }
+
+  .modal > .modal-head h3 {
+    font-size: 15.5px;
+  }
+}
+
+/* ---------- 14.7 Мелочи: оверлей и размеры кнопок на телефоне ---------- */
+.modal-overlay {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+@media (max-width: 760px) {
+  /* Кнопки на страницах тоже стали аккуратнее — меньше «плашек» */
+  .btn {
+    padding: 11px 18px;
+    font-size: 13.5px;
+  }
+
+  .btn-large {
+    padding: 13px 22px;
+    font-size: 14.5px;
+  }
+
+  .btn-small {
+    padding: 7px 12px;
+    font-size: 12px;
+  }
+
+  /* Внутри окон — ещё компактнее */
+  .modal .btn {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .modal .btn-small {
+    padding: 6px 10px;
+    font-size: 11.5px;
+  }
+}
+
+/* ---------- 14.8 Кнопки внизу окна: длинные подписи переносятся ---------- */
+.modal > .modal-foot .btn {
+  white-space: normal;
+  line-height: 1.25;
+  text-align: center;
+  min-height: 40px;
+  overflow-wrap: anywhere;
+}
+
+/* В карточке cookies внизу ещё и ссылка на политику */
+.modal > .modal-foot .cookie-actions {
+  flex-wrap: wrap;
+}
+
+.modal > .modal-foot .cookie-link {
+  flex: 1 1 100%;
+  margin-top: 2px;
+  text-align: center;
+}
+
+@media (max-width: 760px) {
+  .modal > .modal-foot .btn {
+    min-height: 38px;
+  }
+}
+
+/* ---------- 14.9 Настройки и вход на телефоне ---------- */
+@media (max-width: 900px) {
+  /* Настройки: меню больше не жмётся сбоку — уходит вверх полосой */
+  .settings-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .settings-menu {
+    position: static;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;
+    padding: 8px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+
+  .settings-menu::-webkit-scrollbar {
+    display: none;
+  }
+
+  .settings-menu .menu-item {
+    flex: 0 0 auto;
+    width: auto;
+    margin-bottom: 0;
+    padding: 9px 13px;
+    white-space: nowrap;
+  }
+
+  .settings-menu .menu-sep,
+  .settings-menu .menu-badge {
+    display: none;
+  }
+
+  /* Вход и регистрация: форма идёт первой, рассказ — ниже */
+  .auth-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 26px;
+    min-height: 0;
+    padding-top: 8px;
+  }
+
+  .auth-card {
+    order: -1;
+  }
+
+  .auth-aside h1 {
+    font-size: 30px;
+    margin: 14px 0 10px;
+  }
+
+  .auth-aside > p {
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-width: 760px) {
+  /* Заголовок вкладки и кнопка «Сохранить» — в столбик, кнопка на всю ширину */
+  .settings-head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+  }
+
+  .settings-head h2 {
+    font-size: 19px;
+  }
+
+  .settings-head .btn {
+    width: 100%;
+  }
+
+  /* Строка секции экзамена не должна сплющиваться */
+  .exam-section-row {
+    grid-template-columns: 42px minmax(0, 1fr) 44px;
+    gap: 8px;
+    font-size: 12px;
+  }
+}
