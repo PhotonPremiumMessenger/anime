@@ -29,29 +29,33 @@ function checkAuth() {
 
 /**
  * Заполняет ник, аватар, уровень и XP.
- * Статистика считается по прогрессу уроков (js/progress.js).
+ * Опыт, уровень и стрик берутся из системы XP (js/xp.js).
  */
 function fillProfile() {
   const user = getCurrentUser();
   const username = user ? user.username : 'Игрок';
-  const stats = getStats();
-  const achievements = getUnlockedAchievements();
+  const stats = getPlayerStats();
 
   // Ник встречается в нескольких местах страницы
   document.querySelectorAll('[data-username]').forEach(el => {
     el.textContent = username;
   });
 
-  // Уровень
+  // Почта в карточке профиля
+  const emailEl = document.getElementById('playerEmail');
+  if (emailEl) emailEl.textContent = user ? user.email : '';
+
+  // Уровень, опыт и награды
   const levelEl = document.getElementById('playerLevel');
   if (levelEl) levelEl.textContent = stats.level;
 
-  // XP-бар
+  const xpMax = stats.levelInfo.maxLevel ? stats.xp : stats.levelInfo.nextAt;
+  const percent = Math.min(100, stats.levelInfo.percent);
+
   const xpText = document.getElementById('xpText');
   const xpFill = document.getElementById('xpFill');
-  const percent = Math.min(100, Math.round((stats.xp / stats.xpMax) * 100));
 
-  if (xpText) xpText.textContent = stats.xp + ' / ' + stats.xpMax + ' XP';
+  if (xpText) xpText.textContent = stats.xp + ' / ' + xpMax + ' XP';
   if (xpFill) {
     // Небольшая задержка, чтобы полоска красиво «наполнилась» после загрузки
     setTimeout(() => (xpFill.style.width = percent + '%'), 250);
@@ -60,7 +64,7 @@ function fillProfile() {
   // Карточки статистики
   animateNumber('statLessons', stats.lessons);
   animateNumber('statWords', stats.words);
-  animateNumber('statDays', stats.days);
+  animateNumber('statDays', stats.streak);
 
   // Дата регистрации хранится в аккаунте (createdAt)
   const joinedEl = document.getElementById('joinedDate');
@@ -69,59 +73,168 @@ function fillProfile() {
     joinedEl.textContent = formatDate(created);
   }
 
-  // Почта в карточке профиля
-  const emailEl = document.getElementById('playerEmail');
-  if (emailEl) emailEl.textContent = user ? user.email : '';
-
   // Серия дней подряд
   const streakEl = document.getElementById('streakDays');
   if (streakEl) {
-    streakEl.textContent = stats.days > 0
-      ? stats.days + ' ' + pluralDays(stats.days) + ' 🔥'
+    streakEl.textContent = stats.streak > 0
+      ? stats.streak + ' ' + pluralDays(stats.streak) + ' 🔥'
       : 'пока нет 🔥';
   }
 
   // Достижения и активность
-  renderAchievements(achievements);
+  renderAchievements();
   renderActivity(stats);
+  renderProfileLevel();
+  renderAchievementsPreview();
 
-  // Аватар
+  // Аватар и надетые предметы из магазина
   updateAllAvatars();
+  if (typeof applyShopStyles === 'function') applyShopStyles();
 }
 
 /**
- * Рисует сетку достижений: открытые светятся, закрытые — приглушены.
- * @param {Array<string>} unlockedIds
+ * Блок «Уровень» в профиле: крупный уровень, титул, полоса опыта,
+ * сколько осталось до следующего уровня и ближайшая награда.
  */
-function renderAchievements(unlockedIds) {
-  const grid = document.getElementById('achGrid');
-  if (!grid) return;
+function renderProfileLevel() {
+  const xp = getXP();
+  const info = getLevelInfo(xp);
 
-  grid.innerHTML = '';
+  const big = document.getElementById('profileLevelBig');
+  if (big) big.textContent = info.level;
 
-  ACHIEVEMENTS.forEach(achievement => {
-    const unlocked = unlockedIds.includes(achievement.id);
+  const title = getPlayerTitle(info.level);
+  const titleEl = document.getElementById('profileTitle');
+  if (titleEl) titleEl.textContent = title;
 
-    const item = document.createElement('div');
-    item.className = 'ach' + (unlocked ? ' unlocked' : '');
-    item.title = achievement.description;
+  const text = document.getElementById('profileXPText');
+  if (text) {
+    text.textContent = info.maxLevel
+      ? xp + ' XP · максимальный уровень'
+      : info.intoLevel + ' / ' + (info.nextAt - info.currentFrom) + ' XP';
+  }
 
-    const icon = document.createElement('div');
-    icon.className = 'ach-icon';
-    icon.textContent = achievement.icon;
+  const fill = document.getElementById('profileXPFill');
+  if (fill) {
+    setTimeout(() => (fill.style.width = info.percent + '%'), 280);
+  }
 
-    const name = document.createElement('div');
-    name.className = 'ach-name';
-    name.textContent = achievement.name;
+  const left = document.getElementById('profileXPLeft');
+  if (left) {
+    left.textContent = info.maxLevel
+      ? 'Ты на вершине — 100 уровень достигнут!'
+      : 'до ' + (info.level + 1) + ' уровня: ' + info.need + ' XP';
+  }
 
-    item.appendChild(icon);
-    item.appendChild(name);
-    grid.appendChild(item);
+  const total = document.getElementById('profileXPTotal');
+  if (total) total.textContent = xp + ' XP';
+
+  // Ближайшая награда
+  const nextReward = document.getElementById('profileNextReward');
+  if (nextReward) {
+    const next = getNextLevelReward(info.level);
+    nextReward.innerHTML = '';
+
+    if (next) {
+      const span = document.createElement('span');
+      span.className = 'level-reward-note';
+      span.textContent = 'Награда за ' + next.level + ' уровень: ' + next.reward.text;
+      nextReward.appendChild(span);
+    } else {
+      const span = document.createElement('span');
+      span.className = 'level-reward-note muted';
+      span.textContent = 'Все награды уровней уже открыты';
+      nextReward.appendChild(span);
+    }
+  }
+
+  renderLevelRoad(info.level);
+}
+
+/** Титул игрока по уровню (ближайший открытый титул). */
+function getPlayerTitle(level) {
+  let title = 'Гость';
+
+  Object.keys(LEVEL_REWARDS).forEach(key => {
+    const reward = LEVEL_REWARDS[key];
+    if (reward.kind === 'title' && Number(key) <= level) title = reward.title;
   });
 
-  // Счётчик в заголовке блока
-  const note = document.getElementById('achNote');
-  if (note) note.textContent = 'открыто ' + unlockedIds.length + ' из ' + ACHIEVEMENTS.length;
+  // До 2 уровня титула нет — используем нейтральный
+  return level >= 2 ? title : 'Новичок';
+}
+
+/** Следующая награда за уровень (первая после текущего). */
+function getNextLevelReward(level) {
+  const levels = Object.keys(LEVEL_REWARDS).map(Number).filter(n => n > level).sort((a, b) => a - b);
+  if (!levels.length) return null;
+  return { level: levels[0], reward: LEVEL_REWARDS[levels[0]] };
+}
+
+/** Дорожная карта наград: крупные вехи до 100 уровня. */
+function renderLevelRoad(currentLevel) {
+  const box = document.getElementById('levelRoad');
+  if (!box) return;
+
+  const milestones = [2, 3, 5, 7, 10, 15, 20, 30, 40, 50, 60, 75, 100];
+  box.innerHTML = '';
+
+  milestones.forEach(level => {
+    const reward = LEVEL_REWARDS[level];
+    if (!reward) return;
+
+    const item = document.createElement('div');
+    item.className = 'level-node' +
+      (currentLevel >= level ? ' is-open' : '') +
+      (currentLevel === level ? ' is-current' : '');
+
+    item.innerHTML = '<b>' + level + '</b><span></span>';
+    item.querySelector('span').textContent = reward.text;
+    item.title = reward.text + (currentLevel >= level ? ' — получено' : ' — на уровне ' + level);
+
+    box.appendChild(item);
+  });
+}
+
+/** Мини-сетка из шести последних достижений для карточки игрока. */
+function renderAchievementsPreview() {
+  const box = document.getElementById('achPreview');
+  if (!box) return;
+
+  const unlocked = getUnlockedAchievements();
+  box.innerHTML = '';
+
+  // Сначала показываем открытые, затем закрытые
+  const unlockedList = ACHIEVEMENTS.filter(a => unlocked.includes(a.id));
+  const lockedList = ACHIEVEMENTS.filter(a => !unlocked.includes(a.id));
+  const preview = unlockedList.concat(lockedList).slice(0, 6);
+
+  if (!preview.length) return;
+
+  preview.forEach(achievement => {
+    const isOpen = unlocked.includes(achievement.id);
+    const cell = document.createElement('div');
+    cell.className = 'ach-preview-cell' + (isOpen ? ' is-unlocked' : '');
+    cell.title = achievement.name + ' — ' + achievement.description;
+    cell.innerHTML = achievementIconMarkup(achievement, isOpen);
+    box.appendChild(cell);
+  });
+}
+
+/**
+ * Рисует сетку достижений из js/achievements.js:
+ * открытые — цветные, закрытые — серые.
+ */
+function renderAchievements() {
+  if (typeof renderAchievementGrid === 'function') {
+    renderAchievementGrid('achGrid');
+    return;
+  }
+
+  // Запасной простой вариант, если модуль достижений не подключён
+  const grid = document.getElementById('achGrid');
+  if (!grid) return;
+  grid.innerHTML = '<div class="empty-state">Достижения не загрузились. Обнови страницу.</div>';
 }
 
 /**
@@ -285,6 +398,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /* Экспорт в глобальную область */
 window.checkAuth = checkAuth;
+window.renderProfileLevel = renderProfileLevel;
+window.renderLevelRoad = renderLevelRoad;
+window.getPlayerTitle = getPlayerTitle;
 window.showLogoutConfirm = showLogoutConfirm;
 window.closeLogoutModal = closeLogoutModal;
 window.confirmLogout = confirmLogout;

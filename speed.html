@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тест на скорость — Nihongo</title>
+  <meta name="description" content="Тест на скорость Nihongo: 60 секунд, вопросы по хирагане, катакане и словам. Рекорд сохраняется.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛩</text></svg>">
+</head>
+<body>
+
+  <!-- ============ ШАПКА ============ -->
+  <header class="header">
+    <div class="container">
+      <a class="logo" href="index.html" aria-label="Nihongo — на главную">
+        <span class="logo-badge">
+          <svg viewBox="0 0 48 48" aria-hidden="true">
+            <rect x="6" y="10" width="36" height="4.5" rx="2.2" fill="currentColor"></rect>
+            <rect x="10" y="18" width="28" height="3.2" rx="1.6" fill="currentColor" opacity="0.85"></rect>
+            <rect x="14" y="16" width="4.2" height="24" rx="1.6" fill="currentColor"></rect>
+            <rect x="29.8" y="16" width="4.2" height="24" rx="1.6" fill="currentColor"></rect>
+            <rect x="20" y="24" width="8" height="3" rx="1.5" fill="currentColor" opacity="0.7"></rect>
+          </svg>
+        </span>
+        <span class="logo-text">
+          <span class="logo-jp">日本語</span>
+          <span class="logo-en">NIHONGO</span>
+        </span>
+      </a>
+
+      <nav class="nav">
+        <a class="nav-link" href="index.html">Главная</a>
+        <a class="nav-link" href="lessons.html">Уроки</a>
+        <a class="nav-link" href="rating.html">Рейтинг</a>
+        <a class="nav-link" href="shop.html">Магазин</a>
+        <a class="nav-link" href="about.html">О проекте</a>
+
+        <button class="nav-design" id="designToggle" onclick="toggleDesignPanel()" aria-expanded="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"></circle>
+            <circle cx="8.5" cy="9.5" r="1.2"></circle>
+            <circle cx="15.5" cy="9.5" r="1.2"></circle>
+            <circle cx="9" cy="15" r="1.2"></circle>
+            <circle cx="15" cy="15" r="1.2"></circle>
+          </svg>
+          Дизайн
+        </button>
+      </nav>
+
+      <div class="header-actions">
+        <div class="is-guest">
+          <a class="btn btn-ghost btn-small" href="register.html">Войти</a>
+          <a class="btn btn-primary btn-small" href="register.html">Регистрация</a>
+        </div>
+        <a class="user-chip is-auth" href="profile.html">
+          <img src="assets/images/avatars/avatar1.png" alt="Аватар" data-header-avatar data-avatar-img>
+          <span class="user-name" data-header-nick>Игрок</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ ПАНЕЛЬ ДИЗАЙНА ============ -->
+  <aside class="design-panel" id="designPanel" aria-label="Панель дизайна">
+    <h4>Панель дизайна</h4>
+    <p class="panel-sub">Настрой внешний вид под себя. Изменения сохраняются.</p>
+
+    <div class="theme-grid">
+      <button class="theme-card active" data-theme="default" onclick="setTheme('default')">
+        <div class="theme-preview theme-preview-default"></div>
+        <div class="theme-name">Стандарт</div>
+        <div class="theme-desc">Оранжевый акцент</div>
+      </button>
+      <button class="theme-card" data-theme="sakura" onclick="setTheme('sakura')">
+        <div class="theme-preview theme-preview-sakura"></div>
+        <div class="theme-name">Сакура</div>
+        <div class="theme-desc">Розовый акцент</div>
+      </button>
+      <button class="theme-card" data-theme="light" onclick="setTheme('light')">
+        <div class="theme-preview theme-preview-light"></div>
+        <div class="theme-name">Светлая</div>
+        <div class="theme-desc">Дневной режим</div>
+      </button>
+    </div>
+
+    <div class="switch-row">
+      <div>
+        <div class="switch-label">Лепестки сакуры</div>
+        <div class="switch-hint">Падающие лепестки поверх страницы</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="sakuraSwitch" onchange="toggleSakura(this)">
+        <span class="track"></span>
+      </label>
+    </div>
+
+    <div class="switch-row">
+      <div>
+        <div class="switch-label">Все настройки</div>
+        <div class="switch-hint">Звук, уведомления, лаунчер</div>
+      </div>
+      <a class="btn btn-ghost btn-small" href="settings.html">Открыть</a>
+    </div>
+  </aside>
+
+  <!-- ============ ТЕСТ НА СКОРОСТЬ ============ -->
+  <main>
+    <section class="catalog-hero speed-hero">
+      <div class="container">
+        <span class="badge">
+          <span class="badge-dot"></span>
+          60 секунд · +4 XP за верный ответ
+        </span>
+
+        <h1 class="mt-16">Тест на <span class="accent">скорость</span></h1>
+        <p>Хирагана, катакана, слова и фразы. Отвечай как можно быстрее — время не ждёт.</p>
+
+        <div class="catalog-stats">
+          <div class="catalog-stat">
+            <b id="speedBest">0</b>
+            <span>твой рекорд</span>
+          </div>
+          <div class="catalog-stat">
+            <b>60</b>
+            <span>секунд на раунд</span>
+          </div>
+          <div class="catalog-stat">
+            <b id="speedAttempts">0</b>
+            <span>попыток сделано</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="padding-top:10px">
+      <div class="container">
+        <div class="speed-wrap">
+
+          <!-- Стартовый экран -->
+          <div class="speed-card" id="speedStart">
+            <div class="speed-start-icon">⚡</div>
+            <h2>Готов проверить реакцию?</h2>
+            <p>60 секунд, вопросы без конца. Верный ответ — +4 XP, каждые 5 подряд — бонус +10 XP.
+               В конце раунда — бонус за результат.</p>
+
+            <ul class="speed-rules">
+              <li><b>1–4</b> — выбор ответа с клавиатуры</li>
+              <li><b>Комбо</b> — серия верных ответов подряд</li>
+              <li><b>Рекорд</b> — сохраняется в этом браузере</li>
+            </ul>
+
+            <button class="btn btn-primary btn-large" id="speedStartBtn">Начать тест</button>
+          </div>
+
+          <!-- Игровое поле -->
+          <div class="speed-card hidden" id="speedGame" tabindex="0" aria-live="polite">
+            <div class="speed-hud">
+              <div class="speed-hud-item">
+                <span>Время</span>
+                <b id="speedTime">60</b>
+              </div>
+              <div class="speed-hud-item">
+                <span>Верно</span>
+                <b id="speedScore">0</b>
+              </div>
+              <div class="speed-hud-item speed-hud-combo">
+                <b id="speedCombo"></b>
+              </div>
+            </div>
+
+            <div class="speed-timer-bar">
+              <span id="speedBar" style="width:100%"></span>
+            </div>
+
+            <div class="speed-board" id="speedBoard">
+              <div class="speed-hint" id="speedHint">хирагана</div>
+              <div class="speed-prompt" id="speedPrompt">あ</div>
+              <div class="speed-options" id="speedOptions"></div>
+            </div>
+          </div>
+
+          <!-- Результат -->
+          <div class="speed-card hidden" id="speedResult">
+            <div class="speed-start-icon">🏁</div>
+            <h2>Время вышло!</h2>
+
+            <div class="speed-score-big">
+              <b id="resultScore">0</b>
+              <span>верных ответов</span>
+            </div>
+
+            <div class="speed-result-grid">
+              <div>
+                <span>Точность</span>
+                <b id="resultAccuracy">0%</b>
+              </div>
+              <div>
+                <span>Лучшее комбо</span>
+                <b id="resultCombo">0</b>
+              </div>
+              <div>
+                <span>Заработано</span>
+                <b id="resultXP">0 XP</b>
+              </div>
+            </div>
+
+            <div class="speed-record" id="resultRecord">Рекорд: 0</div>
+
+            <div class="btn-row">
+              <button class="btn btn-primary" style="flex:1" id="speedRetryBtn">Ещё раз</button>
+              <button class="btn btn-outline" style="flex:1" id="speedAgainBtn">На главную теста</button>
+            </div>
+          </div>
+
+          <div class="shop-tip">
+            <span class="shop-tip-icon">💡</span>
+            <div>
+              <b>Совет</b>
+              <p>Не гонись за скоростью в ущерб точности: ошибка сбрасывает комбо и отнимает время.
+                 Сначала выучи ряд хираганы, потом включай таймер.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ ПОДВАЛ ============ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom" style="border-top:none;padding-top:0">
+        <span>© 2026 Nihongo. Все права защищены.</span>
+        <span class="footer-made">Сделано с <span class="accent">♥</span> для анимешников</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ============ СКРИПТЫ ============ -->
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/progress.js"></script>
+  <script src="js/lessons-data.js"></script>
+  <script src="js/xp.js"></script>
+  <script src="js/achievements.js"></script>
+  <script src="js/daily.js"></script>
+  <script src="js/shop.js"></script>
+  <script src="js/avatar.js"></script>
+  <script src="js/speed.js"></script>
+  <script src="js/design.js"></script>
+  <script src="js/translate.js"></script>
+</body>
+</html>

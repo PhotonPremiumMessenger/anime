@@ -21,6 +21,25 @@ const AVATARS = [
 const AVATAR_KEY = 'avatar';
 
 /**
+ * Список доступных аватаров: 8 стандартных + купленные в магазине.
+ * Магазин может быть не подключён на странице — тогда только стандартные.
+ */
+function getAvailableAvatars() {
+  const list = AVATARS.slice();
+
+  if (typeof getShopState === 'function' && typeof SHOP_ITEMS !== 'undefined') {
+    const owned = getShopState().owned;
+    SHOP_ITEMS.forEach(item => {
+      if (item.category === 'avatar' && owned.includes(item.id) && !list.includes(item.value)) {
+        list.push(item.value);
+      }
+    });
+  }
+
+  return list;
+}
+
+/**
  * Возвращает путь к текущему аватару.
  * Если ничего не выбрано — первый из набора.
  */
@@ -29,7 +48,7 @@ function getCurrentAvatar() {
   const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
   const saved = (user && user.avatar) || localStorage.getItem(AVATAR_KEY);
 
-  return AVATARS.includes(saved) ? saved : AVATARS[0];
+  return getAvailableAvatars().includes(saved) ? saved : AVATARS[0];
 }
 
 /**
@@ -37,8 +56,8 @@ function getCurrentAvatar() {
  * @param {string} path — путь из массива AVATARS
  */
 function setAvatar(path) {
-  if (!AVATARS.includes(path)) {
-    showToast('Не получилось', 'Такого аватара нет в наборе', 'error');
+  if (!getAvailableAvatars().includes(path)) {
+    showToast('Не получилось', 'Этот аватар ещё не открыт — загляни в магазин', 'warning');
     return;
   }
 
@@ -60,11 +79,12 @@ function setAvatar(path) {
  */
 function setRandomAvatar() {
   const current = getCurrentAvatar();
+  const pool = getAvailableAvatars();
   let next = current;
 
   // Крутим до тех пор, пока не выпадет другой
-  while (next === current) {
-    next = AVATARS[Math.floor(Math.random() * AVATARS.length)];
+  while (next === current && pool.length > 1) {
+    next = pool[Math.floor(Math.random() * pool.length)];
   }
 
   setAvatar(next);
@@ -94,6 +114,10 @@ function openAvatarModal() {
   const modal = document.getElementById('avatarModal');
   if (!modal) return;
 
+  // Сбрасываем флаг, чтобы подхватить аватары, купленные в магазине
+  const grid = document.getElementById('avatarGrid');
+  if (grid) grid.dataset.ready = 'false';
+
   renderAvatarGrid();
   modal.classList.add('open');
   updateAllAvatars();
@@ -115,7 +139,7 @@ function renderAvatarGrid() {
 
   grid.innerHTML = '';
 
-  AVATARS.forEach((path, index) => {
+  getAvailableAvatars().forEach((path, index) => {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'avatar-option';
@@ -125,6 +149,14 @@ function renderAvatarGrid() {
     const img = document.createElement('img');
     img.src = path;
     img.alt = 'Аватар ' + (index + 1);
+
+    // Премиальные аватары из магазина помечаем звёздочкой
+    if (!AVATARS.includes(path)) {
+      const mark = document.createElement('span');
+      mark.className = 'avatar-premium-mark';
+      mark.textContent = '★';
+      button.appendChild(mark);
+    }
 
     button.appendChild(img);
     button.addEventListener('click', () => selectAvatar(path, button));
@@ -170,6 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /* Экспорт в глобальную область */
 window.AVATARS = AVATARS;
+window.getAvailableAvatars = getAvailableAvatars;
 window.getCurrentAvatar = getCurrentAvatar;
 window.setAvatar = setAvatar;
 window.setRandomAvatar = setRandomAvatar;
