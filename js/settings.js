@@ -305,6 +305,11 @@ const SETTINGS_CONTENT = {
     description: 'Внешний вид сайта: язык, тема, фон и размер шрифта.',
     html: `
       <div class="settings-group">
+        <h4>Тема по времени суток</h4>
+        <div id="autoThemeSwitch"></div>
+      </div>
+
+      <div class="settings-group">
         <h4>Основное</h4>
         <div class="setting-row">
           <div class="setting-info">
@@ -750,6 +755,7 @@ function showSettingsTab(tabId, buttonElement) {
   // Дополнительные виджеты, которым нужен готовый DOM
   if (typeof renderVoicePicker === 'function') renderVoicePicker();
   if (typeof renderJLPTSwitchers === 'function') renderJLPTSwitchers();
+  if (typeof renderAutoThemeSwitch === 'function') renderAutoThemeSwitch();
   if (typeof renderJLPTProgress === 'function') renderJLPTProgress();
 
   const romajiSwitch = container.querySelector('input[onchange="setRomajiOn(this.checked)"]');

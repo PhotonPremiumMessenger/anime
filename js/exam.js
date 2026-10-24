@@ -181,6 +181,11 @@ function answerExam(option) {
   const right = option === question.answer;
 
   examState.answers.push({ question: question, picked: option, right: right });
+
+  // Разбор ошибок после экзамена — в общую копилку слабых мест
+  if (!right && typeof recordMistake === 'function') {
+    recordMistake('Экзамен', question.sectionRu, question.prompt, question.answer, option);
+  }
   examState.index += 1;
 
   if (examState.index >= examState.questions.length) {

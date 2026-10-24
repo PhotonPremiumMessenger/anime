@@ -103,6 +103,12 @@ function gradeCard(jp, grade) {
   if (grade === 'again') {
     card.box = 1;
     card.wrong = (card.wrong || 0) + 1;
+
+    if (typeof recordMistake === 'function') {
+      const word = (typeof getAllDictionaryWords === 'function' ? getAllDictionaryWords() : [])
+        .find(item => item.jp === jp) || {};
+      recordMistake('Словарь', word.level || 'Слова', jp + ' — что значит?', word.ru || '', 'не вспомнил');
+    }
   } else if (grade === 'hard') {
     card.box = Math.max(1, card.box || 1);
     card.right = (card.right || 0) + 1;

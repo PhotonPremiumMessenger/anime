@@ -10,8 +10,12 @@
 // Куда можно прыгнуть из палитры
 const COMMAND_PAGES = [
   { title: 'Главная', hint: 'index.html', url: 'index.html', icon: '🏠' },
+  { title: 'Поиск по сайту', hint: 'search.html', url: 'search.html', icon: '🔎' },
   { title: 'Уроки', hint: 'lessons.html', url: 'lessons.html', icon: '📚' },
   { title: 'Флешкарты', hint: 'flashcards.html', url: 'flashcards.html', icon: '🃏' },
+  { title: 'Кандзи-пары', hint: 'match.html', url: 'match.html', icon: '🧩' },
+  { title: 'Избранное', hint: 'favorites.html', url: 'favorites.html', icon: '⭐' },
+  { title: 'Слабые места', hint: 'weakspots.html', url: 'weakspots.html', icon: '🎯' },
   { title: 'Аудирование', hint: 'listening.html', url: 'listening.html', icon: '🎧' },
   { title: 'Пробный экзамен JLPT', hint: 'exam.html', url: 'exam.html', icon: '📝' },
   { title: 'Аниме', hint: 'anime.html', url: 'anime.html', icon: '🎌' },
@@ -24,6 +28,7 @@ const COMMAND_PAGES = [
   { title: 'Тест на скорость', hint: 'speed.html', url: 'speed.html', icon: '⚡' },
   { title: 'Профиль', hint: 'profile.html', url: 'profile.html', icon: '👤' },
   { title: 'Настройки', hint: 'settings.html', url: 'settings.html', icon: '⚙️' },
+  { title: 'Обновления', hint: 'updates.html', url: 'updates.html', icon: '🆕' },
   { title: 'О проекте', hint: 'about.html', url: 'about.html', icon: 'ℹ️' }
 ];
 

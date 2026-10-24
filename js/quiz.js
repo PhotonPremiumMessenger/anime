@@ -114,6 +114,12 @@ function answerQuiz(optionIndex) {
   state.answers.push({ index: state.index, chosen: optionIndex, correct: isCorrect });
   if (isCorrect) state.correct += 1;
 
+  // Ошибка уходит в аналитику слабых мест
+  if (!isCorrect && typeof recordMistake === 'function') {
+    recordMistake('Викторина', question.topic || 'Викторина дня', question.question || '',
+      (question.options || [])[question.correct] || '', (question.options || [])[optionIndex] || '');
+  }
+
   // Подсвечиваем ответ на 900 мс, затем переходим дальше
   const buttons = document.querySelectorAll('#quizBlock .quiz-option');
   buttons.forEach((button, index) => {

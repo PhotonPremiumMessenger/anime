@@ -270,6 +270,12 @@ function renderDictionary() {
 
     if (mine.includes(word.jp)) card.classList.add('is-mine');
 
+    // Звёздочка избранного (пункт 43)
+    if (typeof favoriteButtonMarkup === 'function') {
+      card.insertAdjacentHTML('beforeend',
+        favoriteButtonMarkup('word', word.jp, word.jp + ' — ' + word.ru, 'dictionary.html?q=' + encodeURIComponent(word.jp)));
+    }
+
     card.querySelector('.speak-btn').addEventListener('click', event => {
       event.stopPropagation();
       speakJapanese(word.jp);
@@ -360,6 +366,15 @@ async function translateUnknown() {
 
 document.addEventListener('DOMContentLoaded', () => {
   if (!document.getElementById('dictGrid')) return;
+
+  // Переход из общего поиска: dictionary.html?q=слово
+  const params = new URLSearchParams(window.location.search);
+  const query = params.get('q');
+  if (query) {
+    dictionaryQuery = query.trim().toLowerCase();
+    const input = document.getElementById('dictSearch');
+    if (input) input.value = query;
+  }
 
   renderDictionary();
 

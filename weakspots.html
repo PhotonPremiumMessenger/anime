@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Слабые места — Nihongo</title>
+  <meta name="description" content="Слабые места Nihongo: аналитика ошибок по темам и подсказки, что подтянуть.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛩</text></svg>">
+</head>
+<body>
+
+  <!-- ============ ШАПКА ============ -->
+  <header class="header">
+    <div class="container">
+      <a class="logo" href="index.html" aria-label="Nihongo — на главную">
+        <span class="logo-badge">
+          <svg viewBox="0 0 48 48" aria-hidden="true">
+            <rect x="6" y="10" width="36" height="4.5" rx="2.2" fill="currentColor"></rect>
+            <rect x="10" y="18" width="28" height="3.2" rx="1.6" fill="currentColor" opacity="0.85"></rect>
+            <rect x="14" y="16" width="4.2" height="24" rx="1.6" fill="currentColor"></rect>
+            <rect x="29.8" y="16" width="4.2" height="24" rx="1.6" fill="currentColor"></rect>
+            <rect x="20" y="24" width="8" height="3" rx="1.5" fill="currentColor" opacity="0.7"></rect>
+          </svg>
+        </span>
+        <span class="logo-text">
+          <span class="logo-jp">日本語</span>
+          <span class="logo-en">NIHONGO</span>
+        </span>
+      </a>
+
+      <nav class="nav">
+        <a class="nav-link" href="index.html">Главная</a>
+        <a class="nav-link" href="lessons.html">Уроки</a>
+        <a class="nav-link" href="anime.html">Аниме</a>
+        <a class="nav-link" href="tests.html">Тесты</a>
+        <a class="nav-link" href="grammar.html">Грамматика</a>
+
+        <div class="nav-more">
+          <button class="nav-link nav-more-btn" onclick="toggleNavMore(event)" aria-haspopup="true" aria-expanded="false">
+            Ещё <span class="nav-more-caret">▾</span>
+          </button>
+          <div class="nav-more-panel" id="navMorePanel">
+            <a href="search.html"><b>Поиск</b><span>По всему сайту</span></a>
+            <a href="flashcards.html"><b>Флешкарты</b><span>Повторения по системе</span></a>
+            <a href="match.html"><b>Кандзи-пары</b><span>Мини-игра на память</span></a>
+            <a href="listening.html"><b>Аудирование</b><span>Слова на слух</span></a>
+            <a href="exam.html"><b>Пробный JLPT</b><span>20 вопросов на время</span></a>
+            <a href="dictionary.html"><b>Словарь</b><span>140 слов с поиском и переводом</span></a>
+            <a href="video.html"><b>Видео-уроки</b><span>5 видео и слайд-режим</span></a>
+            <a href="rating.html"><b>Рейтинг</b><span>ТОП-100 по опыту</span></a>
+            <a href="shop.html"><b>Магазин</b><span>Аватары, темы, рамки, значки</span></a>
+            <a href="speed.html"><b>Скорость</b><span>60 секунд на реакцию</span></a>
+            <a href="favorites.html"><b>Избранное</b><span>Отложенное</span></a>
+            <a href="weakspots.html"><b>Слабые места</b><span>Разбор ошибок</span></a>
+            <a href="updates.html"><b>Обновления</b><span>Что нового</span></a>
+            <a href="about.html"><b>О проекте</b><span>Что это и зачем</span></a>
+          </div>
+        </div>
+
+        <button class="nav-design" id="designToggle" onclick="toggleDesignPanel()" aria-expanded="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"></circle>
+            <circle cx="8.5" cy="9.5" r="1.2"></circle>
+            <circle cx="15.5" cy="9.5" r="1.2"></circle>
+            <circle cx="9" cy="15" r="1.2"></circle>
+            <circle cx="15" cy="15" r="1.2"></circle>
+          </svg>
+          Дизайн
+        </button>
+      </nav>
+
+      <div class="header-actions">
+        <div class="is-guest">
+          <a class="btn btn-ghost btn-small" href="register.html">Войти</a>
+          <a class="btn btn-primary btn-small" href="register.html">Регистрация</a>
+        </div>
+        <a class="user-chip is-auth" href="profile.html">
+          <img src="assets/images/avatars/avatar1.png" alt="Аватар" data-header-avatar data-avatar-img>
+          <span class="user-name" data-header-nick>Игрок</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ ПАНЕЛЬ ДИЗАЙНА ============ -->
+  <aside class="design-panel" id="designPanel" aria-label="Панель дизайна">
+    <h4>Панель дизайна</h4>
+    <p class="panel-sub">Настрой внешний вид под себя. Изменения сохраняются.</p>
+
+    <div class="theme-grid">
+      <button class="theme-card active" data-theme="default" onclick="setTheme('default')">
+        <div class="theme-preview theme-preview-default"></div>
+        <div class="theme-name">Стандарт</div>
+        <div class="theme-desc">Оранжевый акцент</div>
+      </button>
+      <button class="theme-card" data-theme="sakura" onclick="setTheme('sakura')">
+        <div class="theme-preview theme-preview-sakura"></div>
+        <div class="theme-name">Сакура</div>
+        <div class="theme-desc">Розовый акцент</div>
+      </button>
+      <button class="theme-card" data-theme="light" onclick="setTheme('light')">
+        <div class="theme-preview theme-preview-light"></div>
+        <div class="theme-name">Светлая</div>
+        <div class="theme-desc">Дневной режим</div>
+      </button>
+    </div>
+
+    <div class="switch-row">
+      <div>
+        <div class="switch-label">Лепестки сакуры</div>
+        <div class="switch-hint">Падающие лепестки поверх страницы</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="sakuraSwitch" onchange="toggleSakura(this)">
+        <span class="track"></span>
+      </label>
+    </div>
+
+    <div class="switch-row">
+      <div>
+        <div class="switch-label">Все настройки</div>
+        <div class="switch-hint">Звук, уведомления, лаунчер</div>
+      </div>
+      <a class="btn btn-ghost btn-small" href="settings.html">Открыть</a>
+    </div>
+  </aside>
+
+  <!-- ============ ТЕСТ НА СКОРОСТЬ ============ -->
+      <main>
+    <section class="catalog-hero">
+      <div class="container">
+        <span class="badge">
+          <span class="badge-dot"></span>
+          Разбор ошибок из тестов, викторины, экзамена и карточек
+        </span>
+
+        <h1 class="mt-16">Слабые <span class="accent">места</span></h1>
+        <p>Здесь видно, что именно проваливается чаще всего, и куда идти, чтобы это починить.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="weak-layout">
+          <div class="weak-main">
+            <div class="weak-block" id="weakSpots"></div>
+            <h3 class="mt-32">Последние ошибки</h3>
+            <div class="mistake-list" id="mistakeList"></div>
+          </div>
+
+          <aside class="fc-side">
+            <div class="panel-card">
+              <h4>Как это работает</h4>
+              <p class="muted small">Каждый неверный ответ записывается с темой и правильным вариантом.
+                 Темы с наибольшим числом ошибок поднимаются наверх.</p>
+            </div>
+            <div class="panel-card">
+              <h4>Что дальше</h4>
+              <p class="muted small">Начни с верхней темы: одно правило или десяток слов закрывают
+                 сразу несколько ошибок.</p>
+              <a class="btn btn-outline btn-small" href="flashcards.html">Повторить карточки</a>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ ПОДВАЛ ============ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom" style="border-top:none;padding-top:0">
+        <span>© 2026 Nihongo. Все права защищены.</span>
+        <span class="footer-made">Сделано с <span class="accent">♥</span> для анимешников</span>
+      </div>
+    </div>
+  </footer>
+
+    <!-- ============ СКРИПТЫ ============ -->
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/progress.js"></script>
+  <script src="js/lessons-data.js"></script>
+  <script src="js/xp.js"></script>
+  <script src="js/achievements.js"></script>
+  <script src="js/daily.js"></script>
+  <script src="js/shop.js"></script>
+  <script src="js/avatar.js"></script>
+  <script src="js/profile-custom.js"></script>
+  <script src="js/design.js"></script>
+  <script src="js/translate.js"></script>
+  <script src="js/romaji.js"></script>
+  <script src="js/voice.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/jlpt.js"></script>
+  <script src="js/dictionary.js"></script>
+  <script src="js/notify.js"></script>
+  <script src="js/hotkeys.js"></script>
+  <script src="js/pwa.js"></script>
+  <script src="js/backup.js"></script>
+  <script src="js/weakspots.js"></script>
+  <script src="js/goals.js"></script>
+  <script src="js/favorites.js"></script>
+  <script src="js/autotheme.js"></script>
+  <script src="js/alltime.js"></script>
+  <script src="js/mobile.js"></script>
+  <script src="js/easter.js"></script>
+</body>
+</html>

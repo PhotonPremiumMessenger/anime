@@ -129,6 +129,10 @@ function answerListening(picked, typed) {
   } else {
     stats.wrong += 1;
     listeningState.streak = 0;
+
+    if (typeof recordMistake === 'function') {
+      recordMistake('Аудирование', target.level, target.jp + ' — что это?', target.ru, picked || typed || '');
+    }
   }
   saveListeningStats(stats);
 
