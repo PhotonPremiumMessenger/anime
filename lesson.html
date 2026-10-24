@@ -37,12 +37,23 @@
       <nav class="nav">
         <a class="nav-link" href="index.html">Главная</a>
         <a class="nav-link active" href="lessons.html">Уроки</a>
-        <a class="nav-link" href="rating.html">Рейтинг</a>
-        <a class="nav-link" href="shop.html">Магазин</a>
-        <a class="nav-link" href="#" onclick="event.preventDefault(); showToast('Аниме', 'Каталог появится после релиза', 'info')">
-          Аниме <span class="nav-soon">скоро</span>
-        </a>
-        <a class="nav-link" href="about.html">О проекте</a>
+        <a class="nav-link" href="anime.html">Аниме</a>
+        <a class="nav-link" href="tests.html">Тесты</a>
+        <a class="nav-link" href="grammar.html">Грамматика</a>
+
+        <div class="nav-more">
+          <button class="nav-link nav-more-btn" onclick="toggleNavMore(event)" aria-haspopup="true" aria-expanded="false">
+            Ещё <span class="nav-more-caret">▾</span>
+          </button>
+          <div class="nav-more-panel" id="navMorePanel">
+            <a href="dictionary.html"><b>Словарь</b><span>130 слов с поиском и переводом</span></a>
+            <a href="video.html"><b>Видео-уроки</b><span>5 видео и слайд-режим</span></a>
+            <a href="rating.html"><b>Рейтинг</b><span>ТОП-100 по опыту</span></a>
+            <a href="shop.html"><b>Магазин</b><span>Аватары, темы, рамки, значки</span></a>
+            <a href="speed.html"><b>Скорость</b><span>60 секунд на реакцию</span></a>
+            <a href="about.html"><b>О проекте</b><span>Что это и зачем</span></a>
+          </div>
+        </div>
 
         <button class="nav-design" id="designToggle" onclick="toggleDesignPanel()" aria-expanded="false">
           <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -134,6 +145,18 @@
         </div>
       </section>
 
+      <!-- Прогресс прохождения урока -->
+      <section class="lesson-progress-block reveal" id="lessonProgressBlock">
+        <div class="lesson-progress-top">
+          <span>Прохождение урока</span>
+          <b id="lessonProgressPercent">0%</b>
+        </div>
+        <div class="progress-bar progress-thick">
+          <span id="lessonProgressFill" style="width:0%"></span>
+        </div>
+        <div class="lesson-steps" id="lessonSteps"></div>
+      </section>
+
       <div class="lesson-layout">
         <div class="lesson-main">
 
@@ -144,6 +167,9 @@
               <span class="block-note" id="speakHint">Нажми 🔊 рядом со словом, чтобы услышать произношение.</span>
             </div>
             <div class="word-list" id="wordList"></div>
+            <button class="btn btn-outline btn-small btn-block mt-16" onclick="markWordsSeen()">
+              Отметить слова изученными
+            </button>
           </section>
 
           <!-- Грамматика -->
@@ -152,6 +178,9 @@
               <h3>Грамматика и контекст</h3>
             </div>
             <p class="grammar-text" id="grammarText"></p>
+            <button class="btn btn-outline btn-small btn-block mt-16" id="grammarDoneBtn" onclick="markGrammarUnderstood()">
+              Правило понятно ✓
+            </button>
           </section>
 
           <!-- Примеры -->
@@ -161,6 +190,9 @@
               <span class="block-note">нажми 🔊 для озвучки</span>
             </div>
             <div class="example-list" id="exampleList"></div>
+            <button class="btn btn-outline btn-small btn-block mt-16" onclick="markExamplesSeen()">
+              Примеры разобраны
+            </button>
           </section>
         </div>
 
@@ -223,7 +255,12 @@
   <script src="js/achievements.js"></script>
   <script src="js/daily.js"></script>
   <script src="js/shop.js"></script>
+  <script src="js/lesson-steps.js"></script>
   <script src="js/lesson.js"></script>
   <script src="js/translate.js"></script>
+  <script src="js/romaji.js"></script>
+  <script src="js/voice.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/easter.js"></script>
 </body>
 </html>

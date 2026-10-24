@@ -204,6 +204,27 @@ const SETTINGS_CONTENT = {
         </div>
         <div class="setting-row">
           <div class="setting-info">
+            <div class="setting-name">Голос озвучки</div>
+            <div class="setting-desc">Выбор голоса, скорость и тон для японских слов</div>
+          </div>
+        </div>
+        <div class="voice-picker-wrap" id="voicePicker"></div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Ромадзи под японским</div>
+            <div class="setting-desc">Показывать латинскую транскрипцию под словами и фразами</div>
+          </div>
+          <div class="setting-control">
+            <label class="switch">
+              <input type="checkbox" checked onchange="setRomajiOn(this.checked)">
+              <span class="track"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
             <div class="setting-name">Громкость музыки</div>
             <div class="setting-desc">Отдельный уровень для фоновой музыки</div>
           </div>
@@ -672,6 +693,12 @@ function showSettingsTab(tabId, buttonElement) {
 
   restoreSettingsValues(container);
   bindSettingsTab(tabId);
+
+  // Дополнительные виджеты, которым нужен готовый DOM
+  if (typeof renderVoicePicker === 'function') renderVoicePicker();
+
+  const romajiSwitch = container.querySelector('input[onchange="setRomajiOn(this.checked)"]');
+  if (romajiSwitch && typeof isRomajiOn === 'function') romajiSwitch.checked = isRomajiOn();
 }
 
 /** Подставляет сохранённые значения в поля активной вкладки. */

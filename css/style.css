@@ -6332,3 +6332,1647 @@ body.theme-light .rating-table tr.is-me {
     width: auto;
   }
 }
+
+/* ============================================================
+   ЧАСТЬ 7. НОВЫЕ РАЗДЕЛЫ: НАВИГАЦИЯ, РОМАДЗИ, ГОЛОС,
+   ЦИТАТА ДНЯ, АНИМЕ, ГРАММАТИКА, СЛОВАРЬ, ТЕСТЫ, ВИДЕО,
+   ПРОГРЕСС УРОКА И ПАСХАЛКИ
+   ============================================================ */
+
+/* ---------- 7.1 Выпадающее меню «Ещё» ---------- */
+
+.nav-more {
+  position: relative;
+}
+
+.nav-more-btn {
+  background: none;
+  border: none;
+  font: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.nav-more-caret {
+  font-size: 9px;
+  opacity: 0.7;
+  transition: transform var(--transition);
+}
+
+.nav-more-btn.open .nav-more-caret {
+  transform: rotate(180deg);
+}
+
+.nav-more-panel {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 50%;
+  transform: translate(-50%, -8px);
+  width: 268px;
+  padding: 8px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-strong);
+  background: rgba(16, 16, 24, 0.96);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: var(--transition);
+  z-index: 400;
+}
+
+.nav-more-panel.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translate(-50%, 0);
+}
+
+.nav-more-panel a {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  color: var(--text-gray);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.nav-more-panel a b {
+  font-size: 12.5px;
+  color: var(--text-main);
+  font-weight: 500;
+}
+
+.nav-more-panel a span {
+  font-size: 10.5px;
+  color: var(--text-dim);
+}
+
+.nav-more-panel a:hover,
+.nav-more-panel a.is-active {
+  background: var(--accent-soft);
+}
+
+.nav-more-panel a:hover b,
+.nav-more-panel a.is-active b {
+  color: var(--accent);
+}
+
+body.theme-light .nav-more-panel {
+  background: rgba(255, 255, 255, 0.98);
+  border-color: rgba(20, 20, 30, 0.12);
+}
+
+/* ---------- 7.2 Ромадзи ---------- */
+
+.romaji,
+.word-romaji,
+.example-romaji,
+.grammar-example-romaji,
+.dict-romaji {
+  font-size: 11.5px;
+  letter-spacing: 0.4px;
+  color: var(--text-dim);
+  font-weight: 400;
+}
+
+.romaji {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+}
+
+body.hide-romaji .romaji,
+body.hide-romaji .word-romaji,
+body.hide-romaji .example-romaji,
+body.hide-romaji .grammar-example-romaji,
+body.hide-romaji .dict-romaji,
+body.hide-romaji .anime-jp {
+  display: none;
+}
+
+/* ---------- 7.3 Выбор голоса ---------- */
+
+.voice-picker-wrap {
+  padding: 4px 0 12px;
+}
+
+.voice-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.voice-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--text-gray);
+}
+
+.voice-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.voice-dot.is-ok { background: var(--success); box-shadow: 0 0 8px var(--success); }
+.voice-dot.is-warn { background: var(--warning); box-shadow: 0 0 8px var(--warning); }
+
+.voice-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.voice-field > span {
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.voice-field select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 12.5px;
+}
+
+.voice-field select option {
+  background: #16161f;
+  color: #fff;
+}
+
+.voice-range-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11.5px;
+  color: var(--text-gray);
+  margin-bottom: 4px;
+}
+
+.voice-range-top b {
+  color: var(--accent);
+  font-family: var(--font-head);
+  font-size: 11.5px;
+}
+
+.voice-hint {
+  font-size: 10.5px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+/* ---------- 7.4 Цитата дня ---------- */
+
+.quote-section {
+  padding-top: 10px;
+}
+
+.quote-block {
+  position: relative;
+  padding: 34px 36px;
+  overflow: hidden;
+}
+
+.quote-block::before {
+  content: '';
+  position: absolute;
+  top: -80px;
+  left: -60px;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 179, 71, 0.16), transparent 70%);
+  pointer-events: none;
+}
+
+.quote-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.quote-source {
+  font-size: 11.5px;
+  color: var(--text-dim);
+}
+
+.quote-body {
+  position: relative;
+  padding-left: 42px;
+}
+
+.quote-mark {
+  position: absolute;
+  left: 0;
+  top: -14px;
+  font-family: var(--font-head);
+  font-size: 54px;
+  line-height: 1;
+  color: rgba(255, 179, 71, 0.3);
+}
+
+.quote-jp {
+  font-size: 24px;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.quote-romaji {
+  margin-top: 6px;
+  font-size: 12.5px;
+  color: var(--text-dim);
+  letter-spacing: 0.6px;
+}
+
+.quote-ru {
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--text-gray);
+}
+
+.quote-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--border);
+}
+
+/* ---------- 7.5 Каталог аниме ---------- */
+
+.anime-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 18px;
+}
+
+.anime-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  overflow: hidden;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.anime-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-card);
+}
+
+.anime-poster {
+  position: relative;
+  height: 172px;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 70% 20%, rgba(255, 255, 255, 0.22), transparent 55%),
+    linear-gradient(150deg, var(--poster-1, #FFB347), var(--poster-2, #B7410E));
+  overflow: hidden;
+}
+
+.anime-poster::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(10, 10, 16, 0.65), transparent 55%);
+}
+
+.anime-kanji {
+  font-size: 76px;
+  font-family: var(--font-head);
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  transform: translateY(-4px);
+}
+
+.anime-year {
+  position: absolute;
+  left: 12px;
+  bottom: 10px;
+  z-index: 2;
+  font-size: 10.5px;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.anime-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #101014;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.anime-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px 16px;
+}
+
+.anime-title {
+  font-size: 14.5px;
+  line-height: 1.3;
+}
+
+.anime-jp {
+  font-size: 11.5px;
+  color: var(--text-dim);
+}
+
+.anime-genres {
+  font-size: 10.5px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.anime-phrase {
+  margin-top: 8px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.anime-phrase-jp {
+  font-size: 14px;
+}
+
+.anime-phrase .romaji,
+.anime-phrase-romaji {
+  font-size: 10.5px;
+  color: var(--text-dim);
+  letter-spacing: 0.4px;
+}
+
+body.hide-romaji .anime-phrase-romaji {
+  display: none;
+}
+
+.anime-phrase-ru {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.anime-modal-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(140deg, var(--poster-1), var(--poster-2));
+}
+
+.anime-modal-kanji {
+  font-family: var(--font-head);
+  font-size: 40px;
+  color: #fff;
+}
+
+.anime-modal-head h2 {
+  font-size: 19px;
+  color: #fff;
+}
+
+.anime-modal-head p {
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.anime-modal-phrase {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  margin-bottom: 14px;
+}
+
+.anime-modal-phrase b {
+  font-size: 21px;
+}
+
+.anime-modal-romaji {
+  font-size: 12px;
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+}
+
+.anime-modal-ru {
+  font-size: 13px;
+  color: var(--text-gray);
+  margin-bottom: 8px;
+}
+
+.anime-modal-context {
+  font-size: 12.5px;
+  color: var(--text-gray);
+  margin-bottom: 18px;
+}
+
+.anime-modal-sub {
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+.anime-words {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.anime-word {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.anime-word > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 96px;
+}
+
+.anime-word b { font-size: 14px; }
+.anime-word > div span { font-size: 10.5px; color: var(--text-dim); }
+.anime-word > span { flex: 1; font-size: 12px; color: var(--text-gray); }
+
+body.modal-open {
+  overflow: hidden;
+}
+
+/* ---------- 7.6 Грамматика ---------- */
+
+.grammar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.grammar-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.grammar-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent);
+}
+
+.grammar-card.is-read {
+  border-color: rgba(74, 222, 128, 0.3);
+}
+
+.grammar-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.grammar-jp {
+  font-size: 24px;
+  font-family: var(--font-head);
+  color: var(--accent);
+}
+
+.grammar-level {
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  font-size: 10px;
+  color: var(--text-gray);
+}
+
+.grammar-card-title {
+  font-size: 14px;
+}
+
+.grammar-card-short {
+  font-size: 11.5px;
+  color: var(--text-dim);
+  flex: 1;
+}
+
+.grammar-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10.5px;
+  color: var(--text-dim);
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+}
+
+.grammar-tag { color: var(--accent); }
+.grammar-card.is-read .grammar-read { color: var(--success); }
+
+.grammar-detail {
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+.grammar-back { margin-bottom: 18px; }
+
+.grammar-detail-head {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.grammar-detail-jp {
+  font-size: 40px;
+  font-family: var(--font-head);
+  color: var(--accent);
+  padding: 8px 18px;
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+  border: 1px solid rgba(255, 179, 71, 0.3);
+}
+
+.grammar-detail-head h2 { font-size: 24px; }
+.grammar-detail-head p { font-size: 12px; color: var(--text-dim); }
+
+.grammar-block {
+  margin-bottom: 20px;
+}
+
+.grammar-block h4 {
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+.grammar-block p {
+  font-size: 13.5px;
+  color: var(--text-gray);
+  margin-bottom: 8px;
+  line-height: 1.7;
+}
+
+.grammar-structure {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  margin-bottom: 22px;
+  border-radius: var(--radius-md);
+  border: 1px dashed rgba(255, 179, 71, 0.35);
+  background: rgba(255, 179, 71, 0.06);
+}
+
+.grammar-structure span {
+  font-size: 10.5px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.grammar-structure b {
+  font-size: 14px;
+  color: var(--accent);
+}
+
+.grammar-examples {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.grammar-example {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.grammar-example-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.grammar-example-jp { font-size: 15px; }
+.grammar-example-ru { font-size: 11.5px; color: var(--text-gray); }
+
+.grammar-tip,
+.grammar-mistake {
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  margin-bottom: 12px;
+  font-size: 12.5px;
+}
+
+.grammar-tip {
+  border: 1px solid rgba(74, 222, 128, 0.28);
+  background: rgba(74, 222, 128, 0.07);
+}
+
+.grammar-tip b { color: var(--success); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+.grammar-tip p { margin-top: 4px; color: var(--text-gray); }
+
+.grammar-mistake {
+  border: 1px solid rgba(248, 113, 113, 0.28);
+  background: rgba(248, 113, 113, 0.06);
+  margin-bottom: 22px;
+}
+
+.grammar-mistake b { color: var(--error); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+.grammar-mistake p { margin-top: 4px; color: var(--text-gray); }
+
+/* ---------- 7.7 Словарь ---------- */
+
+.catalog-search {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  max-width: 620px;
+}
+
+.catalog-search .search {
+  flex: 1;
+}
+
+.dict-translate {
+  margin-top: 14px;
+}
+
+.dict-translate-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+  padding: 16px 18px;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 179, 71, 0.3);
+  background: rgba(255, 179, 71, 0.06);
+  max-width: 620px;
+}
+
+.dict-translate-card b {
+  font-size: 20px;
+}
+
+.dict-translate-romaji {
+  font-size: 12px;
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+}
+
+.dict-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 12px;
+}
+
+.dict-card {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.025);
+  transition: var(--transition);
+}
+
+.dict-card:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+}
+
+.dict-card.is-mine {
+  border-color: rgba(74, 222, 128, 0.28);
+  background: rgba(74, 222, 128, 0.05);
+}
+
+.dict-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.dict-jp {
+  font-size: 21px;
+  font-weight: 500;
+}
+
+.dict-level {
+  font-size: 9.5px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  color: var(--text-dim);
+}
+
+.dict-ru {
+  font-size: 12.5px;
+  color: var(--text-gray);
+}
+
+.dict-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
+}
+
+.dict-tag {
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.dict-card.is-mine .dict-tag {
+  color: var(--success);
+}
+
+.dict-empty {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ---------- 7.8 Тесты ---------- */
+
+.tests-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.test-card {
+  display: flex;
+  gap: 16px;
+  padding: 18px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  transition: var(--transition);
+}
+
+.test-card:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-3px);
+}
+
+.test-card-icon {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-family: var(--font-head);
+  font-size: 20px;
+}
+
+.test-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.test-card-body h3 { font-size: 14.5px; }
+.test-card-body p { font-size: 11.5px; color: var(--text-dim); }
+
+.test-card-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 10.5px;
+  color: var(--text-dim);
+  margin: 2px 0 8px;
+}
+
+.test-level {
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+}
+
+.test-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.test-best {
+  font-size: 10.5px;
+  color: var(--text-dim);
+}
+
+.test-best.is-good { color: var(--success); }
+
+.test-runner {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.test-runner-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.test-progress-text {
+  font-family: var(--font-head);
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.test-question-lg {
+  font-size: 21px;
+  line-height: 1.45;
+  margin: 24px 0 20px;
+}
+
+.test-options-lg {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.test-option-lg {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.test-option-lg i {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  border: 1px solid var(--border-strong);
+  font-style: normal;
+  font-size: 10.5px;
+  color: var(--text-dim);
+}
+
+.test-option-lg:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  transform: translateX(3px);
+}
+
+.test-option-lg.is-right {
+  border-color: var(--success);
+  background: rgba(74, 222, 128, 0.14);
+}
+
+.test-option-lg.is-wrong {
+  border-color: var(--error);
+  background: rgba(248, 113, 113, 0.14);
+}
+
+.test-runner-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 20px;
+  font-size: 11.5px;
+  color: var(--text-dim);
+}
+
+.test-correct-count { color: var(--success); }
+
+.test-result-screen {
+  max-width: 620px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 32px;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+}
+
+.test-result-icon { font-size: 40px; margin-bottom: 10px; }
+.test-result-screen h2 { font-size: 24px; margin-bottom: 4px; }
+.test-result-sub { font-size: 12px; color: var(--text-dim); margin-bottom: 18px; }
+
+.test-result-score {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 20px;
+}
+
+.test-result-score b {
+  font-family: var(--font-head);
+  font-size: 52px;
+  line-height: 1;
+  color: var(--accent);
+}
+
+.test-result-score span { font-size: 11.5px; color: var(--text-dim); }
+
+.test-result-meta {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.test-result-meta > div {
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.test-result-meta span { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-dim); }
+.test-result-meta b { font-family: var(--font-head); font-size: 13px; }
+
+.test-record {
+  display: inline-block;
+  padding: 5px 14px;
+  margin-bottom: 14px;
+  border-radius: 999px;
+  font-size: 11px;
+  color: var(--accent);
+  border: 1px solid rgba(255, 179, 71, 0.35);
+  background: rgba(255, 179, 71, 0.08);
+}
+
+.test-answers-review {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.test-answers-review i {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  font-size: 10.5px;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.test-answers-review i.ok { background: rgba(74, 222, 128, 0.16); color: var(--success); }
+.test-answers-review i.no { background: rgba(248, 113, 113, 0.16); color: var(--error); }
+
+/* ---------- 7.9 Видео-уроки ---------- */
+
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.video-card {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  overflow: hidden;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.video-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-card);
+}
+
+.video-cover {
+  position: relative;
+  height: 150px;
+  background-size: cover;
+  background-position: center;
+  display: grid;
+  place-items: center;
+}
+
+.video-cover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 10, 16, 0.45);
+  transition: var(--transition);
+}
+
+.video-card:hover .video-cover::after {
+  background: rgba(10, 10, 16, 0.25);
+}
+
+.video-play {
+  position: relative;
+  z-index: 2;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 179, 71, 0.92);
+  color: #101014;
+  font-size: 15px;
+  padding-left: 3px;
+  box-shadow: 0 8px 24px rgba(255, 149, 0, 0.35);
+}
+
+.video-duration {
+  position: absolute;
+  right: 10px;
+  bottom: 8px;
+  z-index: 2;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  background: rgba(10, 10, 16, 0.7);
+  color: #fff;
+}
+
+.video-body {
+  padding: 14px 16px 16px;
+}
+
+.video-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.video-top h3 { font-size: 14px; }
+
+.video-level {
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  font-size: 9.5px;
+  color: var(--text-dim);
+}
+
+.video-body p { font-size: 11px; color: var(--text-dim); }
+
+.video-player {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: #07070c;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.video-stage {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: linear-gradient(140deg, #12121c, #05050a);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.video-embed,
+.video-native {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+.video-native.hidden { display: none; }
+
+.video-slide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 24px;
+  text-align: center;
+}
+
+.video-slide.hidden { display: none; }
+
+.video-slide-jp {
+  font-size: clamp(28px, 5vw, 54px);
+  font-family: var(--font-head);
+  line-height: 1.4;
+  background: linear-gradient(120deg, #fff, var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.video-slide-ru {
+  font-size: 14px;
+  color: var(--text-gray);
+  max-width: 520px;
+}
+
+.video-slide-note {
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-top: 6px;
+}
+
+.video-big-play {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  background: rgba(255, 179, 71, 0.92);
+  color: #101014;
+  font-size: 22px;
+  padding-left: 4px;
+  box-shadow: 0 10px 34px rgba(255, 149, 0, 0.4);
+  transition: var(--transition);
+}
+
+.video-big-play:hover {
+  transform: scale(1.06);
+}
+
+.video-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border-top: 1px solid var(--border);
+}
+
+.video-btn {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-main);
+  cursor: pointer;
+  font-size: 11px;
+  transition: var(--transition);
+}
+
+.video-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.video-progress {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.video-progress span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent-dark), var(--accent));
+  transition: width 0.25s linear;
+}
+
+.video-time {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+  min-width: 34px;
+  text-align: center;
+}
+
+.video-meta h1 { font-size: 26px; margin-bottom: 4px; }
+.video-meta p { font-size: 12.5px; color: var(--text-dim); margin-bottom: 6px; }
+.video-meta code {
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.07);
+  font-size: 11px;
+}
+
+.video-transcript {
+  margin-top: 22px;
+}
+
+.video-transcript h4 {
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+}
+
+.video-transcript-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.video-transcript-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.video-transcript-row:hover {
+  border-color: var(--border-strong);
+}
+
+.video-transcript-row.is-current {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.video-transcript-num {
+  width: 20px;
+  flex: 0 0 20px;
+  font-size: 10.5px;
+  color: var(--text-dim);
+  padding-top: 2px;
+}
+
+.video-transcript-row div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.video-transcript-row b { font-size: 14px; }
+.video-transcript-row span { font-size: 11.5px; color: var(--text-dim); }
+
+/* ---------- 7.10 Прогресс урока ---------- */
+
+.lesson-progress-block {
+  margin: 22px 0 6px;
+  padding: 20px 24px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  backdrop-filter: blur(10px);
+}
+
+.lesson-progress-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.lesson-progress-top b {
+  font-family: var(--font-head);
+  font-size: 15px;
+  color: var(--accent);
+}
+
+.lesson-steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.lesson-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.02);
+  opacity: 0.6;
+  transition: var(--transition);
+}
+
+.lesson-step.is-active {
+  opacity: 1;
+  border-color: rgba(255, 179, 71, 0.4);
+  background: rgba(255, 179, 71, 0.07);
+}
+
+.lesson-step.is-done {
+  opacity: 1;
+  border-color: rgba(74, 222, 128, 0.32);
+  background: rgba(74, 222, 128, 0.06);
+}
+
+.lesson-step-num {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  font-size: 10.5px;
+  color: var(--text-dim);
+}
+
+.lesson-step.is-active .lesson-step-num {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.lesson-step.is-done .lesson-step-num {
+  border-color: var(--success);
+  background: rgba(74, 222, 128, 0.2);
+  color: var(--success);
+}
+
+.lesson-step-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.lesson-step-body b { font-size: 12px; }
+.lesson-step-body span { font-size: 10px; color: var(--text-dim); }
+
+.btn.is-done {
+  border-color: rgba(74, 222, 128, 0.4);
+  color: var(--success);
+}
+
+/* ---------- 7.11 Пасхалки ---------- */
+
+.easter-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.easter-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.easter-item.is-found {
+  border-color: rgba(74, 222, 128, 0.3);
+  background: rgba(74, 222, 128, 0.05);
+}
+
+.easter-check {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  border: 1px solid var(--border-strong);
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.easter-item.is-found .easter-check {
+  border-color: var(--success);
+  color: var(--success);
+  background: rgba(74, 222, 128, 0.14);
+}
+
+.easter-item div {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.easter-item b { font-size: 12.5px; }
+.easter-item span { font-size: 11px; color: var(--text-dim); }
+
+/* ---------- 7.12 Светлая тема ---------- */
+
+body.theme-light .grammar-card,
+body.theme-light .test-card,
+body.theme-light .video-card,
+body.theme-light .dict-card,
+body.theme-light .lesson-progress-block,
+body.theme-light .quote-block,
+body.theme-light .test-result-screen,
+body.theme-light .anime-card {
+  background: rgba(255, 255, 255, 0.75);
+  border-color: rgba(20, 20, 30, 0.1);
+}
+
+body.theme-light .voice-field select {
+  background: rgba(20, 20, 30, 0.04);
+  color: #14141e;
+}
+
+body.theme-light .voice-field select option {
+  background: #fff;
+  color: #14141e;
+}
+
+body.theme-light .video-slide-jp {
+  background: linear-gradient(120deg, #1f1f2b, #b7410e);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+body.theme-light .video-player {
+  background: rgba(20, 20, 30, 0.06);
+}
+
+body.theme-light .video-stage {
+  background: linear-gradient(140deg, #f1f1f6, #ffffff);
+}
+
+/* ---------- 7.13 Адаптивность ---------- */
+
+@media (max-width: 1100px) {
+  .nav-more-panel {
+    left: auto;
+    right: 0;
+    transform: translate(0, -8px);
+  }
+
+  .nav-more-panel.open {
+    transform: translate(0, 0);
+  }
+}
+
+@media (max-width: 900px) {
+  .lesson-steps {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .quote-block {
+    padding: 24px 20px;
+  }
+
+  .quote-body {
+    padding-left: 30px;
+  }
+
+  .quote-jp {
+    font-size: 20px;
+  }
+
+  .catalog-search {
+    flex-direction: column;
+  }
+
+  .test-result-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .video-controls {
+    flex-wrap: wrap;
+  }
+
+  .video-progress {
+    order: 5;
+    flex-basis: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .anime-grid,
+  .grammar-grid,
+  .dict-grid,
+  .tests-grid,
+  .video-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .grammar-detail-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .grammar-detail-jp {
+    font-size: 30px;
+  }
+
+  .video-transcript-row b {
+    font-size: 13px;
+  }
+}
+
+/* Кнопка-переключатель ромадзи */
+[data-romaji-toggle] {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-gray);
+  font-family: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+[data-romaji-toggle]:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+[data-romaji-toggle].is-off {
+  color: var(--text-dim);
+  border-style: dashed;
+  opacity: 0.7;
+}
