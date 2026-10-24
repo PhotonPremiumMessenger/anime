@@ -204,16 +204,8 @@ const ACHIEVEMENTS = [
 // Защита от повторного входа во время проверки
 let achievementCheckRunning = false;
 
-/** Открытые достижения (массив id). */
-function getUnlockedAchievements() {
-  const list = readJSON(XP_KEYS.achievements, []);
-  return Array.isArray(list) ? list : [];
-}
-
-/** Открыто ли достижение. */
-function hasAchievement(id) {
-  return getUnlockedAchievements().includes(id);
-}
+// getUnlockedAchievements() и hasAchievement() объявлены в js/progress.js —
+// он подключается раньше и хранит ключ nihongo_achievements. Здесь не дублируем.
 
 /** Сохраняет список открытых. */
 function saveUnlockedAchievements(list) {

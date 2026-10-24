@@ -120,6 +120,25 @@ function renderPublicProfile() {
   const root = document.querySelector('.profile-section .container');
   if (!root) return;
 
+  // Хозяин профиля отключил показ по ссылке — уважаем выбор
+  const closed = typeof prefValue === 'function' && prefValue('launcher.publicProfile', true) === false;
+  if (closed && profile && profile.isMe) {
+    root.innerHTML = `
+      <div class="public-missing">
+        <div class="public-missing-icon">${typeof icon === 'function' ? icon('lock') : ''}</div>
+        <h1>Профиль закрыт</h1>
+        <p>Показ профиля по ссылке выключен в настройках → «Лаунчер».
+           Включи «Публичный профиль», и ссылка снова начнёт работать.</p>
+        <div class="btn-row" style="justify-content:center">
+          <a class="btn btn-primary" href="settings.html#launcher">Открыть настройки</a>
+          <a class="btn btn-outline" href="profile.html">Мой профиль</a>
+        </div>
+      </div>
+    `;
+    document.title = 'Профиль закрыт — Nihongo';
+    return;
+  }
+
   if (!profile) {
     root.innerHTML = `
       <div class="public-missing">

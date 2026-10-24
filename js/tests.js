@@ -11,16 +11,8 @@ const TESTS_KEY = 'nihongo_tests';
 
 /* ---------- Сборка тестов ---------- */
 
-/** Детерминированный генератор, чтобы вопросы были стабильны. */
-function seededRandom(seed) {
-  let value = seed % 2147483647;
-  if (value <= 0) value += 2147483646;
-
-  return function next() {
-    value = (value * 16807) % 2147483647;
-    return (value - 1) / 2147483646;
-  };
-}
+// seededRandom() объявлен в js/daily.js — он подключается раньше на всех
+// страницах с тестами. Здесь не дублируем.
 
 /** Перемешивает массив с заданным генератором. */
 function shuffleWith(list, random) {

@@ -157,7 +157,7 @@ const SETTINGS_CONTENT = {
         <div class="setting-row">
           <div class="setting-info">
             <div class="setting-name">Двухфакторная аутентификация</div>
-            <div class="setting-desc">Дополнительный код при входе с нового устройства</div>
+            <div class="setting-desc">Переключатель сохраняется. Реальная проверка кода требует сервера — появится вместе с ним</div>
           </div>
           <div class="setting-control">
             <label class="switch">
@@ -191,8 +191,21 @@ const SETTINGS_CONTENT = {
   /* ---------- Звук ---------- */
   sound: {
     title: 'Звук',
-    description: 'Громкость, музыка и звуковые эффекты интерфейса.',
+    description: 'Громкость и звуки интерфейса. Всё слышно сразу — жать «Сохранить» не нужно.',
     html: `
+      <div class="settings-group">
+        <h4>Проверка</h4>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Проверить звук</div>
+            <div class="setting-desc">Короткая гамма с текущей громкостью</div>
+          </div>
+          <div class="setting-control">
+            <button class="btn btn-outline btn-small" onclick="testSound()">Прослушать</button>
+          </div>
+        </div>
+      </div>
+
       <div class="settings-group">
         <h4>Общая громкость</h4>
         <div class="setting-row">
@@ -314,7 +327,7 @@ const SETTINGS_CONTENT = {
         <div class="setting-row">
           <div class="setting-info">
             <div class="setting-name">Язык интерфейса</div>
-            <div class="setting-desc">Русский — основной язык платформы</div>
+            <div class="setting-desc">Переводит меню, подвал и основные кнопки. Уроки остаются на русском</div>
           </div>
           <div class="setting-control">
             <select class="select" data-setting="interface.language">
@@ -372,6 +385,19 @@ const SETTINGS_CONTENT = {
               <option value="default">Стандартный</option>
               <option value="accent">Акцентный</option>
             </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <h4>Помощь</h4>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Пройти тур заново</div>
+            <div class="setting-desc">Пять шагов с подсветкой: меню, дизайн, каталог и подвал</div>
+          </div>
+          <div class="setting-control">
+            <button class="btn btn-outline btn-small" onclick="restartTour()">Запустить</button>
           </div>
         </div>
       </div>
@@ -461,7 +487,7 @@ const SETTINGS_CONTENT = {
 
   notifications: {
     title: 'Уведомления',
-    description: 'Что и когда присылать. Всё можно выключить в один клик.',
+    description: 'Что и когда присылать. Фильтр работает сразу и на уведомления в колокольчике, и на всплывашки.',
     html: `
       <div class="settings-group">
         <h4>События</h4>
@@ -563,18 +589,19 @@ const SETTINGS_CONTENT = {
   /* ---------- Лаунчер ---------- */
   launcher: {
     title: 'Лаунчер',
-    description: 'Настройки будущего десктоп-клиента Nihongo.',
+    description: 'Публичный профиль работает уже сейчас. Прокси и DNS — только для будущего десктоп-клиента.',
     html: `
       <div class="notice">
         <span class="notice-icon">⚙</span>
-        <span>Лаунчер ещё в разработке. Настройки сохранятся и применятся автоматически, когда он выйдет.</span>
+        <span>Прокси и DNS без отдельного приложения не применить — браузер этого не разрешает.
+          Значения сохраняются и подхватятся в десктоп-клиенте.</span>
       </div>
       <div class="settings-group">
         <h4>Профиль</h4>
         <div class="setting-row">
           <div class="setting-info">
             <div class="setting-name">Публичный профиль</div>
-            <div class="setting-desc">Показывать прогресс другим игрокам</div>
+            <div class="setting-desc">Ссылка profile.html?user=ник открывает твой профиль. Выключишь — увидишь «профиль закрыт»</div>
           </div>
           <div class="setting-control">
             <label class="switch">
@@ -750,6 +777,7 @@ function showSettingsTab(tabId, buttonElement) {
   history.replaceState(null, '', '#' + tabId);
 
   restoreSettingsValues(container);
+  bindLiveSettings(container);
   bindSettingsTab(tabId);
 
   // Дополнительные виджеты, которым нужен готовый DOM
@@ -794,6 +822,28 @@ function restoreSettingsValues(container) {
 
   // Подписи кастомных списков берут значения из localStorage
   if (typeof syncCustomSelects === 'function') syncCustomSelects(container);
+}
+
+/**
+ * Живое применение: любое изменение поля сразу пишется в localStorage
+ * и применяется к странице, без кнопки «Сохранить».
+ */
+function bindLiveSettings(container) {
+  if (container.dataset.liveBound === '1') return;
+  container.dataset.liveBound = '1';
+
+  container.addEventListener('change', event => {
+    const input = event.target.closest('[data-setting]');
+    if (!input) return;
+
+    const key = input.dataset.setting;
+    const value = input.type === 'checkbox' ? input.checked : input.value;
+
+    setSettingValue(key, value);
+
+    if (typeof applyStoredSettings === 'function') applyStoredSettings();
+    if (typeof applyAllPreferences === 'function') applyAllPreferences();
+  });
 }
 
 /** Дополнительные обработчики конкретной вкладки. */
@@ -877,8 +927,9 @@ function saveSetting(tabId) {
 
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
 
-  // Применяем то, что влияет на внешний вид
+  // Применяем всё: внешний вид, звук, уведомления, язык
   if (typeof applyStoredSettings === 'function') applyStoredSettings();
+  if (typeof applyAllPreferences === 'function') applyAllPreferences();
 
   // Подписи кастомных списков могли устареть — синхронизируем
   if (typeof syncCustomSelects === 'function') syncCustomSelects(container);
@@ -1429,6 +1480,9 @@ window.changePassword = changePassword;
 window.changeNickname = changeNickname;
 window.changeEmailRequest = changeEmailRequest;
 window.changeEmailConfirm = changeEmailConfirm;
+window.getSettings = getSettings;
+window.getSettingValue = getSettingValue;
+window.setSettingValue = setSettingValue;
 window.connectSocial = connectSocial;
 window.saveSocial = saveSocial;
 window.unlinkSocial = unlinkSocial;
