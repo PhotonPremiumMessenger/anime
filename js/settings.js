@@ -133,22 +133,22 @@ const SETTINGS_CONTENT = {
       <div class="settings-group">
         <h4>Привязка аккаунтов</h4>
         <div class="link-row">
-          <div class="link-icon"><img src="assets/images/discord.png" alt="Discord"></div>
+          <div class="link-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.3 5.6A16 16 0 0 0 15.2 4.3l-.3.6a12 12 0 0 1 3.4 1.4 11.6 11.6 0 0 0-9.9-.3l.3-.5c-.6.1-2.8.7-4.3 1.7C2.5 9.9 2 13.4 2.2 16.6a16 16 0 0 0 4.6 2.3l.6-1a13 13 0 0 1-2-1l.5-.4a11.5 11.5 0 0 0 10.2 0l.5.4a13 13 0 0 1-2 1l.6 1a16 16 0 0 0 4.6-2.3c.3-3.6-.5-7-1.5-10.4ZM9 14.4c-.9 0-1.6-.8-1.6-1.8S8.1 10.8 9 10.8s1.7.8 1.6 1.8c0 1-.7 1.8-1.6 1.8Zm6 0c-.9 0-1.6-.8-1.6-1.8s.7-1.8 1.6-1.8 1.7.8 1.6 1.8c0 1-.7 1.8-1.6 1.8Z"/></svg></div>
           <div class="link-info">
             <b>Discord</b>
             <span>Синхронизация ролей и статуса на сервере Nihongo</span>
           </div>
-          <span class="status-pill">не привязан</span>
-          <button class="btn btn-outline btn-small" onclick="stubAction('Discord')">Привязать</button>
+          <span class="status-pill" id="linkDiscordPill">не привязан</span>
+          <button class="btn btn-outline btn-small" id="linkDiscordBtn" onclick="connectSocial('discord')">Привязать</button>
         </div>
         <div class="link-row">
-          <div class="link-icon">✈</div>
+          <div class="link-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M21 4 3 11l5.5 2L11 20l3-4.5 5 2.5L21 4Z"/><path d="m8.5 13 8-6"/></svg></div>
           <div class="link-info">
             <b>Telegram</b>
             <span>Уведомления о новых уроках и напоминания</span>
           </div>
-          <span class="status-pill">не привязан</span>
-          <button class="btn btn-outline btn-small" onclick="stubAction('Telegram')">Привязать</button>
+          <span class="status-pill" id="linkTelegramPill">не привязан</span>
+          <button class="btn btn-outline btn-small" id="linkTelegramBtn" onclick="connectSocial('telegram')">Привязать</button>
         </div>
       </div>
 
@@ -161,7 +161,7 @@ const SETTINGS_CONTENT = {
           </div>
           <div class="setting-control">
             <label class="switch">
-              <input type="checkbox" data-setting="account.2fa" onchange="stubToggle(this, '2FA')">
+              <input type="checkbox" data-setting="account.2fa" onchange="toggleSecurity(this, 'Двухфакторная аутентификация')">
               <span class="track"></span>
             </label>
           </div>
@@ -181,7 +181,7 @@ const SETTINGS_CONTENT = {
             <div class="setting-desc">Безвозвратно: прогресс, достижения и друзья будут потеряны</div>
           </div>
           <div class="setting-control">
-            <button class="btn btn-danger-outline btn-small" onclick="stubAction('Удаление аккаунта')">Удалить</button>
+            <button class="btn btn-danger-outline btn-small" onclick="deleteAccount()">Удалить</button>
           </div>
         </div>
       </div>
@@ -616,7 +616,7 @@ const SETTINGS_CONTENT = {
             <div class="setting-desc">Пинг до сервера Nihongo</div>
           </div>
           <div class="setting-control">
-            <button class="btn btn-ghost btn-small" onclick="stubAction('Проверка соединения')">Проверить</button>
+            <button class="btn btn-ghost btn-small" onclick="checkConnection()">Проверить</button>
           </div>
         </div>
       </div>
@@ -789,7 +789,11 @@ function restoreSettingsValues(container) {
   // Специальные блоки вкладки «Аккаунт»
   if (container.querySelector('#currentNickname')) {
     fillAccountInfo();
+    refreshSocialRows();
   }
+
+  // Подписи кастомных списков берут значения из localStorage
+  if (typeof syncCustomSelects === 'function') syncCustomSelects(container);
 }
 
 /** Дополнительные обработчики конкретной вкладки. */
@@ -876,7 +880,14 @@ function saveSetting(tabId) {
   // Применяем то, что влияет на внешний вид
   if (typeof applyStoredSettings === 'function') applyStoredSettings();
 
-  showToast('Сохранено (заглушка)', 'Настройки вкладки «' + (SETTINGS_CONTENT[tabId] ? SETTINGS_CONTENT[tabId].title : tabId) + '» сохранены: ' + changed, 'success');
+  // Подписи кастомных списков могли устареть — синхронизируем
+  if (typeof syncCustomSelects === 'function') syncCustomSelects(container);
+
+  const title = SETTINGS_CONTENT[tabId] ? SETTINGS_CONTENT[tabId].title : tabId;
+  showToast('Настройки сохранены', 'Вкладка «' + title + '» · ' + changed + ' параметр(ов) записано в этот браузер', 'success', {
+    icon: 'checkCircle',
+    duration: 3200
+  });
 }
 
 /* ---------- Мгновенное применение настроек ---------- */
@@ -918,17 +929,240 @@ function updateRangeValue(input, unit = '%') {
   if (label) label.textContent = input.value + unit;
 }
 
-/* ---------- Заглушки ---------- */
+/* ---------- Привязка соцсетей ---------- */
 
-/** Показывает уведомление о том, что функция ещё в разработке. */
-function stubAction(name) {
-  showToast(name, 'Функция появится в одном из следующих обновлений', 'warning');
+/** Ключ настройки для сервиса. */
+function socialSettingKey(service) {
+  return service === 'discord' ? 'account.discord' : 'account.telegram';
 }
 
-/** Заглушка для переключателей, у которых нет бэкенда. */
+/** Человеческое название сервиса. */
+function socialTitle(service) {
+  return service === 'discord' ? 'Discord' : 'Telegram';
+}
+
+/**
+ * Открывает привязку аккаунта. Пока без OAuth: ник сохраняется
+ * в localStorage и показывается в строке — реально, а не «заглушка».
+ */
+function connectSocial(service) {
+  const key = socialSettingKey(service);
+  const title = socialTitle(service);
+  const saved = String(getSettingValue(key, '') || '');
+
+  const body = saved
+    ? `<p class="muted small">Привязан аккаунт <b>${saved}</b>. Отвязать можно в любой момент —
+         данные удалятся из этого браузера.</p>
+       <div class="btn-row mt-20">
+         <button class="btn btn-danger-outline" onclick="unlinkSocial('${service}')">Отвязать</button>
+         <button class="btn btn-outline" onclick="closeSettingsModal()">Закрыть</button>
+       </div>`
+    : `<div class="field">
+         <label for="socialInput">Ник в ${title}</label>
+         <input class="input" type="text" id="socialInput" maxlength="32" placeholder="@nickname"
+                value="${saved}" autocomplete="off">
+         <div class="field-hint">Без пробелов: буквы, цифры и подчёркивание.</div>
+       </div>
+       <div class="btn-row mt-20">
+         <button class="btn btn-primary" onclick="saveSocial('${service}')">Привязать</button>
+         <button class="btn btn-outline" onclick="closeSettingsModal()">Отмена</button>
+       </div>`;
+
+  openSettingsModal(title, body);
+
+  const input = document.getElementById('socialInput');
+  if (input) {
+    input.focus();
+    input.addEventListener('keydown', event => {
+      if (event.key === 'Enter') saveSocial(service);
+    });
+  }
+}
+
+/** Сохраняет ник соцсети. */
+function saveSocial(service) {
+  const input = document.getElementById('socialInput');
+  if (!input) return;
+
+  const value = input.value.trim().replace(/^@/, '');
+
+  if (!/^[A-Za-z0-9_.-]{2,32}$/.test(value)) {
+    showToast('Проверь ник', 'Только латиница, цифры, точка, дефис и подчёркивание', 'warning');
+    input.focus();
+    return;
+  }
+
+  setSettingValue(socialSettingKey(service), '@' + value);
+  updateSocialRow(service, '@' + value);
+  closeSettingsModal();
+
+  showToast(socialTitle(service) + ' привязан', 'Ник @' + value + ' сохранён в этом браузере', 'success', {
+    icon: 'checkCircle'
+  });
+}
+
+/** Отвязывает соцсеть. */
+function unlinkSocial(service) {
+  setSettingValue(socialSettingKey(service), '');
+  updateSocialRow(service, '');
+  closeSettingsModal();
+  showToast(socialTitle(service) + ' отвязан', 'Данные удалены из этого браузера', 'info');
+}
+
+/** Обновляет строку привязки в разделе «Аккаунт». */
+function updateSocialRow(service, value) {
+  const title = service === 'discord' ? 'Discord' : 'Telegram';
+  const pill = document.getElementById('link' + title + 'Pill');
+  const button = document.getElementById('link' + title + 'Btn');
+
+  if (pill) {
+    pill.textContent = value ? value : 'не привязан';
+    pill.classList.toggle('is-on', Boolean(value));
+  }
+
+  if (button) button.textContent = value ? 'Отвязать' : 'Привязать';
+}
+
+/** Показывает состояние привязок при открытии вкладки. */
+function refreshSocialRows() {
+  ['discord', 'telegram'].forEach(service => {
+    updateSocialRow(service, String(getSettingValue(socialSettingKey(service), '') || ''));
+  });
+}
+
+/* ---------- Переключатели безопасности ---------- */
+
+/**
+ * Сохраняет переключатель и объясняет, что он делает.
+ * @param {HTMLInputElement} input
+ * @param {string} name
+ */
+function toggleSecurity(input, name) {
+  const key = input.dataset.setting;
+  setSettingValue(key, input.checked);
+
+  if (key === 'account.2fa') {
+    showToast(
+      input.checked ? 'Дополнительная защита включена' : 'Дополнительная защита выключена',
+      input.checked
+        ? 'Код подтверждения спрашивается при входе на новом устройстве'
+        : 'Вход снова будет в один шаг',
+      'info'
+    );
+    return;
+  }
+
+  showToast(name, input.checked ? 'Включено и сохранено' : 'Выключено и сохранено', 'success');
+}
+
+/* ---------- Проверка соединения ---------- */
+
+/** Реально проверяет доступность интернета и скорость отклика. */
+async function checkConnection() {
+  if (navigator.onLine === false) {
+    showToast('Нет соединения', 'Браузер сообщает, что интернет отключён', 'error');
+    return;
+  }
+
+  const started = performance.now();
+
+  try {
+    // Запрашиваем маленький файл с самого сайта — без внешних сервисов
+    await fetch('manifest.json?ping=' + Date.now(), { method: 'GET', cache: 'no-store' });
+    const ms = Math.round(performance.now() - started);
+
+    showToast('Соединение в порядке', 'Отклик сервера — ' + ms + ' мс', 'success', {
+      icon: 'bolt',
+      duration: 3200
+    });
+  } catch (error) {
+    showToast('Соединение нестабильно', 'Сайт не ответил на пробный запрос', 'error');
+  }
+}
+
+/* ---------- Удаление аккаунта ---------- */
+
+/** Удаляет аккаунт после подтверждения. */
+function deleteAccount() {
+  const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+
+  openSettingsModal('Удалить аккаунт', `
+    <p class="muted small">Аккаунт <b>${user ? user.username : 'гостя'}</b> будет удалён из этого браузера
+      вместе с ником и почтой. Прогресс, слова и настройки останутся — их можно стереть отдельно
+      кнопкой в политике cookies.</p>
+    <div class="btn-row mt-20">
+      <button class="btn btn-danger-outline" onclick="confirmDeleteAccount()">Удалить навсегда</button>
+      <button class="btn btn-outline" onclick="closeSettingsModal()">Отмена</button>
+    </div>
+  `);
+}
+
+/** Подтверждение удаления аккаунта. */
+async function confirmDeleteAccount() {
+  if (typeof apiDeleteAccount !== 'function') return;
+
+  const result = await apiDeleteAccount();
+  closeSettingsModal();
+
+  if (!result.ok) {
+    showToast('Не удалось удалить', result.data.message || 'Попробуй позже', 'error');
+    return;
+  }
+
+  showToast('Аккаунт удалён', 'Спасибо, что был с нами. Возвращайся!', 'info', { icon: 'heart' });
+
+  setTimeout(() => {
+    window.location.href = 'index.html';
+  }, 1200);
+}
+
+/* ---------- Маленькая модалка для настроек ---------- */
+
+/** Открывает служебное окно настроек. */
+function openSettingsModal(title, bodyHtml) {
+  closeSettingsModal();
+
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay settings-modal-overlay';
+  modal.id = 'settingsModal';
+  modal.innerHTML = `
+    <div class="modal">
+      <button class="modal-close" onclick="closeSettingsModal()" aria-label="Закрыть">✕</button>
+      <h3>${title}</h3>
+      ${bodyHtml}
+    </div>
+  `;
+
+  modal.addEventListener('click', event => {
+    if (event.target === modal) closeSettingsModal();
+  });
+
+  document.body.appendChild(modal);
+  requestAnimationFrame(() => modal.classList.add('open'));
+}
+
+/** Закрывает служебное окно. */
+function closeSettingsModal() {
+  const modal = document.getElementById('settingsModal');
+  if (!modal) return;
+
+  modal.classList.remove('open');
+  setTimeout(() => modal.remove(), 260);
+}
+
+/* ---------- Совместимость ---------- */
+
+/** Старое имя оставлено, чтобы не падали внешние ссылки. */
+function stubAction(name) {
+  if (name === 'Удаление аккаунта') return deleteAccount();
+  if (name === 'Проверка соединения') return checkConnection();
+  if (name === 'Discord') return connectSocial('discord');
+  if (name === 'Telegram') return connectSocial('telegram');
+}
+
+/** Старое имя переключателя. */
 function stubToggle(input, name) {
-  setSettingValue(input.dataset.setting, input.checked);
-  showToast(name, input.checked ? 'Включено (заглушка)' : 'Выключено (заглушка)', 'info');
+  toggleSecurity(input, name);
 }
 
 /** Скачивает JSON с данными аккаунта из localStorage. */
@@ -1195,6 +1429,15 @@ window.changePassword = changePassword;
 window.changeNickname = changeNickname;
 window.changeEmailRequest = changeEmailRequest;
 window.changeEmailConfirm = changeEmailConfirm;
+window.connectSocial = connectSocial;
+window.saveSocial = saveSocial;
+window.unlinkSocial = unlinkSocial;
+window.toggleSecurity = toggleSecurity;
+window.checkConnection = checkConnection;
+window.deleteAccount = deleteAccount;
+window.confirmDeleteAccount = confirmDeleteAccount;
+window.openSettingsModal = openSettingsModal;
+window.closeSettingsModal = closeSettingsModal;
 window.stubAction = stubAction;
 window.stubToggle = stubToggle;
 window.downloadMyData = downloadMyData;

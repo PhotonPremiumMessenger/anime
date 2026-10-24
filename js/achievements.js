@@ -259,8 +259,9 @@ function checkAchievements(silent = false) {
       if (!silent && typeof showToast === 'function') {
         showToast(
           'Достижение: ' + achievement.name,
-          achievement.description + ' · +25 XP',
-          'success'
+          achievement.description,
+          'success',
+          { icon: 'medal', duration: 5200, rewards: [{ icon: 'star', text: '+25 XP' }] }
         );
       }
       addXP(25, 'Достижение');

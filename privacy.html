@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Политика конфиденциальности — Nihongo</title>
+  <meta name="description" content="Политика конфиденциальности Nihongo: какие данные хранятся в браузере, что уходит наружу, как удалить свои данные.">
+  <meta name="theme-color" content="#ff9500">
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/loader.js"></script>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛩</text></svg>">
+</head>
+<body>
+
+  <!-- ============ ШАПКА ============ -->
+  <header class="header">
+    <div class="container">
+      <a class="logo" href="index.html" aria-label="Nihongo — на главную">
+        <span class="logo-badge">
+          <svg viewBox="0 0 48 48" aria-hidden="true">
+            <rect x="6" y="10" width="36" height="4.5" rx="2.2" fill="currentColor"></rect>
+            <rect x="10" y="18" width="28" height="3.2" rx="1.6" fill="currentColor" opacity="0.85"></rect>
+            <rect x="14" y="16" width="4.2" height="24" rx="1.6" fill="currentColor"></rect>
+            <rect x="29.8" y="16" width="4.2" height="24" rx="1.6" fill="currentColor"></rect>
+            <rect x="20" y="24" width="8" height="3" rx="1.5" fill="currentColor" opacity="0.7"></rect>
+          </svg>
+        </span>
+        <span class="logo-text">
+          <span class="logo-jp">日本語</span>
+          <span class="logo-en">NIHONGO</span>
+        </span>
+      </a>
+
+      <nav class="nav">
+        <a class="nav-link" href="index.html">Главная</a>
+        <a class="nav-link" href="lessons.html">Уроки</a>
+        <a class="nav-link" href="anime.html">Аниме</a>
+        <a class="nav-link" href="tests.html">Тесты</a>
+        <a class="nav-link" href="grammar.html">Грамматика</a>
+
+        <div class="nav-more">
+          <button class="nav-link nav-more-btn" onclick="toggleNavMore(event)" aria-haspopup="true" aria-expanded="false">
+            Ещё <span class="nav-more-caret">▾</span>
+          </button>
+          <div class="nav-more-panel" id="navMorePanel">
+            <div class="nav-group" data-group="study">
+              <button class="nav-group-btn" type="button" onclick="toggleNavGroup(event, this)" aria-expanded="false">
+                <span class="nav-group-icon">📚</span>
+                <b>Учёба</b>
+                <span class="nav-group-count">4</span>
+                <span class="nav-group-caret">▾</span>
+              </button>
+              <div class="nav-group-list">
+                <a href="dictionary.html"><b>Словарь</b><span>слова и перевод</span></a>
+                <a href="video.html"><b>Видео-уроки</b><span>5 видео</span></a>
+                <a href="exam.html"><b>Пробный JLPT</b><span>20 вопросов</span></a>
+                <a href="search.html"><b>Поиск</b><span>по всему сайту</span></a>
+              </div>
+            </div>
+            <div class="nav-group" data-group="practice">
+              <button class="nav-group-btn" type="button" onclick="toggleNavGroup(event, this)" aria-expanded="false">
+                <span class="nav-group-icon">🎯</span>
+                <b>Практика</b>
+                <span class="nav-group-count">5</span>
+                <span class="nav-group-caret">▾</span>
+              </button>
+              <div class="nav-group-list">
+                <a href="flashcards.html"><b>Флешкарты</b><span>повторения</span></a>
+                <a href="match.html"><b>Кандзи-пары</b><span>мини-игра</span></a>
+                <a href="listening.html"><b>Аудирование</b><span>слова на слух</span></a>
+                <a href="speed.html"><b>Скорость</b><span>60 секунд</span></a>
+                <a href="weakspots.html"><b>Слабые места</b><span>разбор ошибок</span></a>
+              </div>
+            </div>
+            <div class="nav-group" data-group="progress">
+              <button class="nav-group-btn" type="button" onclick="toggleNavGroup(event, this)" aria-expanded="false">
+                <span class="nav-group-icon">🏆</span>
+                <b>Прогресс</b>
+                <span class="nav-group-count">4</span>
+                <span class="nav-group-caret">▾</span>
+              </button>
+              <div class="nav-group-list">
+                <a href="profile.html"><b>Профиль</b><span>уровень и статистика</span></a>
+                <a href="rating.html"><b>Рейтинг</b><span>ТОП-100</span></a>
+                <a href="shop.html"><b>Магазин</b><span>аватары и темы</span></a>
+                <a href="favorites.html"><b>Избранное</b><span>отложенное</span></a>
+              </div>
+            </div>
+            <div class="nav-group" data-group="other">
+              <button class="nav-group-btn" type="button" onclick="toggleNavGroup(event, this)" aria-expanded="false">
+                <span class="nav-group-icon">✨</span>
+                <b>Разное</b>
+                <span class="nav-group-count">3</span>
+                <span class="nav-group-caret">▾</span>
+              </button>
+              <div class="nav-group-list">
+                <a href="updates.html"><b>Обновления</b><span>что нового</span></a>
+                <a href="about.html"><b>О проекте</b><span>о проекте</span></a>
+                <a href="settings.html"><b>Настройки</b><span>параметры</span></a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button class="nav-design" id="designToggle" onclick="toggleDesignPanel()" aria-expanded="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"></circle>
+            <circle cx="8.5" cy="9.5" r="1.2"></circle>
+            <circle cx="15.5" cy="9.5" r="1.2"></circle>
+            <circle cx="12" cy="15" r="1.2"></circle>
+          </svg>
+          Дизайн
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="catalog-hero">
+      <div class="container">
+        <span class="badge">
+          <span class="badge-dot"></span>
+          Обновлено 24 октября 2026
+        </span>
+
+        <h1 class="mt-16">Политика <span class="accent">конфиденциальности</span></h1>
+        <p>Коротко: у Nihongo нет сервера. Аккаунт, опыт, слова и настройки лежат
+           в localStorage твоего браузера, а не на чьём-то диске.</p>
+
+        <div class="privacy-nav">
+          <a href="#data">Какие данные</a>
+          <a href="#storage">Где хранится</a>
+          <a href="#cookies">Cookies</a>
+          <a href="#third">Третьи лица</a>
+          <a href="#rights">Твои права</a>
+          <a href="#contacts">Контакты</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="privacy-doc">
+
+          <article class="privacy-block" id="data">
+            <h2>1. Какие данные мы собираем</h2>
+            <p>Мы стараемся собирать как можно меньше. Всё, что появляется на сайте, ты вводишь сам:</p>
+            <ul>
+              <li><b>Аккаунт:</b> ник, адрес почты и пароль. Пароль хранится в браузере в виде хеша — открытым текстом его нет.</li>
+              <li><b>Прогресс:</b> опыт, уровень, стрик, пройденные уроки, собранные слова, достижения, результаты тестов и экзаменов.</li>
+              <li><b>Настройки:</b> тема, размер шрифта, голос озвучки, выбор уровня JLPT и прочие параметры интерфейса.</li>
+              <li><b>Социальное:</b> друзья по нику, история активности, избранное, цели и разбор ошибок.</li>
+            </ul>
+            <p>Мы не спрашиваем фамилию, адрес, телефон, паспортные данные и номер карты.</p>
+          </article>
+
+          <article class="privacy-block" id="storage">
+            <h2>2. Где всё хранится</h2>
+            <p>Nihongo — статический сайт на GitHub Pages. У него нет базы данных и нет
+               серверной части, поэтому данные не покидают твой браузер.</p>
+            <ul>
+              <li>Основное хранилище — <b>localStorage</b>: ключи с префиксом <code>nihongo_</code>, а также <code>theme</code>, <code>settings</code>, <code>avatar</code>.</li>
+              <li><b>sessionStorage</b> — только служебный флаг перехода между страницами; он стирается при закрытии вкладки.</li>
+              <li>Очистка данных сайта в браузере удаляет всё сразу и безвозвратно — резервную копию можно сделать в настройках кнопкой «Скачать прогресс».</li>
+              <li>Если ты пользуешься общим компьютером, после занятий выходи из аккаунта: профиль останется в браузере, но сессия закроется.</li>
+            </ul>
+          </article>
+
+          <article class="privacy-block" id="cookies">
+            <h2>3. Cookies и похожие технологии</h2>
+            <p>Рекламных и аналитических cookies на сайте нет. Вместо них используется
+               localStorage — он работает похоже, но не отправляется на сервер автоматически.</p>
+            <ul>
+              <li><b>Необходимые:</b> вход в аккаунт, сохранение прогресса и настроек. Без них сайт не работает.</li>
+              <li><b>Функциональные:</b> тема, выбор голоса, включённая сакура, пройденная инструкция.</li>
+              <li><b>Аналитика и реклама:</b> не используются. Сторонних трекеров, пикселей и систем A/B-тестов нет.</li>
+            </ul>
+            <p>Согласие можно отозвать в любой момент — кнопка «Cookies» в подвале сайта или очистка данных сайта в браузере.</p>
+          </article>
+
+          <article class="privacy-block" id="third">
+            <h2>4. Третьи стороны</h2>
+            <p>Часть функций обращается к внешним сервисам. Они получают минимальные технические
+               данные — обычно IP-адрес и запрошенный ресурс:</p>
+            <ul>
+              <li><b>Google Fonts</b> — шрифты Russo One и Noto Sans JP. Запрос идёт на fonts.googleapis.com.</li>
+              <li><b>Google Translate</b> — только когда ты сам нажимаешь «Перевести» или выделяешь неизвестное слово.</li>
+              <li><b>GitHub Pages</b> — хостинг сайта; он видит обычные запросы страниц так же, как любой веб-сервер.</li>
+              <li><b>Web Speech API</b> — озвучка японских слов. В большинстве браузеров синтез речи выполняется локально, но в некоторых случаях текст может обрабатываться сервисом браузера.</li>
+            </ul>
+            <p>Видео-уроки открываются с Rutube и VK — у них свои политики конфиденциальности.
+               YouTube в проекте не используется.</p>
+          </article>
+
+          <article class="privacy-block" id="rights">
+            <h2>5. Твои права и удаление данных</h2>
+            <ul>
+              <li><b>Посмотреть</b> — настройки → «Аккаунт» → «Выгрузить мои данные».</li>
+              <li><b>Забрать с собой</b> — «Скачать прогресс»: один JSON со всеми ключами, его можно перенести на другое устройство.</li>
+              <li><b>Удалить</b> — «Сбросить всё» в настройках или очистка данных сайта в браузере.</li>
+              <li><b>Отозвать согласие на cookies</b> — кнопка «Cookies» в подвале.</li>
+            </ul>
+            <p>Так как данные не покидают браузер, удаление происходит мгновенно и не требует запроса в поддержку.</p>
+          </article>
+
+          <article class="privacy-block" id="contacts">
+            <h2>6. Контакты</h2>
+            <p>Вопросы по данным и работе сайта — через страницу <a href="about.html">«О проекте»</a>
+               или в сообществе в Discord. Отвечаем по возможности быстро.</p>
+            <p class="muted small">Политика может обновляться: при изменениях дата в начале страницы
+               меняется. Существенные правки дублируются на странице <a href="updates.html">обновлений</a>.</p>
+          </article>
+
+          <div class="privacy-actions">
+            <a class="btn btn-primary" href="index.html">Вернуться на сайт</a>
+            <button class="btn btn-outline" onclick="openCookiesSettings()">Настройки cookies</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <a class="logo" href="index.html" aria-label="Nihongo — на главную">
+            <span class="logo-badge">
+              <svg viewBox="0 0 48 48" aria-hidden="true">
+                <rect x="6" y="10" width="36" height="4.5" rx="2.2" fill="currentColor"></rect>
+                <rect x="10" y="18" width="28" height="3.2" rx="1.6" fill="currentColor" opacity="0.85"></rect>
+                <rect x="14" y="16" width="4.2" height="24" rx="1.6" fill="currentColor"></rect>
+                <rect x="29.8" y="16" width="4.2" height="24" rx="1.6" fill="currentColor"></rect>
+                <rect x="20" y="24" width="8" height="3" rx="1.5" fill="currentColor" opacity="0.7"></rect>
+              </svg>
+            </span>
+            <span class="logo-text">
+              <span class="logo-jp">日本語</span>
+              <span class="logo-en">NIHONGO</span>
+            </span>
+          </a>
+
+          <p>Платформа для изучения японского через аниме: фразы, пасхалки и культурные отсылки.
+             Без сервера — весь прогресс остаётся в твоём браузере.</p>
+
+          <div class="socials mt-16">
+            <a class="social-link" href="https://www.tiktok.com/" target="_blank" rel="noopener" aria-label="TikTok" title="TikTok">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.5 3c.3 2 1.5 3.4 3.5 3.7v2.4c-1.3.1-2.5-.3-3.6-1v5.6a5.6 5.6 0 1 1-5.6-5.6c.3 0 .6 0 .9.1v2.5a3.1 3.1 0 1 0 2.2 3V3h2.6Z"/></svg>
+            </a>
+            <a class="social-link" href="https://www.youtube.com/" target="_blank" rel="noopener" aria-label="YouTube" title="YouTube">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.5 2.5 0 0 0 2.4 7.2 26 26 0 0 0 2 12a26 26 0 0 0 .4 4.8 2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8A26 26 0 0 0 22 12a26 26 0 0 0-.4-4.8ZM10 15V9l5.2 3-5.2 3Z"/></svg>
+            </a>
+            <a class="social-link" href="https://www.instagram.com/" target="_blank" rel="noopener" aria-label="Instagram" title="Instagram">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.2c-2.7 0-3 0-4.1.1-1 0-1.8.2-2.4.5a4.8 4.8 0 0 0-1.8 1.1A4.8 4.8 0 0 0 2.6 5.7c-.3.6-.4 1.3-.5 2.4C2 9.2 2 9.5 2 12.2s0 3 .1 4.1c0 1 .2 1.8.5 2.4a4.8 4.8 0 0 0 1.1 1.8 4.8 4.8 0 0 0 1.8 1.1c.6.3 1.3.5 2.4.5 1.1.1 1.4.1 4.1.1s3 0 4.1-.1c1 0 1.8-.2 2.4-.5a5 5 0 0 0 2.9-2.9c.3-.6.4-1.3.5-2.4.1-1.1.1-1.4.1-4.1s0-3-.1-4.1c0-1-.2-1.8-.5-2.4a4.8 4.8 0 0 0-1.1-1.8 4.8 4.8 0 0 0-1.8-1.1c-.6-.3-1.3-.5-2.4-.5-1.1-.1-1.4-.1-4.1-.1Zm0 1.8c2.7 0 3 0 4 .1.9 0 1.3.2 1.6.3.4.2.7.4 1 .7.3.3.5.6.7 1 .1.3.3.7.3 1.6.1 1 .1 1.3.1 4s0 3-.1 4c0 .9-.2 1.3-.3 1.6-.2.4-.4.7-.7 1-.3.3-.6.5-1 .7-.3.1-.7.3-1.6.3-1 .1-1.3.1-4 .1s-3 0-4-.1c-.9 0-1.3-.2-1.6-.3-.4-.2-.7-.4-1-.7a2.7 2.7 0 0 1-.7-1c-.1-.3-.3-.7-.3-1.6-.1-1-.1-1.3-.1-4s0-3 .1-4c0-.9.2-1.3.3-1.6.2-.4.4-.7.7-1 .3-.3.6-.5 1-.7.3-.1.7-.3 1.6-.3 1-.1 1.3-.1 4-.1Zm0 3a5.2 5.2 0 1 0 0 10.4 5.2 5.2 0 0 0 0-10.4Zm0 8.6a3.4 3.4 0 1 1 0-6.8 3.4 3.4 0 0 1 0 6.8Zm6.6-8.8a1.2 1.2 0 1 1-2.4 0 1.2 1.2 0 0 1 2.4 0Z"/></svg>
+            </a>
+            <a class="social-link" href="https://discord.com/" target="_blank" rel="noopener" aria-label="Discord" title="Discord">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.3 5.6A16 16 0 0 0 15.2 4.3l-.3.6a12 12 0 0 1 3.4 1.4 11.6 11.6 0 0 0-9.9-.3l.3-.5c-.6.1-2.8.7-4.3 1.7C2.5 9.9 2 13.4 2.2 16.6a16 16 0 0 0 4.6 2.3l.6-1a13 13 0 0 1-2-1l.5-.4a11.5 11.5 0 0 0 10.2 0l.5.4a13 13 0 0 1-2 1l.6 1a16 16 0 0 0 4.6-2.3c.3-3.6-.5-7-1.5-10.4ZM9 14.4c-.9 0-1.6-.8-1.6-1.8S8.1 10.8 9 10.8s1.7.8 1.6 1.8c0 1-.7 1.8-1.6 1.8Zm6 0c-.9 0-1.6-.8-1.6-1.8s.7-1.8 1.6-1.8 1.7.8 1.6 1.8c0 1-.7 1.8-1.6 1.8Z"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <div class="footer-cols">
+          <div class="footer-col">
+            <h5>Платформа</h5>
+            <a href="index.html">Главная</a>
+            <a href="lessons.html">Уроки</a>
+            <a href="anime.html">Аниме</a>
+            <a href="tests.html">Тесты</a>
+            <a href="grammar.html">Грамматика</a>
+          </div>
+
+          <div class="footer-col">
+            <h5>Практика</h5>
+            <a href="dictionary.html">Словарь</a>
+            <a href="flashcards.html">Флешкарты</a>
+            <a href="listening.html">Аудирование</a>
+            <a href="exam.html">Пробный JLPT</a>
+            <a href="match.html">Кандзи-пары</a>
+          </div>
+
+          <div class="footer-col">
+            <h5>Аккаунт</h5>
+            <a href="register.html">Регистрация</a>
+            <a href="profile.html">Профиль</a>
+            <a href="rating.html">Рейтинг</a>
+            <a href="shop.html">Магазин</a>
+            <a href="settings.html">Настройки</a>
+          </div>
+
+          <div class="footer-col">
+            <h5>Проект</h5>
+            <a href="about.html">О проекте</a>
+            <a href="updates.html">Обновления</a>
+            <a href="privacy.html">Конфиденциальность</a>
+            <a href="#" onclick="event.preventDefault(); openCookiesSettings()">Cookies</a>
+            <a href="search.html">Поиск</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-donate">
+        <span class="footer-donate-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 20.3 4.6 13a4.4 4.4 0 0 1 6.2-6.2l1.2 1.2 1.2-1.2A4.4 4.4 0 1 1 19.4 13L12 20.3Z"/></svg>
+        </span>
+        <div class="footer-donate-text">
+          <b>Поддержать проект</b>
+          <span>Сайт живёт без рекламы и подписок. Если он помогает — угости автора кофе.</span>
+        </div>
+        <button class="btn btn-primary btn-small footer-donate-btn" onclick="openDonate()">Поддержать</button>
+      </div>
+
+      <div class="footer-bottom">
+        <span>© 2026 Nihongo. Все права защищены.</span>
+        <span class="footer-links">
+          <a href="privacy.html">Политика конфиденциальности</a>
+          <a href="updates.html">Обновления</a>
+          <a href="about.html">Контакты</a>
+        </span>
+        <span class="footer-made">Сделано с <span class="accent">♥</span> для анимешников</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ============ СКРИПТЫ ============ -->
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="js/select.js"></script>
+  <script src="js/design.js"></script>
+  <script src="js/romaji.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/notify.js"></script>
+  <script src="js/hotkeys.js"></script>
+  <script src="js/pwa.js"></script>
+  <script src="js/donate.js"></script>
+  <script src="js/consent.js"></script>
+  <script src="js/onboarding.js"></script>
+  <script src="js/mobile.js"></script>
+</body>
+</html>

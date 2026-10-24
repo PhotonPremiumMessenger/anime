@@ -324,6 +324,22 @@ async function apiLogout() {
   return { ok: true, data: { loggedOut: true } };
 }
 
+/**
+ * Удаляет текущий аккаунт из localStorage.
+ * Прогресс и настройки остаются — они привязаны к браузеру,
+ * но войти в удалённый аккаунт уже нельзя.
+ */
+async function apiDeleteAccount() {
+  const user = getCurrentUser();
+  if (!user) return { ok: false, data: { message: 'Нет активного аккаунта' } };
+
+  const users = getUsers().filter(item => item.username !== user.username);
+  saveUsers(users);
+
+  clearSession();
+  return { ok: true, data: { username: user.username } };
+}
+
 /* ---------- Сброс и смена пароля ---------- */
 
 /**
@@ -476,6 +492,7 @@ window.apiVerifyCode = apiVerifyCode;
 window.apiRegister = apiRegister;
 window.apiLogin = apiLogin;
 window.apiLogout = apiLogout;
+window.apiDeleteAccount = apiDeleteAccount;
 window.apiResetPassword = apiResetPassword;
 window.apiChangePassword = apiChangePassword;
 window.apiChangeNickname = apiChangeNickname;
