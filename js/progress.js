@@ -227,6 +227,11 @@ function resetProgress() {
 
 /* ---------- Озвучка слов (Web Speech API) ---------- */
 
+/** Сбрасывает закэшированный голос: нужен после смены в настройках. */
+function resetJapaneseVoice() {
+  japaneseVoice = null;
+}
+
 // Голос японского выбираем один раз и запоминаем
 let japaneseVoice = null;
 
@@ -273,10 +278,16 @@ function speakJapanese(text) {
 
   const utterance = new SpeechSynthesisUtterance(clean);
   utterance.lang = 'ja-JP';
-  utterance.rate = 0.9;
-  utterance.pitch = 1;
 
-  if (!japaneseVoice) japaneseVoice = pickJapaneseVoice();
+  // Скорость и тон берём из настроек (вкладка «Звук» → выбор голоса)
+  utterance.rate = typeof getSpeechRate === 'function' ? getSpeechRate() : 0.9;
+  utterance.pitch = typeof getSpeechPitch === 'function' ? getSpeechPitch() : 1;
+
+  if (!japaneseVoice) {
+    // Сначала смотрим голос, выбранный пользователем
+    const chosen = typeof getSelectedVoice === 'function' ? getSelectedVoice() : null;
+    japaneseVoice = chosen && /^ja/i.test(chosen.lang) ? chosen : pickJapaneseVoice();
+  }
   if (japaneseVoice) utterance.voice = japaneseVoice;
 
   window.speechSynthesis.speak(utterance);
@@ -302,4 +313,5 @@ window.completeLesson = completeLesson;
 window.countCompletedLessons = countCompletedLessons;
 window.resetProgress = resetProgress;
 window.speakJapanese = speakJapanese;
+window.resetJapaneseVoice = resetJapaneseVoice;
 window.isSpeechSupported = isSpeechSupported;

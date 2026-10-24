@@ -229,6 +229,11 @@ function selectAnswer(questionIndex, optionIndex, optionsEl) {
   optionsEl.querySelectorAll('.test-option').forEach((button, index) => {
     button.classList.toggle('selected', index === optionIndex);
   });
+
+  // Прогресс урока: сколько вопросов уже отвечено
+  if (typeof markTestAnswer === 'function') {
+    markTestAnswer(answers.filter(answer => answer !== -1).length);
+  }
 }
 
 /* ---------- Проверка теста ---------- */
@@ -247,6 +252,10 @@ function checkTest() {
   }
 
   checked = true;
+
+  // Прогресс урока: тест проверен — шаг закрыт
+  if (typeof markTestChecked === 'function') markTestChecked();
+
   let correctCount = 0;
 
   currentLesson.test.forEach((question, questionIndex) => {
