@@ -12051,3 +12051,329 @@ body.no-anim .exam-clock.is-low {
     display: none;
   }
 }
+
+/* ============================================================
+   ЧАСТЬ 11 — меню по группам и загрузка между страницами
+   ============================================================ */
+
+/* ---------- 11.1 Компактное «Ещё» с категориями ---------- */
+
+.nav-more-panel {
+  width: 306px;
+  max-height: min(74vh, 470px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 6px;
+  gap: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+
+.nav-more-panel::-webkit-scrollbar {
+  width: 7px;
+}
+
+.nav-more-panel::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+/* Группа: заголовок-кнопка и раскрывающийся список */
+.nav-group {
+  display: block;
+  border-radius: var(--radius-md);
+}
+
+.nav-group-btn {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 9px 10px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-main);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.22s var(--ease-soft), color 0.22s var(--ease-soft);
+}
+
+.nav-group-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.nav-group.open .nav-group-btn {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.nav-group-icon {
+  font-size: 13px;
+  line-height: 1;
+}
+
+.nav-group-btn b {
+  flex: 1;
+  font-weight: 500;
+}
+
+.nav-group-count {
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 10px;
+  line-height: 15px;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.nav-group-caret {
+  font-size: 9px;
+  color: var(--text-dim);
+  transition: transform 0.25s var(--ease-spring);
+}
+
+.nav-group.open .nav-group-caret {
+  transform: rotate(180deg);
+  color: var(--accent);
+}
+
+/* Список показывается только у открытой группы — панель не раздувается */
+.nav-group-list {
+  display: none;
+  flex-direction: column;
+  gap: 1px;
+  padding: 2px 0 4px 6px;
+  margin-left: 6px;
+  border-left: 1px solid var(--border);
+}
+
+.nav-group.open .nav-group-list {
+  display: flex;
+  animation: navGroupIn 0.22s var(--ease-smooth);
+}
+
+@keyframes navGroupIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Внутри группы ссылки компактнее и без сдвига по ховеру */
+.nav-more-panel .nav-group-list a {
+  padding: 7px 10px;
+  gap: 0;
+  border-radius: var(--radius-sm);
+}
+
+.nav-more-panel .nav-group-list a b {
+  font-size: 12px;
+}
+
+.nav-more-panel .nav-group-list a span {
+  font-size: 10px;
+}
+
+.nav-more-panel .nav-group-list a:hover {
+  padding-left: 10px;
+  transform: translateX(2px);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.nav-more-panel .nav-group-list a.is-active {
+  background: var(--accent-soft);
+}
+
+.nav-more-panel .nav-group-list a.is-active b {
+  color: var(--accent);
+}
+
+body.theme-light .nav-group-btn:hover,
+body.theme-light .nav-more-panel .nav-group-list a:hover {
+  background: rgba(20, 20, 30, 0.05);
+}
+
+@media (max-width: 1100px) {
+  .nav-more-panel {
+    width: 290px;
+    max-height: min(70vh, 430px);
+  }
+}
+
+/* ---------- 11.2 Оверлей загрузки между страницами ---------- */
+
+.page-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 50% 32%, rgba(255, 179, 71, 0.13), transparent 58%),
+    rgba(8, 8, 13, 0.94);
+  backdrop-filter: blur(14px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.34s var(--ease-smooth), visibility 0.34s;
+}
+
+.page-loader.is-visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.page-loader-inner {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  transform: translateY(8px) scale(0.98);
+  opacity: 0;
+  transition: transform 0.45s var(--ease-spring), opacity 0.4s var(--ease-soft);
+}
+
+.page-loader.is-visible .page-loader-inner {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+.page-loader-logo {
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  margin-bottom: 4px;
+  border-radius: 18px;
+  color: var(--accent);
+  background: rgba(255, 179, 71, 0.1);
+  border: 1px solid rgba(255, 179, 71, 0.32);
+  box-shadow: 0 0 40px rgba(255, 149, 0, 0.22), inset 0 0 24px rgba(255, 149, 0, 0.08);
+  animation: pageLoaderLogoPulse 1.9s var(--ease-soft) infinite;
+}
+
+.page-loader-logo svg {
+  width: 30px;
+  height: 30px;
+}
+
+@keyframes pageLoaderLogoPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 34px rgba(255, 149, 0, 0.18); }
+  50% { transform: scale(1.05); box-shadow: 0 0 52px rgba(255, 149, 0, 0.34); }
+}
+
+.page-loader-jp {
+  font-family: var(--font-head);
+  font-size: 21px;
+  letter-spacing: 5px;
+  color: var(--text-main);
+}
+
+.page-loader-name {
+  font-family: var(--font-head);
+  font-size: 11px;
+  letter-spacing: 5px;
+  color: var(--text-dim);
+}
+
+.page-loader-spinner {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  margin-top: 12px;
+}
+
+.page-loader-spinner span {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2.5px solid transparent;
+}
+
+.page-loader-spinner span:first-child {
+  border-top-color: var(--accent);
+  border-right-color: rgba(255, 179, 71, 0.4);
+  animation: pageLoaderSpin 0.85s linear infinite;
+}
+
+.page-loader-spinner span:last-child {
+  inset: 8px;
+  border-bottom-color: rgba(255, 179, 71, 0.65);
+  border-left-color: rgba(255, 179, 71, 0.2);
+  animation: pageLoaderSpin 1.35s linear infinite reverse;
+}
+
+@keyframes pageLoaderSpin {
+  to { transform: rotate(360deg); }
+}
+
+.page-loader-text {
+  margin-top: 4px;
+  font-size: 12px;
+  letter-spacing: 0.6px;
+  color: var(--text-gray);
+}
+
+.page-loader-dots i {
+  font-style: normal;
+  opacity: 0.25;
+  animation: pageLoaderDot 1.2s var(--ease-soft) infinite;
+}
+
+.page-loader-dots i:nth-child(2) { animation-delay: 0.16s; }
+.page-loader-dots i:nth-child(3) { animation-delay: 0.32s; }
+
+@keyframes pageLoaderDot {
+  0%, 60%, 100% { opacity: 0.2; }
+  30% { opacity: 1; }
+}
+
+.page-loader-bar {
+  width: 138px;
+  height: 3px;
+  margin-top: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.page-loader-bar span {
+  display: block;
+  width: 40%;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  animation: pageLoaderBar 1.15s var(--ease-soft) infinite;
+}
+
+@keyframes pageLoaderBar {
+  from { transform: translateX(-120%); }
+  to { transform: translateX(320%); }
+}
+
+/* Пока идёт переход, страницу не дёргаем скроллом */
+html.is-page-loading {
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-loader,
+  .page-loader-inner,
+  .page-loader-logo,
+  .page-loader-spinner span,
+  .page-loader-bar span,
+  .page-loader-dots i,
+  .nav-group-list {
+    animation: none !important;
+    transition-duration: 0.12s !important;
+  }
+}
+
+body.no-anim .page-loader-logo,
+body.no-anim .page-loader-spinner span,
+body.no-anim .page-loader-bar span {
+  animation: none;
+}

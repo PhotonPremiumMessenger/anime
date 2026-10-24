@@ -50,21 +50,28 @@ function mountMobileNav() {
   button.innerHTML = '<span></span><span></span><span></span>';
   button.addEventListener('click', toggleMobileNav);
 
-  // На телефоне панель «Ещё» прячется, поэтому её ссылки дублируем
-  // в мобильный блок внутри самого меню
+  // На телефоне панель «Ещё» прячется, поэтому её пункты переносим
+  // в меню теми же группами, но без аккордеона: там удобнее прокрутка
   const panel = document.querySelector('.nav-more-panel');
   if (panel && !nav.querySelector('.mobile-more')) {
     const more = document.createElement('div');
     more.className = 'mobile-more';
-    more.innerHTML = '<span class="mobile-more-title">Ещё</span>';
 
-    panel.querySelectorAll('a').forEach(link => {
-      const clone = document.createElement('a');
-      clone.href = link.getAttribute('href');
-      clone.className = 'nav-link';
-      clone.innerHTML = link.innerHTML;
-      clone.addEventListener('click', closeMobileNav);
-      more.appendChild(clone);
+    panel.querySelectorAll('.nav-group').forEach(group => {
+      const title = group.querySelector('.nav-group-btn b');
+      const titleEl = document.createElement('span');
+      titleEl.className = 'mobile-more-title';
+      titleEl.textContent = title ? title.textContent : 'Ещё';
+      more.appendChild(titleEl);
+
+      group.querySelectorAll('a').forEach(link => {
+        const clone = document.createElement('a');
+        clone.href = link.getAttribute('href');
+        clone.className = 'nav-link' + (link.classList.contains('is-active') ? ' active' : '');
+        clone.innerHTML = '<b>' + link.querySelector('b').textContent + '</b>';
+        clone.addEventListener('click', closeMobileNav);
+        more.appendChild(clone);
+      });
     });
 
     nav.appendChild(more);

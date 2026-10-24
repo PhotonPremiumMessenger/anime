@@ -19,6 +19,49 @@ function toggleNavMore(event) {
   const isOpen = panel.classList.toggle('open');
   button.classList.toggle('open', isOpen);
   button.setAttribute('aria-expanded', String(isOpen));
+
+  if (isOpen) openDefaultNavGroup();
+}
+
+/**
+ * Раскрывает группу внутри «Ещё».
+ * Открыта всегда одна группа: так панель остаётся компактной.
+ */
+function toggleNavGroup(event, button) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  const group = button ? button.closest('.nav-group') : null;
+  if (!group) return;
+
+  const wasOpen = group.classList.contains('open');
+
+  group.closest('.nav-more-panel').querySelectorAll('.nav-group').forEach(item => {
+    item.classList.remove('open');
+    const btn = item.querySelector('.nav-group-btn');
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+  });
+
+  if (!wasOpen) {
+    group.classList.add('open');
+    button.setAttribute('aria-expanded', 'true');
+  }
+}
+
+/** Открывает группу с текущей страницей (или первую). */
+function openDefaultNavGroup() {
+  const panel = document.getElementById('navMorePanel');
+  if (!panel || panel.querySelector('.nav-group.open')) return;
+
+  const current = panel.querySelector('.nav-group a.is-active');
+  const group = current ? current.closest('.nav-group') : panel.querySelector('.nav-group');
+  if (!group) return;
+
+  group.classList.add('open');
+  const button = group.querySelector('.nav-group-btn');
+  if (button) button.setAttribute('aria-expanded', 'true');
 }
 
 /** Закрывает панель. */
@@ -46,4 +89,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 window.toggleNavMore = toggleNavMore;
+window.toggleNavGroup = toggleNavGroup;
+window.openDefaultNavGroup = openDefaultNavGroup;
 window.closeNavMore = closeNavMore;
