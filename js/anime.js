@@ -262,7 +262,27 @@ const ANIME_CATALOG = [
  * и loading="lazy", поэтому 24 карточки не тянут всё сразу.
  */
 function animePosterPath(anime) {
-  return 'assets/images/posters/' + anime.id + '.jpg';
+  // В каталоге используем облегчённые копии (440 px) — грузятся заметно быстрее
+  return 'assets/images/posters/web/' + anime.id + '.jpg';
+}
+
+/**
+ * Постер не нашёлся: сначала пробуем полный оригинал,
+ * потом показываем градиентную заглушку.
+ * @param {HTMLImageElement} img
+ */
+function animePosterFallback(img) {
+  if (!img) return;
+
+  if (!img.dataset.fullTry && img.dataset.id) {
+    img.dataset.fullTry = '1';
+    img.src = 'assets/images/posters/' + img.dataset.id + '.jpg';
+    return;
+  }
+
+  const poster = img.closest('.anime-poster');
+  if (poster) poster.classList.add('is-empty');
+  img.remove();
 }
 
 /* ---------- Ромадзи фраз ---------- */
@@ -333,8 +353,14 @@ function filterAnimeLevel(level, button) {
 /** Поиск по названию и фразе. */
 function onAnimeSearch(value) {
   animeQuery = String(value || '').trim().toLowerCase();
-  renderAnimeCatalog();
+
+  // Не перерисовываем сетку на каждую букву
+  clearTimeout(animeSearchTimer);
+  animeSearchTimer = setTimeout(renderAnimeCatalog, 140);
 }
+
+// Таймер дебаунса поиска
+let animeSearchTimer = 0;
 
 /* ---------- Отрисовка ---------- */
 
@@ -355,60 +381,62 @@ function renderAnimeCatalog() {
     return genreOk && levelOk && queryOk;
   });
 
-  grid.innerHTML = '';
-
   if (!list.length) {
     grid.innerHTML = '<div class="empty-state">Ничего не нашли. Попробуй другой жанр или уровень.</div>';
-  }
-
-  list.forEach(anime => {
-    const card = document.createElement('article');
-    card.className = 'anime-card';
-    card.style.setProperty('--poster-1', anime.color1);
-    card.style.setProperty('--poster-2', anime.color2);
-
-    card.innerHTML = `
-      <div class="anime-poster">
-        <img class="anime-img" src="${animePosterPath(anime)}" alt="${anime.title} — постер"
-             loading="lazy" decoding="async" width="620" height="930"
-             onerror="this.closest('.anime-poster').classList.add('is-empty'); this.remove();">
-        <span class="anime-poster-jp">${anime.jp}</span>
-        <span class="anime-kanji">${anime.kanji}</span>
-        <span class="anime-year">${anime.year}</span>
-        <span class="anime-badge">${anime.level}</span>
-      </div>
-      <div class="anime-body">
-        <h3 class="anime-title"></h3>
-        <div class="anime-jp"></div>
-        <div class="anime-genres"></div>
-        <div class="anime-phrase">
-          <b class="anime-phrase-jp" data-ja></b>
-          <span class="anime-phrase-romaji">${animePhraseRomaji(anime)}</span>
-          <span class="anime-phrase-ru"></span>
+  } else {
+    // Собираем одну строку: браузер делает один пересчёт вместо 24
+    grid.innerHTML = list.map(anime => `
+      <article class="anime-card" data-id="${anime.id}"
+               style="--poster-1:${anime.color1};--poster-2:${anime.color2}">
+        <div class="anime-poster">
+          <img class="anime-img" src="${animePosterPath(anime)}" alt="${anime.title} — постер"
+               data-id="${anime.id}" loading="lazy" decoding="async" fetchpriority="low"
+               width="440" height="660"
+               onerror="animePosterFallback(this)">
+          <span class="anime-poster-jp">${anime.jp}</span>
+          <span class="anime-kanji">${anime.kanji}</span>
+          <span class="anime-year">${anime.year}</span>
+          <span class="anime-badge">${anime.level}</span>
         </div>
-      </div>
-    `;
-
-    card.querySelector('.anime-title').textContent = anime.title;
-    card.querySelector('.anime-jp').textContent = anime.jp;
-    card.querySelector('.anime-genres').textContent = anime.genres.join(' · ');
-    card.querySelector('.anime-phrase-jp').textContent = anime.phrase.jp;
-    card.querySelector('.anime-phrase-ru').textContent = anime.phrase.ru;
-
-    // Звёздочка избранного (пункт 43)
-    if (typeof favoriteButtonMarkup === 'function') {
-      card.insertAdjacentHTML('beforeend',
-        favoriteButtonMarkup('anime', anime.id, anime.title, 'anime.html?title=' + anime.id));
-    }
-
-    card.addEventListener('click', () => openAnimeCard(anime.id));
-    grid.appendChild(card);
-  });
+        <div class="anime-body">
+          <h3 class="anime-title">${anime.title}</h3>
+          <div class="anime-jp">${anime.jp}</div>
+          <div class="anime-genres">${anime.genres.join(' · ')}</div>
+          <div class="anime-phrase">
+            <b class="anime-phrase-jp" data-ja>${anime.phrase.jp}</b>
+            <span class="anime-phrase-romaji">${animePhraseRomaji(anime)}</span>
+            <span class="anime-phrase-ru">${anime.phrase.ru}</span>
+          </div>
+        </div>
+        ${typeof favoriteButtonMarkup === 'function'
+          ? favoriteButtonMarkup('anime', anime.id, anime.title, 'anime.html?title=' + anime.id)
+          : ''}
+      </article>
+    `).join('');
+  }
 
   const counter = document.getElementById('animeCounter');
   if (counter) counter.textContent = list.length + ' из ' + ANIME_CATALOG.length + ' тайтлов';
 
   decorateRomaji(grid);
+}
+
+/** Один обработчик на всю сетку вместо 24 своих. */
+function initAnimeGridDelegation() {
+  const grid = document.getElementById('animeGrid');
+  if (!grid || grid.dataset.delegated) return;
+
+  grid.dataset.delegated = '1';
+
+  grid.addEventListener('click', event => {
+    const card = event.target.closest('.anime-card');
+    if (!card) return;
+
+    // Кнопка избранного обрабатывает клик сама
+    if (event.target.closest('.favorite-btn, .fav-btn, button[data-favorite]')) return;
+
+    openAnimeCard(card.dataset.id);
+  });
 }
 
 /** Рисует жанры один раз. */
@@ -528,6 +556,7 @@ async function shareAnimePhrase(id) {
 document.addEventListener('DOMContentLoaded', () => {
   if (!document.getElementById('animeGrid')) return;
 
+  initAnimeGridDelegation();
   renderAnimeCatalog();
 
   // Переход из общего поиска: anime.html?title=id
@@ -553,6 +582,7 @@ window.ANIME_ROMAJI = ANIME_ROMAJI;
 window.animePhraseRomaji = animePhraseRomaji;
 window.renderAnimeCatalog = renderAnimeCatalog;
 window.animePosterPath = animePosterPath;
+window.animePosterFallback = animePosterFallback;
 window.filterAnimeGenre = filterAnimeGenre;
 window.filterAnimeLevel = filterAnimeLevel;
 window.onAnimeSearch = onAnimeSearch;

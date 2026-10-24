@@ -21,8 +21,9 @@ let codeStage = 'send';
  * @param {string} title   — заголовок
  * @param {string} message — текст
  * @param {string} type    — success | error | warning | info
+ * @param {object} options — { icon, duration, rewards } — необязательные детали
  */
-function showToast(title, message = '', type = 'info') {
+function showToast(title, message = '', type = 'info', options = {}) {
   let container = document.querySelector('.toast-container');
   if (!container) {
     container = document.createElement('div');
@@ -30,24 +31,57 @@ function showToast(title, message = '', type = 'info') {
     document.body.appendChild(container);
   }
 
-  // Иконка зависит от типа
-  const icons = { success: '✓', error: '!', warning: '!', info: 'i' };
+  // Иконка по типу уведомления (или своя, если передали)
+  const typeIcons = {
+    success: 'check',
+    error: 'flag',
+    warning: 'bulb',
+    info: 'bell'
+  };
+
+  const iconName = options.icon || typeIcons[type] || 'bell';
+  const iconMarkup = (typeof icon === 'function')
+    ? icon(iconName)
+    : '<span>i</span>';
 
   const toast = document.createElement('div');
   toast.className = 'toast ' + type;
+
+  const duration = Number(options.duration) > 0 ? Number(options.duration) : 4500;
+  toast.style.setProperty('--toast-duration', duration + 'ms');
+
   toast.innerHTML = `
-    <div class="toast-icon">${icons[type] || 'i'}</div>
+    <div class="toast-icon">${iconMarkup}</div>
     <div class="toast-content">
       <div class="toast-title"></div>
       <div class="toast-message"></div>
+      ${Array.isArray(options.rewards) && options.rewards.length
+        ? '<ul class="toast-rewards"></ul>'
+        : ''}
     </div>
     <button class="toast-close" aria-label="Закрыть">×</button>
+    <span class="toast-progress"></span>
   `;
 
   // Текст подставляем через textContent — так безопаснее, чем innerHTML
   toast.querySelector('.toast-title').textContent = title;
   toast.querySelector('.toast-message').textContent = message;
   toast.querySelector('.toast-close').addEventListener('click', () => removeToast(toast));
+
+  // Плашки наград: «+50 XP», «Аватар» и т.п.
+  const rewardList = toast.querySelector('.toast-rewards');
+  if (rewardList) {
+    options.rewards.slice(0, 4).forEach(reward => {
+      const item = document.createElement('li');
+      if (typeof icon === 'function') {
+        item.innerHTML = icon(typeof reward === 'object' && reward.icon ? reward.icon : 'sparkles');
+      }
+      const label = document.createElement('span');
+      label.textContent = typeof reward === 'string' ? reward : (reward.text || '');
+      item.appendChild(label);
+      rewardList.appendChild(item);
+    });
+  }
 
   container.appendChild(toast);
 
@@ -56,8 +90,8 @@ function showToast(title, message = '', type = 'info') {
     removeToast(container.firstElementChild, true);
   }
 
-  // Автоматически скрываем через 4.5 секунды
-  const timer = setTimeout(() => removeToast(toast), 4500);
+  // Автоматически скрываем — время берём из опций
+  const timer = setTimeout(() => removeToast(toast), duration);
   toast.dataset.timer = timer;
 }
 
@@ -338,8 +372,23 @@ async function verifyCode() {
   localStorage.removeItem(PENDING_EMAIL_KEY);
   pendingPassword = '';
 
+  // Приветственная награда — новичок сразу видит, что получил
+  const welcomeXP = 50;
+  if (typeof addXP === 'function') addXP(welcomeXP, 'Регистрация');
+
+  const rewards = [];
+  if (typeof addXP === 'function') rewards.push({ icon: 'star', text: '+' + welcomeXP + ' XP' });
+  rewards.push({ icon: 'user', text: 'Профиль' });
+  rewards.push({ icon: 'cards', text: '140 слов' });
+  rewards.push({ icon: 'trophy', text: '100 наград' });
+
   closeEmailModal();
-  showToast('Готово!', 'Аккаунт создан, добро пожаловать, ' + (data.username || nickname.trim()), 'success');
+  showToast(
+    'Аккаунт создан',
+    'Добро пожаловать, ' + (data.username || nickname.trim()) + '! Вот что уже доступно:',
+    'success',
+    { icon: 'sparkles', duration: 7000, rewards: rewards }
+  );
 
   setTimeout(() => (window.location.href = 'profile.html'), 900);
 }
@@ -441,7 +490,10 @@ async function login() {
   // Токен и ник уже записаны в localStorage внутри apiLogin
   const data = result.data || {};
 
-  showToast('С возвращением!', 'Рады видеть вас снова, ' + (data.username || nickname), 'success');
+  showToast('С возвращением!', 'Рады видеть вас снова, ' + (data.username || nickname), 'success', {
+    icon: 'heart',
+    duration: 3600
+  });
 
   // Если пользователя выкинуло с защищённой страницы — возвращаем его туда
   const redirect = sessionStorage.getItem('redirectAfterLogin');

@@ -165,7 +165,15 @@ function addXP(amount, reason = '') {
         showToast(
           'Уровень ' + level + '!',
           reward ? reward.text : 'Новый уровень аккаунта',
-          'success'
+          'success',
+          {
+            icon: 'crown',
+            duration: 5600,
+            rewards: [
+              { icon: 'bolt', text: 'Новый уровень' },
+              reward && reward.itemId ? { icon: 'gift', text: 'Награда' } : null
+            ].filter(Boolean)
+          }
         );
         if (reward && reward.itemId && typeof unlockShopItem === 'function') {
           unlockShopItem(reward.itemId, 'level');

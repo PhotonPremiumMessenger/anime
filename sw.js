@@ -7,7 +7,7 @@
 
 'use strict';
 
-const VERSION = 'nihongo-v1';
+const VERSION = 'nihongo-v2';
 const STATIC_CACHE = VERSION + '-static';
 const IMAGE_CACHE = VERSION + '-images';
 
@@ -16,6 +16,7 @@ const CORE = [
   './',
   'index.html',
   'offline.html',
+  'privacy.html',
   'css/style.css',
   'manifest.json'
 ];
