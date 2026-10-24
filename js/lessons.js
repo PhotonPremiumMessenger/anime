@@ -40,7 +40,11 @@ function renderLessons() {
   grid.innerHTML = '';
 
   if (!filtered.length) {
-    grid.innerHTML = '<div class="empty-state">Ничего не нашлось. Попробуй другой запрос или уровень.</div>';
+    grid.innerHTML = activeLevel !== 'all' && !searchQuery
+      ? `<div class="empty-state">Уроков уровня ${activeLevel} пока нет.
+          <button class="btn btn-outline btn-small" onclick="filterLessons('all', document.querySelector('.filter-chips .chip'))">Показать все</button>
+        </div>`
+      : '<div class="empty-state">Ничего не нашлось. Попробуй другой запрос или уровень.</div>';
     return;
   }
 

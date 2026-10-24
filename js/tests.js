@@ -205,13 +205,29 @@ const testState = {
 
 /* ---------- Список тестов ---------- */
 
+let testsLevel = 'all';
+
+/** Фильтр тестов по уровню JLPT. */
+function filterTestsLevel(level) {
+  testsLevel = level || 'all';
+  renderTestsList();
+}
+
 /** Рисует карточки тестов. */
 function renderTestsList() {
   const grid = document.getElementById('testsGrid');
   if (!grid) return;
 
-  const tests = getAllTests();
+  const all = getAllTests();
+  const tests = testsLevel === 'all'
+    ? all
+    : all.filter(test => String(test.level).includes(testsLevel));
+
   grid.innerHTML = '';
+
+  if (!tests.length) {
+    grid.innerHTML = '<div class="empty-state">Тестов этого уровня пока нет. Переключи уровень или выбери «Все».</div>';
+  }
 
   tests.forEach(test => {
     const best = getBestTestScore(test.id);
@@ -455,6 +471,7 @@ window.getAllTests = getAllTests;
 window.getTestResults = getTestResults;
 window.getBestTestScore = getBestTestScore;
 window.renderTestsList = renderTestsList;
+window.filterTestsLevel = filterTestsLevel;
 window.startTest = startTest;
 window.answerTest = answerTest;
 window.closeTest = closeTest;

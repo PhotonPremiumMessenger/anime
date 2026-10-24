@@ -13,6 +13,9 @@
  * Возвращает true, если пользователь авторизован.
  */
 function checkAuth() {
+  // Публичный просмотр чужого профиля (?user=ник) не требует входа
+  if (typeof isPublicView === 'function' && isPublicView()) return true;
+
   const authorized = isAuthorized();
 
   if (!authorized) {
@@ -380,6 +383,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!checkAuth()) return;
 
   updateHeaderAuth();
+
+  // Публичный профиль рисует js/public.js — личные блоки не трогаем
+  if (typeof isPublicView === 'function' && isPublicView()) return;
+
   fillProfile();
 
   // Закрытие модалки выхода по клику на фон
@@ -398,6 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /* Экспорт в глобальную область */
 window.checkAuth = checkAuth;
+window.copyProfileLink = typeof copyProfileLink === 'function' ? copyProfileLink : null;
 window.renderProfileLevel = renderProfileLevel;
 window.renderLevelRoad = renderLevelRoad;
 window.getPlayerTitle = getPlayerTitle;

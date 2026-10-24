@@ -231,12 +231,18 @@ function renderDictionary() {
   grid.innerHTML = '';
 
   if (!list.length) {
-    grid.innerHTML = `
-      <div class="empty-state dict-empty">
-        Такого слова нет в словаре.
-        <button class="btn btn-outline btn-small" onclick="translateUnknown()">Перевести через Google</button>
-      </div>
-    `;
+    // Фильтр по уровню объясняем отдельно: это не «слово не найдено»
+    const levelEmpty = dictionaryLevel !== 'all' && !dictionaryQuery;
+
+    grid.innerHTML = levelEmpty
+      ? `<div class="empty-state dict-empty">
+          На уровне ${dictionaryLevel} слов пока нет.
+          <button class="btn btn-outline btn-small" onclick="filterDictionaryLevel('all', document.querySelector('.dict-levels .chip'))">Показать все уровни</button>
+        </div>`
+      : `<div class="empty-state dict-empty">
+          Такого слова нет в словаре.
+          <button class="btn btn-outline btn-small" onclick="translateUnknown()">Перевести через Google</button>
+        </div>`;
   }
 
   // Ограничиваем вывод, чтобы не рисовать 150 карточек разом

@@ -155,7 +155,12 @@
     <section class="section" style="padding-top:10px">
       <div class="container">
         <div id="grammarListSection">
-          <div class="catalog-toolbar">
+          <div class="jlpt-bar">
+          <span class="jlpt-bar-label">Уровень:</span>
+          <div class="jlpt-switcher jlpt-switcher-compact" data-jlpt-switcher></div>
+        </div>
+
+        <div class="catalog-toolbar">
             <div class="search search-small">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <circle cx="11" cy="11" r="7"></circle>
@@ -169,6 +174,7 @@
               <button class="chip chip-active" onclick="filterGrammar('all', this)">Все</button>
               <button class="chip" onclick="filterGrammar('N5', this)">N5</button>
               <button class="chip" onclick="filterGrammar('N4', this)">N4</button>
+              <button class="chip" onclick="filterGrammar('N3', this)">N3</button>
             </div>
           </div>
 
@@ -207,6 +213,8 @@
   <script src="js/voice.js"></script>
   <script src="js/nav.js"></script>
   <script src="js/grammar.js"></script>
+  <script src="js/jlpt.js"></script>
+  <script src="js/profile-custom.js"></script>
   <script src="js/design.js"></script>
   <script src="js/translate.js"></script>
   <script src="js/easter.js"></script>

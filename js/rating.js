@@ -9,33 +9,9 @@
 
 /* ---------- Демо-соперники ---------- */
 
-// Ники и опыт подобраны так, чтобы покрыть разные уровни
-const RATING_BOTS = [
-  { username: 'Sakura_chan', xp: 17650, avatar: 7 },
-  { username: 'Kitsune',     xp: 14200, avatar: 5 },
-  { username: 'Hikari',      xp: 11800, avatar: 3 },
-  { username: 'Ren',         xp: 9450,  avatar: 2 },
-  { username: 'Yuki',        xp: 7600,  avatar: 8 },
-  { username: 'Akira',       xp: 6150,  avatar: 4 },
-  { username: 'Mio',         xp: 5200,  avatar: 6 },
-  { username: 'Sora',        xp: 4300,  avatar: 1 },
-  { username: 'Kenji',       xp: 3650,  avatar: 2 },
-  { username: 'Hana',        xp: 3100,  avatar: 7 },
-  { username: 'Rin',         xp: 2600,  avatar: 3 },
-  { username: 'Daiki',       xp: 2200,  avatar: 5 },
-  { username: 'Emi',         xp: 1900,  avatar: 8 },
-  { username: 'Takumi',      xp: 1600,  avatar: 4 },
-  { username: 'Nao',         xp: 1350,  avatar: 1 },
-  { username: 'Yui',         xp: 1150,  avatar: 6 },
-  { username: 'Haru',        xp: 980,   avatar: 2 },
-  { username: 'Kaori',       xp: 820,   avatar: 7 },
-  { username: 'Shin',        xp: 700,   avatar: 5 },
-  { username: 'Ayaka',       xp: 580,   avatar: 3 },
-  { username: 'Riku',        xp: 460,   avatar: 8 },
-  { username: 'Miyu',        xp: 380,   avatar: 1 },
-  { username: 'Toshi',       xp: 300,   avatar: 4 },
-  { username: 'Mei',         xp: 220,   avatar: 6 }
-];
+// Ники и опыт подобраны так, чтобы покрыть разные уровни.
+// Сам список лежит в bots.js — он общий для друзей и публичных профилей.
+const RATING_BOTS = window.RATING_BOTS_DEMO || [];
 
 /* ---------- Данные рейтинга ---------- */
 
@@ -231,6 +207,12 @@ document.addEventListener('DOMContentLoaded', () => {
   renderRating();
 
   // Кнопка «Показать всех»
+  // Ссылка rating.html#friends открывает вкладку друзей
+  if (window.location.hash === '#friends' && typeof showRatingTab === 'function') {
+    const chip = document.querySelectorAll('.rating-tabs .chip')[1];
+    showRatingTab('friends', chip);
+  }
+
   const more = document.getElementById('ratingMore');
   if (more) {
     more.addEventListener('click', () => {

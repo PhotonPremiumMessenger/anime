@@ -166,6 +166,11 @@
     <!-- ============ КАТАЛОГ ============ -->
     <section class="section" style="padding-top:10px">
       <div class="container">
+        <div class="jlpt-bar">
+          <span class="jlpt-bar-label">Уровень:</span>
+          <div class="jlpt-switcher jlpt-switcher-compact" data-jlpt-switcher></div>
+        </div>
+
         <div class="catalog-toolbar">
           <div class="search search-small">
             <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -180,6 +185,7 @@
             <button class="chip chip-active" onclick="filterLessons('all', this)">Все</button>
             <button class="chip" onclick="filterLessons('N5', this)">N5</button>
             <button class="chip" onclick="filterLessons('N4', this)">N4</button>
+            <button class="chip" onclick="filterLessons('N3', this)">N3</button>
           </div>
         </div>
 
@@ -275,6 +281,8 @@
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/avatar.js"></script>
+  <script src="js/jlpt.js"></script>
+  <script src="js/profile-custom.js"></script>
   <script src="js/design.js"></script>
   <script src="js/progress.js"></script>
   <script src="js/lessons-data.js"></script>

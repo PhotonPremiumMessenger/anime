@@ -161,6 +161,12 @@
     <section class="section" style="padding-top:10px">
       <div class="container">
 
+        <div class="rating-tabs">
+          <button class="chip chip-active" onclick="showRatingTab('all', this)">ТОП-100</button>
+          <button class="chip" onclick="showRatingTab('friends', this)">Среди друзей</button>
+        </div>
+
+        <div id="ratingAllSection">
         <div class="catalog-toolbar">
           <div class="search search-small">
             <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -207,6 +213,41 @@
                другие аккаунты этого браузера добавляются автоматически.</p>
           </div>
         </div>
+        </div>
+
+        <!-- Рейтинг среди друзей -->
+        <div id="ratingFriendsSection" class="hidden">
+          <div class="friends-board-head">
+            <div>
+              <h3>Твой круг</h3>
+              <p>Только те, кого ты добавил в друзья. Добавить можно на странице профиля.</p>
+            </div>
+            <span class="block-note" id="friendsBoardNote">Друзей: 0</span>
+          </div>
+
+          <div class="rating-table-wrap">
+            <table class="rating-table">
+              <thead>
+                <tr>
+                  <th class="rating-place">#</th>
+                  <th>Игрок</th>
+                  <th class="rating-level">Ур.</th>
+                  <th class="rating-xp">Опыт</th>
+                </tr>
+              </thead>
+              <tbody id="friendsBoardBody"></tbody>
+            </table>
+          </div>
+
+          <div class="shop-tip">
+            <span class="shop-tip-icon">👥</span>
+            <div>
+              <b>Маленький круг — большие шансы</b>
+              <p>В рейтинге друзей первое место всегда рядом: добавляй новых игроков и сравнивай
+                 прогресс без общего сервера.</p>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   </main>
@@ -231,7 +272,10 @@
   <script src="js/daily.js"></script>
   <script src="js/shop.js"></script>
   <script src="js/avatar.js"></script>
+  <script src="js/friends.js"></script>
+  <script src="js/bots.js"></script>
   <script src="js/rating.js"></script>
+  <script src="js/profile-custom.js"></script>
   <script src="js/design.js"></script>
   <script src="js/translate.js"></script>
   <script src="js/romaji.js"></script>

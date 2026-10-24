@@ -14,6 +14,10 @@ const SHOP_ITEMS = [
   { id: 'avatar-10', category: 'avatar', name: 'Алый клинок',       desc: 'Аватар с повязкой и углями', price: 300, preview: 'assets/images/avatars/avatar10.png', value: 'assets/images/avatars/avatar10.png' },
   { id: 'avatar-11', category: 'avatar', name: 'Лисья жрица',       desc: 'Аватар с духом кицунэ', price: 350, preview: 'assets/images/avatars/avatar11.png', value: 'assets/images/avatars/avatar11.png' },
   { id: 'avatar-12', category: 'avatar', name: 'Они-воин',          desc: 'Аватар с золотой маской', price: 350, preview: 'assets/images/avatars/avatar12.png', value: 'assets/images/avatars/avatar12.png' },
+  { id: 'avatar-13', category: 'avatar', name: 'Звёздный час',       desc: 'Аватар с розовыми заколками', price: 400, preview: 'assets/images/avatars/avatar13.png', value: 'assets/images/avatars/avatar13.png' },
+  { id: 'avatar-14', category: 'avatar', name: 'Ледяной клинок',     desc: 'Аватар со серебряными волосами', price: 400, preview: 'assets/images/avatars/avatar14.png', value: 'assets/images/avatars/avatar14.png' },
+  { id: 'avatar-15', category: 'avatar', name: 'Мико',               desc: 'Аватар жрицы в храме', price: 450, preview: 'assets/images/avatars/avatar15.png', value: 'assets/images/avatars/avatar15.png' },
+  { id: 'avatar-16', category: 'avatar', name: 'Странник в капюшоне', desc: 'Аватар с янтарными глазами', price: 500, preview: 'assets/images/avatars/avatar16.png', value: 'assets/images/avatars/avatar16.png' },
 
   /* --- Темы (акцентные цвета) --- */
   { id: 'theme-sakura-plus', category: 'theme', name: 'Сакура+',   desc: 'Розовый акцент и мягкое свечение', price: 450, accent: '#FF9EC0', accentDark: '#C2477B', icon: 'sakura' },
@@ -29,12 +33,14 @@ const SHOP_ITEMS = [
   { id: 'frame-dragon',  category: 'frame', name: 'Дракон',  desc: 'Золотая чешуя, свечение',        price: 800, frame: 'frame-dragon',  icon: 'fire' },
 
   /* --- Значки у ника --- */
-  { id: 'badge-first-steps', category: 'badge', name: 'Первые шаги', desc: 'Значок новичка',        price: 150, badge: '👣', icon: 'star' },
-  { id: 'badge-samurai',     category: 'badge', name: 'Самурай',     desc: 'Значок для упорных',    price: 300, badge: '⚔', icon: 'sword' },
-  { id: 'badge-sensei',      category: 'badge', name: 'Сэнсэй',      desc: 'Значок знатока',        price: 500, badge: '👘', icon: 'book' },
-  { id: 'badge-master',      category: 'badge', name: 'Мастер',      desc: 'Значок профессионала',  price: 800, badge: '🎋', icon: 'trophy' },
-  { id: 'badge-legend',      category: 'badge', name: 'Легенда',     desc: 'Значок для легенд',     price: 1200, badge: '🐉', icon: 'crown' },
-  { id: 'badge-weekly',      category: 'badge', name: 'Челленджер',  desc: 'Только за челлендж недели', price: 0, badge: '🏅', icon: 'flag', exclusive: true }
+  { id: 'badge-first-steps', category: 'badge', name: 'Первые шаги', desc: 'Значок новичка',        price: 150, badge: '👣', badgeId: 'first_steps', icon: 'star',   rarity: 'common' },
+  { id: 'badge-sakura',      category: 'badge', name: 'Сакура',      desc: 'Нежный значок',         price: 200, badge: '🌸', badgeId: 'sakura',      icon: 'sakura', rarity: 'common' },
+  { id: 'badge-samurai',     category: 'badge', name: 'Самурай',     desc: 'Значок для упорных',    price: 300, badge: '⚔', badgeId: 'samurai',     icon: 'sword',  rarity: 'rare' },
+  { id: 'badge-sensei',      category: 'badge', name: 'Сэнсэй',      desc: 'Значок знатока',        price: 500, badge: '👘', badgeId: 'sensei',      icon: 'book',   rarity: 'rare' },
+  { id: 'badge-neon',        category: 'badge', name: 'Неон',        desc: 'Значок скорости',       price: 650, badge: '⚡', badgeId: 'neon',        icon: 'bolt',   rarity: 'epic' },
+  { id: 'badge-master',      category: 'badge', name: 'Мастер',      desc: 'Значок профессионала',  price: 800, badge: '🎋', badgeId: 'master',      icon: 'trophy', rarity: 'epic' },
+  { id: 'badge-legend',      category: 'badge', name: 'Легенда',     desc: 'Значок для легенд',     price: 1200, badge: '🐉', badgeId: 'legend',     icon: 'crown',  rarity: 'legendary' },
+  { id: 'badge-weekly',      category: 'badge', name: 'Челленджер',  desc: 'Только за челлендж недели', price: 0, badge: '🏅', badgeId: 'weekly', icon: 'flag', exclusive: true, rarity: 'legendary' }
 ];
 
 /* ---------- Состояние магазина ---------- */
@@ -201,12 +207,16 @@ function applyShopStyles() {
     if (frame && frame.frame) el.classList.add(frame.frame);
   });
 
-  // Значок у ника
-  document.querySelectorAll('[data-profile-badge]').forEach(el => {
-    const badge = state.equipped.badge ? getShopItem(state.equipped.badge) : null;
-    el.textContent = badge ? badge.badge : '';
-    el.classList.toggle('hidden', !badge);
-  });
+  // Значок у ника: рисуем SVG, если модуль значков подключён
+  if (typeof renderEquippedBadge === 'function') {
+    renderEquippedBadge();
+  } else {
+    document.querySelectorAll('[data-profile-badge]').forEach(el => {
+      const badge = state.equipped.badge ? getShopItem(state.equipped.badge) : null;
+      el.textContent = badge ? badge.badge : '';
+      el.classList.toggle('hidden', !badge);
+    });
+  }
 
   // Акцентная тема из магазина
   const theme = state.equipped.theme ? getShopItem(state.equipped.theme) : null;
@@ -295,12 +305,15 @@ function renderShop() {
     const affordable = xp >= item.price;
 
     const card = document.createElement('article');
-    card.className = 'shop-card' + (owned ? ' is-owned' : '') + (equipped ? ' is-equipped' : '');
+    card.className = 'shop-card' + (owned ? ' is-owned' : '') + (equipped ? ' is-equipped' : '') +
+      (item.rarity ? ' rarity-' + item.rarity : '');
 
     // Превью: картинка для аватаров, иконка для остального
     const preview = item.preview
       ? '<img src="' + item.preview + '" alt="' + item.name + '">'
-      : achievementIconMarkup({ icon: item.icon || 'star' }, true);
+      : (item.badgeId && typeof badgeMarkup === 'function'
+          ? badgeMarkup(item.badgeId, 68, true)
+          : achievementIconMarkup({ icon: item.icon || 'star' }, true));
 
     card.innerHTML = `
       <div class="shop-preview ${item.preview ? 'is-image' : ''} ${item.category === 'theme' ? 'is-theme' : ''}">

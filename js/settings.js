@@ -401,6 +401,41 @@ const SETTINGS_CONTENT = {
   },
 
   /* ---------- Уведомления ---------- */
+  level: {
+    title: 'Уровень японского',
+    description: 'Выбери цель по JLPT — уроки, тесты, словарь и аниме подстроятся под неё.',
+    html: `
+      <div class="settings-group">
+        <h4>Мой уровень</h4>
+        <div class="jlpt-switcher" data-jlpt-switcher style="margin-bottom:6px"></div>
+        <p class="custom-hint">Сейчас выбран: <b data-jlpt-label>Все уровни</b>. Настройка сохраняется в аккаунте и в этом браузере.</p>
+      </div>
+
+      <div class="settings-group">
+        <h4>Прогресс по уровням</h4>
+        <div class="jlpt-progress" id="jlptProgress"></div>
+      </div>
+
+      <div class="settings-group">
+        <h4>Что фильтруется</h4>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Уроки и тесты</div>
+            <div class="setting-desc">Показываются только задания выбранного уровня</div>
+          </div>
+          <div class="setting-control"><span class="small muted">автоматически</span></div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Словарь и аниме</div>
+            <div class="setting-desc">Список сокращается до слов и тайтлов уровня</div>
+          </div>
+          <div class="setting-control"><span class="small muted">автоматически</span></div>
+        </div>
+      </div>
+    `
+  },
+
   notifications: {
     title: 'Уведомления',
     description: 'Что и когда присылать. Всё можно выключить в один клик.',
@@ -696,6 +731,8 @@ function showSettingsTab(tabId, buttonElement) {
 
   // Дополнительные виджеты, которым нужен готовый DOM
   if (typeof renderVoicePicker === 'function') renderVoicePicker();
+  if (typeof renderJLPTSwitchers === 'function') renderJLPTSwitchers();
+  if (typeof renderJLPTProgress === 'function') renderJLPTProgress();
 
   const romajiSwitch = container.querySelector('input[onchange="setRomajiOn(this.checked)"]');
   if (romajiSwitch && typeof isRomajiOn === 'function') romajiSwitch.checked = isRomajiOn();
