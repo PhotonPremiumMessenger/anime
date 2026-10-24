@@ -130,6 +130,8 @@
 
         <!-- ---------- Левая колонка ---------- -->
         <aside class="player-card">
+          <div class="profile-cover"></div>
+
           <div class="avatar-frame">
             <img src="assets/images/avatars/avatar1.png" alt="Твой аватар" data-avatar-img>
           </div>
@@ -155,6 +157,11 @@
           <div class="btn-row">
             <button class="btn btn-outline btn-small" style="flex:1" onclick="openAvatarModal()">Аватар</button>
             <a class="btn btn-primary btn-small" style="flex:1" href="shop.html">Магазин</a>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn btn-ghost btn-small" style="flex:1" onclick="openCustomPanel()">Оформление</button>
+            <button class="btn btn-ghost btn-small" style="flex:1" onclick="copyProfileLink(getUsername())">Ссылка</button>
           </div>
 
           <!-- Мини-сетка достижений -->
@@ -206,6 +213,15 @@
                 <div class="stat-icon">火</div>
               </article>
             </div>
+          </section>
+
+          <!-- Био -->
+          <section class="block reveal">
+            <div class="block-head">
+              <h3>О себе</h3>
+              <span class="block-note">видно в публичном профиле</span>
+            </div>
+            <div id="bioBlock"></div>
           </section>
 
           <!-- Уровень и награды -->
@@ -266,47 +282,74 @@
             <div class="ach-grid ach-grid-100" id="achGrid"></div>
           </section>
 
-          <!-- Активность -->
+          <!-- Графики -->
           <section class="block reveal">
             <div class="block-head">
-              <h3>Активность</h3>
-              <span class="block-note">последние события</span>
+              <h3>Статистика в графиках</h3>
+              <span class="block-note">опыт за две недели</span>
             </div>
 
-            <!-- Ленту активности рисует profile.js -->
-            <div class="activity-list" id="activityList"></div>
+            <div id="xpChart"></div>
+
+            <div class="study-rings" id="studyRings"></div>
+            <div class="ach-donut-wrap" id="achDonut"></div>
+          </section>
+
+          <!-- История активности -->
+          <section class="block reveal">
+            <div class="block-head">
+              <h3>История активности</h3>
+              <span class="block-note" id="activityCount">пока пусто</span>
+            </div>
+
+            <div class="ach-filter activity-filters">
+              <button class="chip chip-active" onclick="filterActivity('all', this)">Все</button>
+              <button class="chip" onclick="filterActivity('study', this)">Учёба</button>
+              <button class="chip" onclick="filterActivity('reward', this)">Награды</button>
+              <button class="chip" onclick="filterActivity('social', this)">Общение</button>
+            </div>
+
+            <div class="activity-feed" id="activityBlock"></div>
+
+            <button class="btn btn-ghost btn-small mt-16" onclick="clearActivity()">Очистить историю</button>
           </section>
 
           <!-- Друзья -->
           <section class="block reveal">
             <div class="block-head">
               <h3>Друзья</h3>
-              <span class="block-note">учиться веселее вместе</span>
+              <span class="block-note" id="friendsCount">0</span>
             </div>
 
-            <div class="friends-row">
-              <div class="friend-avatars">
-                <img src="assets/images/avatars/avatar3.png" alt="Друг 1">
-                <img src="assets/images/avatars/avatar5.png" alt="Друг 2">
-                <img src="assets/images/avatars/avatar7.png" alt="Друг 3">
-              </div>
-
-              <div class="friend-count">
-                <b>3</b>
-                <span>друга уже в Nihongo</span>
-              </div>
-
-              <button class="btn btn-outline btn-small"
-                      onclick="showToast('Друзья', 'Приглашения появятся после релиза', 'info')">
-                Пригласить друга
-              </button>
+            <div class="friend-add">
+              <input type="text" id="friendNickInput" placeholder="Ник игрока" autocomplete="off">
+              <button class="btn btn-primary btn-small" onclick="submitFriendForm()">Добавить</button>
             </div>
+            <p class="friend-hint">
+              Можно добавить аккаунт из этого браузера или демо-игрока из
+              <a href="rating.html">рейтинга</a> — например <code>Sakura_chan</code>.
+            </p>
+
+            <div class="friends-list" id="friendsBlock"></div>
+
+            <a class="btn btn-outline btn-small mt-16" href="rating.html#friends">Рейтинг среди друзей →</a>
+          </section>
+
+          <!-- Уровень JLPT -->
+          <section class="block reveal">
+            <div class="block-head">
+              <h3>Уровень подготовки</h3>
+              <span class="block-note">сейчас: <b data-jlpt-label>Все уровни</b></span>
+            </div>
+
+            <div class="jlpt-switcher" data-jlpt-switcher></div>
+            <div class="jlpt-progress" id="jlptProgress"></div>
           </section>
 
           <!-- Кнопки -->
           <div class="profile-actions">
             <a class="btn btn-primary" href="lessons.html">К урокам</a>
-            <a class="btn btn-outline" href="rating.html">Рейтинг игроков</a>
+            <a class="btn btn-outline" href="rating.html#friends">Рейтинг друзей</a>
             <a class="btn btn-outline" href="shop.html">Магазин</a>
 
             <a class="btn btn-outline" href="settings.html">
@@ -357,6 +400,49 @@
     </div>
   </div>
 
+  <!-- ============ МОДАЛКА ОФОРМЛЕНИЯ ============ -->
+  <div class="modal-overlay" id="customModal" role="dialog" aria-modal="true">
+    <div class="modal modal-wide">
+      <div class="modal-head">
+        <h3>Оформление профиля</h3>
+        <button class="modal-close" onclick="closeCustomPanel()" aria-label="Закрыть">×</button>
+      </div>
+      <div id="customPanelBody"></div>
+    </div>
+  </div>
+
+  <!-- ============ МОДАЛКА БИО ============ -->
+  <div class="modal-overlay" id="bioModal" role="dialog" aria-modal="true">
+    <div class="modal">
+      <div class="modal-head">
+        <h3>О себе</h3>
+        <button class="modal-close" onclick="closeBioEditor()" aria-label="Закрыть">×</button>
+      </div>
+      <p class="modal-sub">Пара предложений о себе. Видно всем, кто откроет твой профиль по ссылке.</p>
+
+      <label class="bio-field">
+        <span>Био <i id="bioCounter">0 / 200</i></span>
+        <textarea id="bioText" rows="4" maxlength="320" placeholder="Учу японский ради аниме, люблю сакуру и Гибри…"></textarea>
+      </label>
+
+      <div class="bio-row">
+        <label class="bio-field">
+          <span>Город</span>
+          <input type="text" id="bioCity" maxlength="40" placeholder="Нерюнгри">
+        </label>
+        <label class="bio-field">
+          <span>Любимый тайтл</span>
+          <input type="text" id="bioFavorite" maxlength="60" placeholder="Атака титанов">
+        </label>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" style="flex:1" onclick="submitBio()">Сохранить</button>
+        <button class="btn btn-ghost" onclick="closeBioEditor()">Отмена</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ============ МОДАЛКА ВЫХОДА ============ -->
   <div class="modal-overlay" id="logoutModal" role="dialog" aria-modal="true" aria-labelledby="logoutModalTitle">
     <div class="modal">
@@ -397,6 +483,14 @@
   <script src="js/quiz.js"></script>
   <script src="js/shop.js"></script>
   <script src="js/avatar.js"></script>
+  <script src="js/badges.js"></script>
+  <script src="js/bots.js"></script>
+  <script src="js/friends.js"></script>
+  <script src="js/activity.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/jlpt.js"></script>
+  <script src="js/profile-custom.js"></script>
+  <script src="js/public.js"></script>
   <script src="js/profile.js"></script>
   <script src="js/design.js"></script>
   <script src="js/translate.js"></script>

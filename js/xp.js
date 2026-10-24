@@ -155,6 +155,7 @@ function addXP(amount, reason = '') {
 
   xpPop(delta);
   bumpCounter('xpEarned', delta);
+  recordXPDay(delta);
 
   // Повышение уровня: награда + уведомление
   if (after.level > before.level) {
@@ -168,6 +169,9 @@ function addXP(amount, reason = '') {
         );
         if (reward && reward.itemId && typeof unlockShopItem === 'function') {
           unlockShopItem(reward.itemId, 'level');
+        }
+        if (typeof logActivity === 'function') {
+          logActivity('level', 'Уровень ' + level + (reward ? ': ' + reward.text : ''));
         }
       }, 320);
     }
@@ -185,6 +189,51 @@ function spendXP(amount) {
   bumpCounter('xpSpent', price);
   if (typeof refreshNihongoUI === 'function') refreshNihongoUI();
   return true;
+}
+
+/* ---------- Опыт по дням ---------- */
+
+const XP_DAYS_KEY = 'nihongo_xp_days';
+
+/** Опыт по дням: { '2026-10-24': 120, ... }. */
+function getXPDays() {
+  const saved = readJSON(XP_DAYS_KEY, {});
+  return saved && typeof saved === 'object' ? saved : {};
+}
+
+/** Записывает опыт в копилку дня. */
+function recordXPDay(amount) {
+  const delta = Math.round(Number(amount) || 0);
+  if (!delta) return;
+
+  const days = getXPDays();
+  const key = xpTodayKey();
+  days[key] = Math.max(0, (Number(days[key]) || 0) + delta);
+
+  // Храним только последние 120 дней
+  const keys = Object.keys(days).sort();
+  while (keys.length > 120) delete days[keys.shift()];
+
+  writeJSON(XP_DAYS_KEY, days);
+}
+
+/** Опыт за конкретный день (0 — если не было). */
+function getXPDay(dateKey) {
+  return Number(getXPDays()[dateKey]) || 0;
+}
+
+/** Серия дней с ненулевым опытом подряд (с сегодня назад). */
+function getXPDayStreak() {
+  const days = getXPDays();
+  let streak = 0;
+
+  for (let i = 0; i < 120; i++) {
+    const key = xpDateKey(i);
+    if ((Number(days[key]) || 0) > 0) streak += 1;
+    else if (i > 0) break;
+  }
+
+  return streak;
 }
 
 /* ---------- Всплывашка «+N XP» ---------- */
@@ -524,6 +573,10 @@ window.saveStreak = saveStreak;
 window.touchStreakOnVisit = touchStreakOnVisit;
 window.getPlayerStats = getPlayerStats;
 window.renderHeroLevel = renderHeroLevel;
+window.getXPDays = getXPDays;
+window.getXPDay = getXPDay;
+window.getXPDayStreak = getXPDayStreak;
+window.recordXPDay = recordXPDay;
 window.syncLevelRewards = syncLevelRewards;
 window.registerActionHook = registerActionHook;
 window.notifyAction = notifyAction;

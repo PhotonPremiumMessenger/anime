@@ -153,11 +153,17 @@
 
     <section class="section" style="padding-top:10px">
       <div class="container">
+        <div class="jlpt-bar">
+          <span class="jlpt-bar-label">Уровень:</span>
+          <div class="jlpt-switcher jlpt-switcher-compact" data-jlpt-switcher></div>
+        </div>
+
         <div class="catalog-toolbar">
           <div class="filter-chips dict-levels">
             <button class="chip chip-active" onclick="filterDictionaryLevel('all', this)">Все уровни</button>
             <button class="chip" onclick="filterDictionaryLevel('N5', this)">N5</button>
             <button class="chip" onclick="filterDictionaryLevel('N4', this)">N4</button>
+            <button class="chip" onclick="filterDictionaryLevel('N3', this)">N3</button>
           </div>
 
           <button class="chip" onclick="toggleOnlyMine(this)">Только мои слова</button>
@@ -202,6 +208,8 @@
   <script src="js/voice.js"></script>
   <script src="js/nav.js"></script>
   <script src="js/dictionary.js"></script>
+  <script src="js/jlpt.js"></script>
+  <script src="js/profile-custom.js"></script>
   <script src="js/design.js"></script>
   <script src="js/translate.js"></script>
   <script src="js/easter.js"></script>

@@ -130,7 +130,33 @@ function closeAvatarModal() {
 }
 
 /**
- * Строит сетку из 8 аватаров.
+ * Все 16 аватаров: 8 базовых и 8 премиальных из магазина.
+ * Премиальные без покупки показываются закрытыми.
+ */
+function getAllAvatarsWithLocks() {
+  const list = AVATARS.map(path => ({ path: path, locked: false }));
+
+  if (typeof SHOP_ITEMS !== 'undefined') {
+    const owned = typeof getShopState === 'function' ? getShopState().owned : [];
+
+    SHOP_ITEMS.forEach(item => {
+      if (item.category !== 'avatar') return;
+      if (list.some(entry => entry.path === item.value)) return;
+
+      list.push({
+        path: item.value,
+        locked: !owned.includes(item.id),
+        price: item.price,
+        itemId: item.id
+      });
+    });
+  }
+
+  return list;
+}
+
+/**
+ * Строит сетку аватаров (16 штук).
  * Вызывается при открытии модалки, чтобы не дублировать разметку в HTML.
  */
 function renderAvatarGrid() {
@@ -139,16 +165,25 @@ function renderAvatarGrid() {
 
   grid.innerHTML = '';
 
-  getAvailableAvatars().forEach((path, index) => {
+  getAllAvatarsWithLocks().forEach((entry, index) => {
+    const path = entry.path;
     const button = document.createElement('button');
     button.type = 'button';
-    button.className = 'avatar-option';
+    button.className = 'avatar-option' + (entry.locked ? ' is-locked' : '');
     button.dataset.avatar = path;
-    button.title = 'Аватар ' + (index + 1);
+    button.title = entry.locked ? 'Откроется в магазине за ' + entry.price + ' XP' : 'Аватар ' + (index + 1);
 
     const img = document.createElement('img');
     img.src = path;
     img.alt = 'Аватар ' + (index + 1);
+
+    // Закрытый премиум-аватар: замок вместо картинки
+    if (entry.locked) {
+      const lock = document.createElement('span');
+      lock.className = 'avatar-lock';
+      lock.textContent = '🔒';
+      button.appendChild(lock);
+    }
 
     // Премиальные аватары из магазина помечаем звёздочкой
     if (!AVATARS.includes(path)) {
@@ -159,7 +194,13 @@ function renderAvatarGrid() {
     }
 
     button.appendChild(img);
-    button.addEventListener('click', () => selectAvatar(path, button));
+    button.addEventListener('click', () => {
+      if (entry.locked) {
+        showToast('Аватар закрыт', 'Купи его в магазине за ' + entry.price + ' XP', 'warning');
+        return;
+      }
+      selectAvatar(path, button);
+    });
     grid.appendChild(button);
   });
 
@@ -203,6 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
 /* Экспорт в глобальную область */
 window.AVATARS = AVATARS;
 window.getAvailableAvatars = getAvailableAvatars;
+window.getAllAvatarsWithLocks = getAllAvatarsWithLocks;
 window.getCurrentAvatar = getCurrentAvatar;
 window.setAvatar = setAvatar;
 window.setRandomAvatar = setRandomAvatar;

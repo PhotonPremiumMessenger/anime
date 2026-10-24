@@ -419,7 +419,11 @@ function renderGrammarList() {
   grid.innerHTML = '';
 
   if (!list.length) {
-    grid.innerHTML = '<div class="empty-state">Правил не нашли. Попробуй другой запрос.</div>';
+    grid.innerHTML = grammarLevelFilter !== 'all'
+      ? `<div class="empty-state">Правил уровня ${grammarLevelFilter} пока нет.
+          <button class="btn btn-outline btn-small" onclick="filterGrammar('all', document.querySelector('.grammar-filters .chip'))">Показать все</button>
+        </div>`
+      : '<div class="empty-state">Правил не нашли. Попробуй другой запрос.</div>';
   }
 
   list.forEach(rule => {
