@@ -63,8 +63,13 @@ body {
   font-family: var(--font-body);
   font-size: 15px;
   line-height: 1.6;
-  overflow-x: hidden;
+  /* clip, а не hidden: hidden ломает position: sticky в карточке профиля */
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
+}
+
+@supports not (overflow: clip) {
+  body { overflow-x: hidden; }
 }
 
 /* Фоновое изображение + затемнение, чтобы текст всегда читался */
@@ -178,9 +183,10 @@ p {
 
 .container {
   width: 100%;
-  max-width: 1200px;
+  /* Ширина идёт за окном на любом масштабе, предел — только 1680 px */
+  max-width: 1680px;
   margin: 0 auto;
-  padding: 0 32px;
+  padding: 0 clamp(16px, 2.4vw, 40px);
 }
 
 .section {
@@ -12494,7 +12500,8 @@ body.no-anim .page-loader-bar span {
 }
 
 .footer-col a {
-  display: inline-block;
+  display: block;
+  width: 100%;
   padding: 4px 0;
   font-size: 13.5px;
   color: var(--text-gray);
@@ -14838,5 +14845,1180 @@ body.theme-light .command-box {
     grid-template-columns: 42px minmax(0, 1fr) 44px;
     gap: 8px;
     font-size: 12px;
+  }
+}
+
+/* ============================================================
+   ЧАСТЬ 15. Аниме-облик, широкие экраны, мобильное меню, профиль
+   Здесь всё, что делает сайт похожим на аниме-постер, а не на
+   обычный тёмный лендинг: скорость, бумага, рамки, акценты.
+   ============================================================ */
+
+/* ---------- 15.1 Широкие экраны: тянемся вместе с окном ---------- */
+@media (min-width: 1440px) {
+  .hero h1 { font-size: clamp(60px, 4.2vw, 78px); }
+  .hero-sub { font-size: 18px; max-width: 560px; }
+  .hero-card { padding: 30px; }
+  .section { padding: 100px 0; }
+  .anime-grid { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+}
+
+@media (min-width: 1700px) {
+  .hero h1 { font-size: 82px; }
+  .hero-sub { font-size: 19px; }
+  .anime-grid { grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); }
+  .lesson-card, .grammar-card, .dict-card, .test-card, .video-card { font-size: 15.5px; }
+}
+
+/* ---------- 15.2 Палитра и общий тон ---------- */
+:root {
+  --accent-2: #FF5E5B;        /* алый — второй акцент, как на постерах */
+  --accent-3: #FFD166;        /* золото для бликов */
+  --ink: #08080D;
+  --panel-line: rgba(255, 255, 255, 0.10);
+}
+
+/* Тёплое свечение и «бумажная» сетка поверх фона */
+body::after {
+  background:
+    radial-gradient(1000px 560px at 12% -5%, rgba(255, 140, 60, 0.16), transparent 70%),
+    radial-gradient(900px 620px at 92% 8%, rgba(255, 94, 91, 0.12), transparent 72%),
+    radial-gradient(700px 700px at 50% 110%, rgba(255, 209, 102, 0.06), transparent 70%),
+    linear-gradient(180deg, rgba(10, 10, 16, 0.62) 0%, rgba(10, 10, 16, 0.9) 55%, var(--bg-dark) 100%);
+}
+
+/* Тонкая манга-сетка: почти незаметные точки-полутон */
+.anime-halftone {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.35;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.09) 0.7px, transparent 0.8px);
+  background-size: 7px 7px;
+  mask-image: radial-gradient(60% 60% at 50% 0%, #000 0%, transparent 85%);
+  -webkit-mask-image: radial-gradient(60% 60% at 50% 0%, #000 0%, transparent 85%);
+}
+
+/* ---------- 15.3 Типографика в духе аниме ---------- */
+h1, h2, .hero h1 {
+  letter-spacing: -0.4px;
+}
+
+.hero h1 {
+  background: linear-gradient(96deg, #FFFFFF 4%, #FFE3B8 38%, var(--accent) 68%, var(--accent-2) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 12px 46px rgba(255, 140, 60, 0.22);
+}
+
+.hero h1 .accent {
+  color: transparent;
+  background: linear-gradient(96deg, var(--accent-3), var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* Кисть под заголовками разделов */
+.section-head h2 {
+  position: relative;
+  display: inline-block;
+  padding-bottom: 10px;
+}
+
+.section-head h2::after {
+  content: '';
+  position: absolute;
+  left: 2px;
+  bottom: 0;
+  width: 64px;
+  height: 4px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transform: skewX(-18deg);
+  box-shadow: 0 4px 16px rgba(255, 94, 91, 0.35);
+}
+
+/* Катакана-акцент рядом с бейджами */
+.badge {
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  font-size: 11px;
+  border-radius: 999px;
+  background: linear-gradient(120deg, rgba(255, 179, 71, 0.18), rgba(255, 94, 91, 0.14));
+  border-color: rgba(255, 179, 71, 0.35);
+}
+
+/* ---------- 15.4 Кнопки: блик и «скорость» ---------- */
+.btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #FFC46B 0%, var(--accent) 42%, #F2703C 100%);
+  box-shadow: 0 10px 26px rgba(242, 112, 60, 0.28);
+}
+
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  top: -60%;
+  left: -80%;
+  width: 45%;
+  height: 220%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  transform: rotate(18deg);
+  transition: left 0.55s var(--ease-smooth);
+}
+
+.btn-primary:hover::after {
+  left: 130%;
+}
+
+.btn-outline:hover {
+  border-color: var(--accent-2);
+  color: #fff;
+  background: linear-gradient(120deg, rgba(255, 179, 71, 0.14), rgba(255, 94, 91, 0.18));
+}
+
+/* ---------- 15.5 Главный экран: скорость и акцентные линии ---------- */
+.hero {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Косые «скоростные» линии справа */
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -12%;
+  right: -6%;
+  width: 58%;
+  height: 124%;
+  background: repeating-linear-gradient(
+    104deg,
+    rgba(255, 255, 255, 0.055) 0 1.5px,
+    transparent 1.5px 14px
+  );
+  transform: skewX(-6deg);
+  mask-image: radial-gradient(60% 70% at 80% 50%, #000, transparent 78%);
+  -webkit-mask-image: radial-gradient(60% 70% at 80% 50%, #000, transparent 78%);
+  pointer-events: none;
+}
+
+/* Крупное вертикальное «日本語» как водяной знак */
+.hero::after {
+  content: '日本語';
+  position: absolute;
+  top: 8%;
+  right: 2%;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: clamp(80px, 9vw, 150px);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 6px;
+  writing-mode: vertical-rl;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255, 179, 71, 0.22);
+  opacity: 0.55;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Плашки на карточке-примере — как стикеры на постере */
+.float-chip {
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent-3), var(--accent));
+  color: #1a1204;
+  font-weight: 800;
+  box-shadow: 0 10px 24px rgba(255, 140, 60, 0.35);
+}
+
+.float-chip.chip-one { transform: rotate(-5deg); }
+.float-chip.chip-two { transform: rotate(4deg); }
+
+/* ---------- 15.6 Карточки: рамка панели и подсветка ---------- */
+.anime-card,
+.lesson-card,
+.grammar-card,
+.dict-card,
+.test-card,
+.video-card,
+.shop-card,
+.feature-card {
+  position: relative;
+  border: 1px solid var(--panel-line);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015)),
+    rgba(12, 12, 20, 0.72);
+}
+
+/* Уголок-«закладка» в правом верхнем углу карточки */
+.anime-card::after,
+.lesson-card::after,
+.grammar-card::after,
+.test-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 34px;
+  height: 34px;
+  background: linear-gradient(225deg, rgba(255, 179, 71, 0.5) 0 50%, transparent 50%);
+  opacity: 0.55;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.anime-card:hover::after,
+.lesson-card:hover::after,
+.grammar-card:hover::after,
+.test-card:hover::after {
+  opacity: 1;
+}
+
+.anime-card:hover,
+.lesson-card:hover,
+.grammar-card:hover,
+.dict-card:hover,
+.test-card:hover,
+.video-card:hover,
+.shop-card:hover,
+.feature-card:hover {
+  border-color: rgba(255, 179, 71, 0.42);
+  box-shadow: 0 22px 54px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 179, 71, 0.12) inset;
+}
+
+/* Постер как кадр из манги: белая рамка и лёгкий поворот при наведении */
+.anime-poster {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.anime-img {
+  transition: transform 0.6s var(--ease-smooth), filter 0.4s ease;
+}
+
+.anime-card:hover .anime-img {
+  transform: scale(1.045);
+  filter: saturate(1.12) contrast(1.03);
+}
+
+/* Уровень JLPT на постере — как стикер */
+.anime-badge {
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--accent-3), var(--accent));
+  color: #191104;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+
+/* ---------- 15.7 Блоки, панели, разделители ---------- */
+.block,
+.settings-group,
+.panel {
+  border-color: var(--panel-line);
+}
+
+.block-head h3,
+.settings-group > h4 {
+  letter-spacing: 0.2px;
+}
+
+.block-head h3::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 15px;
+  margin-right: 9px;
+  border-radius: 3px;
+  vertical-align: -2px;
+  background: linear-gradient(180deg, var(--accent), var(--accent-2));
+}
+
+/* ---------- 15.8 Подвал: знак и линия ---------- */
+.footer::after {
+  content: '日本';
+  position: absolute;
+  right: 4%;
+  bottom: 10px;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 84px;
+  font-weight: 900;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255, 179, 71, 0.13);
+  pointer-events: none;
+  user-select: none;
+  line-height: 1;
+}
+
+/* ---------- 15.9 Светлая тема ---------- */
+body.theme-light .hero h1 {
+  background: linear-gradient(96deg, #1b1710 0%, #7a4a12 45%, #d2622b 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+body.theme-light .hero::before {
+  background: repeating-linear-gradient(
+    104deg,
+    rgba(0, 0, 0, 0.06) 0 1.5px,
+    transparent 1.5px 14px
+  );
+}
+
+body.theme-light .hero::after {
+  -webkit-text-stroke: 1px rgba(210, 98, 43, 0.18);
+}
+
+body.theme-light .anime-card,
+body.theme-light .lesson-card,
+body.theme-light .grammar-card,
+body.theme-light .dict-card,
+body.theme-light .test-card,
+body.theme-light .video-card,
+body.theme-light .shop-card,
+body.theme-light .feature-card {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7)),
+    #fff;
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+/* ============================================================
+   15.10 Мобильное меню — выезжающая панель поверх страницы
+   ============================================================ */
+
+/* Затемнение под меню */
+.nav-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  background: rgba(4, 4, 8, 0.66);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s var(--ease-soft), visibility 0.3s;
+}
+
+body.nav-open .nav-backdrop {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Кнопка закрытия внутри панели */
+.nav-drawer-head,
+.nav-drawer-close {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  /* Шапка без blur: он ломал fixed-позиционирование меню */
+  .header {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(8, 8, 13, 0.97);
+    border-bottom: 1px solid var(--border);
+  }
+
+  body.theme-light .header {
+    background: rgba(255, 255, 255, 0.97);
+  }
+
+  .header .container {
+    flex-wrap: nowrap;
+    gap: 10px;
+  }
+
+  .header-actions {
+    margin-left: auto;
+  }
+
+  .nav {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: auto;
+    width: min(340px, 88vw);
+    max-height: none;
+    height: 100%;
+    z-index: 920;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+    padding: 0 14px 24px;
+    margin: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border: none;
+    border-left: 1px solid var(--border-strong);
+    border-radius: 0;
+    background: #0d0d15;
+    box-shadow: -24px 0 70px rgba(0, 0, 0, 0.6);
+    transform: translateX(100%);
+    visibility: hidden;
+    transition: transform 0.36s var(--ease-smooth), visibility 0.36s;
+  }
+
+  body.theme-light .nav {
+    background: #fffdf9;
+  }
+
+  .nav.is-mobile-open {
+    display: flex;
+    transform: translateX(0);
+    visibility: visible;
+  }
+
+  /* Шапка панели */
+  .nav-drawer-head {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 0 -14px 10px;
+    padding: 14px 16px;
+    background: inherit;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-drawer-title {
+    font-family: var(--font-head);
+    font-size: 14px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-gray);
+  }
+
+  .nav-drawer-close {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    color: var(--text-gray);
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .nav-drawer-close svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+
+  .nav-link {
+    width: 100%;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-size: 15px;
+  }
+
+  .nav-link.active {
+    background: var(--accent-soft);
+  }
+
+  .nav-design {
+    width: 100%;
+    justify-content: center;
+    margin-top: 10px;
+    padding: 12px;
+  }
+
+  .mobile-more {
+    margin-top: 4px;
+    padding-top: 4px;
+    border-top: 1px solid var(--border);
+  }
+
+  .mobile-more-title {
+    padding: 12px 14px 4px;
+    font-size: 11px;
+    letter-spacing: 1.4px;
+  }
+
+  .mobile-more .nav-link {
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+
+  body.nav-open {
+    overflow: hidden;
+  }
+}
+
+/* На десктопе затемнение и голова панели не нужны */
+@media (min-width: 901px) {
+  .nav-backdrop {
+    display: none;
+  }
+}
+
+/* ============================================================
+   15.11 Профиль: липкая карточка и сворачиваемые блоки
+   ============================================================ */
+
+/* Карточка игрока едет вместе со скроллом */
+.player-card {
+  position: sticky;
+  top: 84px;
+  align-self: start;
+  max-height: calc(100vh - 104px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.player-card::-webkit-scrollbar {
+  width: 5px;
+}
+
+.player-card::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+}
+
+/* Заголовок блока становится кнопкой-аккордеоном */
+.block-head.is-toggle {
+  cursor: pointer;
+  user-select: none;
+  padding: 2px 0;
+  border-radius: 10px;
+  transition: color 0.2s ease;
+}
+
+.block-head.is-toggle:hover h3 {
+  color: var(--accent);
+}
+
+.block-toggle {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  margin-left: 10px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.03);
+  transition: transform 0.32s var(--ease-smooth), color 0.2s ease, border-color 0.2s ease;
+}
+
+.block-toggle svg {
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.block-head.is-toggle:hover .block-toggle {
+  color: var(--accent);
+  border-color: rgba(255, 179, 71, 0.4);
+}
+
+.block.is-collapsed .block-toggle {
+  transform: rotate(-90deg);
+}
+
+/* Тело блока плавно схлопывается */
+.block-body {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.36s var(--ease-smooth), opacity 0.28s ease,
+              margin 0.36s var(--ease-smooth);
+}
+
+.block-body > .block-body-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.block.is-collapsed .block-body {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  margin-top: -6px;
+}
+
+/* Кнопки «открыть все / свернуть все» */
+.profile-blocks-tools {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+@media (max-width: 980px) {
+  .player-card {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+}
+
+/* ============================================================
+   15.12 Тур: крупнее и понятнее
+   ============================================================ */
+
+.tour-card {
+  padding: 26px 26px 20px;
+  border-color: rgba(255, 179, 71, 0.45);
+  background:
+    radial-gradient(120% 140% at 100% 0%, rgba(255, 179, 71, 0.16), transparent 60%),
+    linear-gradient(165deg, rgba(30, 30, 44, 0.99), rgba(12, 12, 19, 0.99));
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.62), 0 0 0 1px rgba(255, 179, 71, 0.12) inset;
+  border-radius: 20px;
+}
+
+.tour-step-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 179, 71, 0.16);
+  font-size: 11.5px;
+  letter-spacing: 1.2px;
+}
+
+.tour-card h4 {
+  font-size: 22px;
+  line-height: 1.25;
+  margin: 10px 0 8px;
+  padding-right: 64px;
+}
+
+.tour-card p {
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text-gray);
+}
+
+.tour-skip {
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+
+.tour-foot {
+  margin-top: 22px;
+}
+
+.tour-btns .btn {
+  padding: 11px 20px;
+  font-size: 14px;
+  border-radius: 12px;
+}
+
+.tour-dots {
+  gap: 6px;
+}
+
+.tour-dot {
+  width: 8px;
+  height: 8px;
+}
+
+.tour-dot.is-active {
+  width: 26px;
+}
+
+/* Стрелка-указатель на подсвеченный элемент */
+.tour-pointer {
+  position: fixed;
+  z-index: 983;
+  width: 54px;
+  height: 54px;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  color: var(--accent);
+  filter: drop-shadow(0 6px 18px rgba(255, 140, 60, 0.5));
+  transition: top 0.34s var(--ease-smooth), left 0.34s var(--ease-smooth),
+              opacity 0.25s ease, visibility 0.25s;
+}
+
+.tour-pointer.is-visible {
+  opacity: 1;
+  visibility: visible;
+  animation: tourPointerBob 1.5s ease-in-out infinite;
+}
+
+.tour-pointer svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+
+@keyframes tourPointerBob {
+  0%, 100% { transform: translateY(0) rotate(-8deg); }
+  50% { transform: translateY(-9px) rotate(-8deg); }
+}
+
+/* Подсказка «нажми сюда» */
+.tour-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 12px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px dashed rgba(255, 179, 71, 0.5);
+  background: rgba(255, 179, 71, 0.1);
+  color: var(--accent);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.tour-hint svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+/* Прогресс тура */
+.tour-progress {
+  height: 4px;
+  margin: 16px 0 0;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.tour-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition: width 0.4s var(--ease-smooth);
+}
+
+@media (max-width: 760px) {
+  .tour-card {
+    padding: 20px 16px 16px;
+    border-radius: 18px;
+  }
+
+  .tour-card h4 {
+    font-size: 18px;
+    padding-right: 0;
+  }
+
+  .tour-card p {
+    font-size: 13.5px;
+  }
+
+  .tour-btns .btn {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .tour-pointer {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* ---------- 15.13 Декор: полутон, боковые надписи, звёзды ---------- */
+.anime-side-mark {
+  position: absolute;
+  top: 42px;
+  left: max(10px, calc(50% - 660px));
+  writing-mode: vertical-rl;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 8px;
+  color: rgba(255, 179, 71, 0.5);
+  pointer-events: none;
+  user-select: none;
+  z-index: 2;
+}
+
+.anime-side-mark::before {
+  content: '';
+  display: block;
+  width: 1px;
+  height: 46px;
+  margin: 0 auto 12px;
+  background: linear-gradient(180deg, transparent, rgba(255, 179, 71, 0.6));
+}
+
+.anime-star {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-left: 8px;
+  vertical-align: 6px;
+  color: var(--accent-2);
+  animation: starTwinkle 3.4s ease-in-out infinite;
+}
+
+.anime-star svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+
+@keyframes starTwinkle {
+  0%, 100% { opacity: 0.55; transform: scale(0.92) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1.08) rotate(12deg); }
+}
+
+/* Наклон карточек включается только там, где есть мышь */
+.anime-card {
+  transform-style: preserve-3d;
+  transform-origin: center;
+  transition: transform 0.35s var(--ease-smooth), box-shadow 0.4s var(--ease-smooth),
+              border-color 0.3s var(--ease-soft);
+}
+
+@media (max-width: 980px) {
+  .anime-side-mark {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anime-star {
+    animation: none;
+  }
+}
+
+/* ---------- 15.14 Стили перевода и транскрипции ---------- */
+
+/* Панель справа */
+body.tr-style-panel .translate-popup {
+  top: 96px !important;
+  right: 22px !important;
+  left: auto !important;
+  width: 300px;
+  max-height: calc(100vh - 130px);
+  overflow-y: auto;
+}
+
+/* Перевод под выделением */
+body.tr-style-inline .translate-popup {
+  border-radius: 10px;
+}
+
+/* Фуригана: чтение мелким шрифтом над текстом */
+body.transcription-kana .romaji {
+  position: absolute;
+  top: -1.15em;
+  left: 0;
+  font-size: 10px;
+  letter-spacing: 0.4px;
+  color: rgba(255, 179, 71, 0.85);
+  white-space: nowrap;
+}
+
+body.transcription-kana [data-ja] {
+  position: relative;
+  margin-top: 14px;
+}
+
+body.transcription-off .romaji,
+body.hide-romaji .romaji {
+  display: none;
+}
+
+/* ---------- 15.15 Скрыть всё пасхальное, если выключено ---------- */
+body.no-easter .easter-hint,
+body.no-easter .easter-list,
+body.no-easter [data-easter] {
+  display: none !important;
+}
+
+/* ---------- 15.16 Заголовок шага тура с иконкой ---------- */
+.tour-card h4 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tour-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  color: var(--accent);
+  background: rgba(255, 179, 71, 0.14);
+  border: 1px solid rgba(255, 179, 71, 0.28);
+}
+
+.tour-icon .ico {
+  width: 20px;
+  height: 20px;
+  vertical-align: 0;
+}
+
+.tour-hint {
+  animation: tourHintPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes tourHintPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 179, 71, 0); }
+  50% { box-shadow: 0 0 0 5px rgba(255, 179, 71, 0.12); }
+}
+
+@media (max-width: 760px) {
+  .tour-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+  }
+
+  .tour-icon .ico {
+    width: 17px;
+    height: 17px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tour-hint {
+    animation: none;
+  }
+}
+
+/* ---------- 15.17 Аккордеон профиля: мелочи раскладки ---------- */
+.block-head.is-toggle {
+  gap: 10px;
+}
+
+.block-head.is-toggle h3 {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.block-head.is-toggle .block-note {
+  flex: 0 1 auto;
+  margin-left: auto;
+  text-align: right;
+}
+
+.block.is-collapsed .block-head {
+  margin-bottom: 0;
+}
+
+.block:has(.block-body) {
+  overflow: hidden;
+}
+
+/* Кнопка-шеврон не мешает заголовку на узком экране */
+@media (max-width: 600px) {
+  .block-head.is-toggle .block-note {
+    display: none;
+  }
+
+  .block {
+    padding: 18px 16px;
+  }
+
+  .profile-blocks-tools {
+    justify-content: stretch;
+  }
+
+  .profile-blocks-tools .btn {
+    flex: 1 1 0;
+  }
+}
+
+/* ---------- 15.18 Правки раскладки под декор ---------- */
+.section {
+  position: relative;
+}
+
+/* Крупная надпись в hero не должна лезть на карточку */
+@media (max-width: 1200px) {
+  .hero::after {
+    display: none;
+  }
+}
+
+.footer::after {
+  opacity: 0.55;
+  z-index: 0;
+}
+
+.footer .container {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 900px) {
+  .footer::after {
+    font-size: 56px;
+    opacity: 0.4;
+  }
+}
+
+/* ---------- 15.19 Шапка на узких экранах ---------- */
+@media (max-width: 560px) {
+  /* Две кнопки в шапке не помещаются — оставляем главную */
+  .header-actions .btn-ghost {
+    display: none;
+  }
+
+  .header-actions .btn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .logo-en {
+    display: none;
+  }
+}
+
+/* Профиль на телефоне: карточка первой, блоки ниже */
+@media (max-width: 900px) {
+  .profile-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .player-card {
+    text-align: center;
+  }
+
+  .profile-blocks-tools {
+    margin-top: 4px;
+  }
+}
+
+
+/* ---------- 15.20 Тур крупнее: видно, куда нажимать ---------- */
+.tour-card {
+  padding: 24px 26px 20px;
+}
+
+.tour-card h4 {
+  font-size: 21px;
+  line-height: 1.3;
+  margin-bottom: 8px;
+  padding-right: 62px;
+}
+
+.tour-card p {
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.tour-count {
+  font-size: 12.5px;
+  letter-spacing: 0.6px;
+}
+
+.tour-skip {
+  top: 16px;
+  right: 18px;
+  font-size: 12.5px;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+.tour-hint {
+  font-size: 13px;
+  padding: 7px 12px;
+  border-radius: 10px;
+}
+
+.tour-hint svg {
+  width: 15px;
+  height: 15px;
+}
+
+.tour-card .btn {
+  min-height: 40px;
+  padding: 0 20px;
+  font-size: 13.5px;
+}
+
+.tour-progress {
+  height: 5px;
+}
+
+.tour-dot {
+  width: 9px;
+  height: 9px;
+}
+
+.tour-dot.is-active {
+  width: 22px;
+}
+
+.tour-pointer {
+  filter: drop-shadow(0 4px 10px rgba(255, 179, 71, 0.45));
+}
+
+@media (max-width: 760px) {
+  .tour-card {
+    padding: 20px 18px 16px;
+  }
+
+  .tour-card h4 {
+    font-size: 18px;
+    padding-right: 54px;
+  }
+
+  .tour-card p {
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  .tour-hint {
+    font-size: 12.5px;
+  }
+
+  .tour-card .btn {
+    min-height: 42px;
+  }
+}
+
+/* ---------- 15.21 Подвал: каждая ссылка — своей строкой ---------- */
+.footer-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.footer-col a {
+  display: block;
+  width: 100%;
+  padding: 5px 0;
+}
+
+.footer-col h5 {
+  margin-bottom: 12px;
+}
+
+/* Нижняя строка подвала тоже дышит свободнее */
+.footer-bottom {
+  row-gap: 8px;
+}
+
+@media (max-width: 720px) {
+  .footer-links {
+    gap: 4px 14px;
   }
 }

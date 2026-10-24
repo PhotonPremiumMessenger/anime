@@ -419,6 +419,9 @@ function renderAnimeCatalog() {
   if (counter) counter.textContent = list.length + ' из ' + ANIME_CATALOG.length + ' тайтлов';
 
   decorateRomaji(grid);
+
+  // Сообщаем декору, что карточки новые — можно навесить наклон
+  document.dispatchEvent(new CustomEvent('anime-grid-rendered'));
 }
 
 /** Один обработчик на всю сетку вместо 24 своих. */

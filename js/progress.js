@@ -118,12 +118,14 @@ function hasAchievement(id) {
   return getUnlockedAchievements().includes(id);
 }
 
-/** Проверка достижений: передаём управление модулю achievements.js. */
-function checkAchievements(silent) {
-  if (typeof window.checkAchievements === 'function' && window.checkAchievements !== checkAchievements) {
-    return window.checkAchievements(silent);
-  }
-  return [];
+/**
+ * Резервная проверка достижений на страницах без js/achievements.js.
+ * Там, где модуль подключён, его объявление перекрывает это значение.
+ */
+if (typeof window.checkAchievements !== 'function') {
+  window.checkAchievements = function checkAchievementsFallback() {
+    return [];
+  };
 }
 
 /** Старые всплывашки больше не нужны: toast показывает achievements.js. */
@@ -219,11 +221,8 @@ function completeLesson(lessonId, correct, total) {
   return { percent: percent, newWords: newWords, achievements: fresh };
 }
 
-/** Полный сброс прогресса (для настроек). */
-function resetProgress() {
-  localStorage.removeItem(STORAGE_KEYS.progress);
-  localStorage.removeItem(STORAGE_KEYS.achievements);
-}
+// Полный сброс прогресса объявлен в js/backup.js (с подтверждением и очисткой
+// всех ключей) — там же и кнопка в настройках. Здесь не дублируем.
 
 /* ---------- Озвучка слов (Web Speech API) ---------- */
 
@@ -307,11 +306,9 @@ window.saveProgress = saveProgress;
 window.getLessonProgress = getLessonProgress;
 window.getUnlockedAchievements = getUnlockedAchievements;
 window.hasAchievement = hasAchievement;
-window.checkAchievements = checkAchievements;
 window.getStats = getStats;
 window.completeLesson = completeLesson;
 window.countCompletedLessons = countCompletedLessons;
-window.resetProgress = resetProgress;
 window.speakJapanese = speakJapanese;
 window.resetJapaneseVoice = resetJapaneseVoice;
 window.isSpeechSupported = isSpeechSupported;
