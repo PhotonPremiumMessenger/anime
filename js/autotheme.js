@@ -48,7 +48,9 @@ function themeForNow(date = new Date()) {
 }
 
 /**
- * Применяет тему.
+ * Применяет тему по времени суток.
+ * Ручной выбор темы всегда сильнее: если человек сам поставил тему,
+ * авто-режим выключается (это делает setTheme) и тема больше не прыгает.
  * @param {boolean} silent — без всплывашки
  */
 function applyAutoTheme(silent = true) {
@@ -59,7 +61,7 @@ function applyAutoTheme(silent = true) {
 
   if (next === current) return false;
 
-  if (typeof setTheme === 'function') setTheme(next);
+  if (typeof setTheme === 'function') setTheme(next, !silent, { source: 'auto' });
 
   if (!silent && typeof showToast === 'function') {
     showToast('Тема сменилась', next === 'light' ? 'Светлая — день' : next === 'sakura' ? 'Сакура — ночь' : 'Стандарт — вечер', 'info');
@@ -84,7 +86,7 @@ function renderAutoThemeSwitch() {
         <div class="setting-name">Тема по времени суток</div>
         <div class="setting-desc">Днём светлая, вечером обычная, ночью сакура. Сейчас подошла бы «${
           next === 'light' ? 'Светлая' : next === 'sakura' ? 'Сакура' : 'Стандарт'
-        }»</div>
+        }». Если выбрать тему вручную, авто-режим выключится</div>
       </div>
       <div class="setting-control">
         <button class="switch-btn${on ? ' is-on' : ''}" onclick="toggleAutoTheme(this)" aria-pressed="${on}">
@@ -102,9 +104,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!isAutoThemeOn()) return;
 
-  // Первый заход — применяем сразу, дальше проверяем раз в полчаса
+  // Первый заход — применяем сразу, дальше проверяем раз в полчаса.
+  // В фоновой вкладке ничего не считаем: экономим батарею и процессор.
   applyAutoTheme(true);
-  setInterval(() => applyAutoTheme(true), 30 * 60 * 1000);
+  setInterval(() => {
+    if (document.hidden) return;
+    applyAutoTheme(true);
+  }, 30 * 60 * 1000);
 });
 
 /* Экспорт в глобальную область */

@@ -15,11 +15,16 @@ const PAGE_LOADER_KEY = 'nihongo_nav_loading';
 const PAGE_LOADER_MIN = 420;
 
 // Пауза перед переходом: успевает проявиться оверлей
-const PAGE_LOADER_DELAY = 240;
+const PAGE_LOADER_DELAY = 150;
 
 let pageLoaderShownAt = 0;
 let pageLoaderHideTimer = null;
 let pageLoaderNavigating = false;
+let pageLoaderWatchdog = null;
+
+// Максимум, сколько оверлей может висеть: дальше он обязан уйти,
+// иначе страница остаётся с overflow: hidden и выглядит «зависшей»
+const PAGE_LOADER_MAX = 7000;
 
 /* ---------- Разметка ---------- */
 
@@ -64,6 +69,23 @@ function getPageLoader() {
 
 /* ---------- Показ и скрытие ---------- */
 
+/**
+ * Аварийная разблокировка страницы: убирает оверлей и снимает
+ * блокировку прокрутки. Вызывается по таймеру и при возврате
+ * из кеша браузера — «вечный» оверлей был причиной зависаний.
+ */
+function forceUnlockPage() {
+  clearTimeout(pageLoaderWatchdog);
+  pageLoaderWatchdog = null;
+
+  const loader = document.getElementById('pageLoader');
+  if (loader) loader.remove();
+
+  document.documentElement.classList.remove('is-page-loading');
+  document.documentElement.style.overflow = '';
+  pageLoaderNavigating = false;
+}
+
 /** Проявляет оверлей. */
 function showPageLoader() {
   const loader = getPageLoader();
@@ -73,6 +95,10 @@ function showPageLoader() {
   document.documentElement.classList.add('is-page-loading');
   // Кадр ожидания: без этого transition не сработает на только что вставленном узле
   requestAnimationFrame(() => loader.classList.add('is-visible'));
+
+  // Страховка: через несколько секунд страница обязана ожить
+  clearTimeout(pageLoaderWatchdog);
+  pageLoaderWatchdog = setTimeout(forceUnlockPage, PAGE_LOADER_MAX);
 }
 
 /** Плавно убирает оверлей. */
@@ -87,6 +113,8 @@ function hidePageLoader(immediate) {
   pageLoaderHideTimer = setTimeout(() => {
     loader.classList.remove('is-visible');
     document.documentElement.classList.remove('is-page-loading');
+    document.documentElement.style.overflow = '';
+    clearTimeout(pageLoaderWatchdog);
 
     // Убираем узел после анимации, чтобы он не мешал кликам
     setTimeout(() => {
@@ -159,14 +187,24 @@ document.addEventListener('click', event => {
 });
 
 // Возврат из кеша браузера: оверлей не должен остаться висеть
-window.addEventListener('pageshow', event => {
-  if (event.persisted) {
+window.addEventListener('pageshow', () => {
+  setTimeout(() => {
     const loader = document.getElementById('pageLoader');
-    if (loader) loader.remove();
-    document.documentElement.classList.remove('is-page-loading');
-    pageLoaderNavigating = false;
-  }
+    // Если оверлей не проявился — значит переход не случился
+    if (!loader || !loader.classList.contains('is-visible')) forceUnlockPage();
+  }, 1200);
 });
+
+// Вкладку скрыли/показали — снимаем возможные блокировки
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) return;
+
+  const loader = document.getElementById('pageLoader');
+  if (!loader || !loader.classList.contains('is-visible')) forceUnlockPage();
+});
+
+// Полная загрузка страницы: блокировка прокрутки больше не нужна
+window.addEventListener('load', () => setTimeout(forceUnlockPage, PAGE_LOADER_MAX));
 
 /* ---------- Старт на новой странице ---------- */
 
@@ -199,3 +237,4 @@ window.addEventListener('pageshow', event => {
 /* Экспорт в глобальную область */
 window.showPageLoader = showPageLoader;
 window.hidePageLoader = hidePageLoader;
+window.forceUnlockPage = forceUnlockPage;

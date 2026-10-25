@@ -216,6 +216,12 @@ function scheduleIconify(node) {
   requestAnimationFrame(() => {
     iconifyScheduled = false;
 
+    // Фоновая вкладка: не тратим кадры на разбор иконок
+    if (document.hidden) {
+      iconifyQueue = [];
+      return;
+    }
+
     // Собираем уникальные узлы: один и тот же блок мог прийти дважды
     const targets = iconifyQueue.filter((item, index) => iconifyQueue.indexOf(item) === index);
     iconifyQueue = [];

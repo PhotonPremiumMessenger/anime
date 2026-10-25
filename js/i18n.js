@@ -163,6 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     requestAnimationFrame(() => {
       scheduled = false;
+      if (document.hidden) return;
       if (currentInterfaceLanguage() !== 'ru') applyLanguage();
     });
   });

@@ -50,10 +50,16 @@ function ensureAudio() {
   return prefAudio;
 }
 
-/** Громкость 0…1 с учётом ползунка. */
+/** Громкость эффектов 0…1 с учётом ползунка. */
 function soundVolume() {
   const volume = Number(prefValue('sound.volume', 60));
   return Math.min(1, Math.max(0, (Number.isFinite(volume) ? volume : 60) / 100));
+}
+
+/** Громкость фоновой музыки 0…1 — отдельный ползунок. */
+function musicVolume() {
+  const volume = Number(prefValue('sound.musicVolume', 40));
+  return Math.min(1, Math.max(0, (Number.isFinite(volume) ? volume : 40) / 100));
 }
 
 /**
@@ -149,7 +155,7 @@ function startAmbient() {
   filter.type = 'lowpass';
   filter.frequency.value = 620;
 
-  const level = Math.min(0.06, 0.006 + soundVolume() * 0.05);
+  const level = Math.min(0.06, 0.002 + musicVolume() * 0.07);
   master.gain.setValueAtTime(0.0001, ctx.currentTime);
   master.gain.exponentialRampToValueAtTime(level, ctx.currentTime + 3);
 
@@ -201,11 +207,34 @@ function stopAmbient() {
   }
 }
 
+/** Подстраивает уже играющую музыку под ползунок громкости. */
+function setAmbientLevel() {
+  if (!ambientNodes) return;
+
+  const ctx = ensureAudio();
+  if (!ctx) return;
+
+  const level = Math.min(0.06, 0.002 + musicVolume() * 0.07);
+
+  try {
+    ambientNodes.master.gain.cancelScheduledValues(ctx.currentTime);
+    ambientNodes.master.gain.setTargetAtTime(level, ctx.currentTime, 0.2);
+  } catch (error) {
+    /* контекст закрыт — ничего страшного */
+  }
+}
+
 /** Включает или выключает музыку по настройке. */
 function syncAmbient() {
-  const on = prefValue('sound.music', false) !== false && Number(prefValue('sound.musicVolume', 40)) > 0;
-  if (on) startAmbient();
-  else stopAmbient();
+  const on = prefValue('sound.music', false) !== false && musicVolume() > 0;
+
+  if (!on) {
+    stopAmbient();
+    return;
+  }
+
+  if (ambientNodes) setAmbientLevel();
+  else startAmbient();
 }
 
 /** Тест звука из настроек: короткая гамма. */
@@ -370,7 +399,55 @@ function bindTranslateSound() {
 }
 
 /* ============================================================
-   5. Старт
+   5. Поля ввода после вставки из буфера
+   ------------------------------------------------------------
+   Браузер иногда оставляет над полем служебный слой (автозаполнение,
+   «умная вставка») — из-за него вставленный текст выглядит закрытым
+   серым прямоугольником. После вставки принудительно перерисовываем
+   поле и возвращаем ему нормальные цвета.
+   ============================================================ */
+
+function tidyPastedField(field) {
+  if (!field) return;
+
+  field.classList.remove('just-pasted');
+
+  // Читаем layout один раз — это заставляет браузер перерисовать поле
+  void field.offsetWidth;
+
+  field.classList.add('just-pasted');
+
+  setTimeout(() => field.classList.remove('just-pasted'), 700);
+}
+
+/** Перерисовка полей после вставки и автозаполнения. */
+function bindPasteFix() {
+  document.addEventListener('paste', event => {
+    const field = event.target && event.target.closest
+      ? event.target.closest('.input, .textarea, input, textarea')
+      : null;
+
+    if (!field) return;
+    setTimeout(() => tidyPastedField(field), 0);
+  }, true);
+
+  document.addEventListener('input', event => {
+    const field = event.target;
+
+    // Срабатывает и на автозаполнение, и на подстановку из менеджера паролей
+    if (!field || !field.classList) return;
+    if (!field.classList.contains('input') && field.tagName !== 'INPUT' && field.tagName !== 'TEXTAREA') return;
+
+    try {
+      if (field.matches && field.matches(':-webkit-autofill')) tidyPastedField(field);
+    } catch (error) {
+      /* браузер не знает такой псевдокласс — ничего страшного */
+    }
+  }, true);
+}
+
+/* ============================================================
+   6. Старт
    ============================================================ */
 
 /** Перечитывает настройки и применяет всё заново. */
@@ -389,6 +466,7 @@ document.addEventListener('DOMContentLoaded', () => {
   applyAllPreferences();
   bindClickSounds();
   bindTranslateSound();
+  bindPasteFix();
 
   // Первый клик разблокирует звук в браузере
   document.addEventListener('pointerdown', () => {
@@ -410,3 +488,6 @@ window.applyAllPreferences = applyAllPreferences;
 window.syncAmbient = syncAmbient;
 window.startAmbient = startAmbient;
 window.stopAmbient = stopAmbient;
+window.tidyPastedField = tidyPastedField;
+window.musicVolume = musicVolume;
+window.setAmbientLevel = setAmbientLevel;
