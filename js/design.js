@@ -53,22 +53,40 @@ function closeDesignPanel() {
 
 /**
  * Переключает тему сайта.
- * @param {string} theme — 'default' или 'sakura'
+ * @param {string} theme — 'default', 'sakura' или 'light'
  * @param {boolean} notify — показывать ли toast
+ * @param {object} options — { source: 'user' | 'auto' | 'restore' }
+ *
+ * Ручной выбор важнее любого авто-режима: если человек сам поставил
+ * тему, «тема по времени суток» отключается, иначе она перебивала
+ * выбор при каждом переходе на другую страницу.
  */
-function setTheme(theme, notify = true) {
+function setTheme(theme, notify = true, options = {}) {
   // Три допустимые темы: default (тёмная), sakura (розовая), light (светлая)
   const themeName = ['sakura', 'light'].includes(theme) ? theme : 'default';
+  const source = options.source || 'user';
 
   document.body.classList.toggle('theme-sakura', themeName === 'sakura');
   document.body.classList.toggle('theme-light', themeName === 'light');
   localStorage.setItem(THEME_KEY, themeName);
 
+  // Ручной выбор выключает авто-режим, чтобы тема не прыгала сама
+  if (source === 'user' && typeof isAutoThemeOn === 'function' && isAutoThemeOn()) {
+    try {
+      localStorage.setItem('nihongo_autotheme', 'false');
+      if (typeof renderAutoThemeSwitch === 'function') renderAutoThemeSwitch();
+    } catch (error) {
+      /* приватный режим — не страшно */
+    }
+  }
+
   // Держим настройки интерфейса и панель дизайна синхронными,
   // иначе после перезагрузки тема из настроек перекроет выбор в панели
   const settings = readSettingsSafe();
-  settings['interface.theme'] = themeName;
-  localStorage.setItem('settings', JSON.stringify(settings));
+  if (settings['interface.theme'] !== themeName) {
+    settings['interface.theme'] = themeName;
+    localStorage.setItem('settings', JSON.stringify(settings));
+  }
 
   // Обновляем превью в панели дизайна
   document.querySelectorAll('.theme-card').forEach(card => {
@@ -102,6 +120,27 @@ function toggleLightTheme(checkbox) {
  * Количество зависит от настройки «уровень сакуры».
  */
 function startSakura() {
+  // Берём уровень из настроек: 0–100, по умолчанию 40
+  const level = Number(getSettingValueSafe('features.sakuraLevel', 40));
+  let count = Math.max(6, Math.round((level / 100) * 40));
+
+  // На слабых устройствах и телефонах оставляем меньше лепестков:
+  // 40 анимированных слоёв с 3D-поворотом — заметная нагрузка на GPU
+  const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduced) count = 8;
+  else if (window.innerWidth <= 760) count = Math.max(6, Math.round(count * 0.5));
+  else if ((navigator.hardwareConcurrency || 8) <= 4) count = Math.max(6, Math.round(count * 0.6));
+
+  // Уже нарисовано столько же лепестков — не пересобираем слой.
+  // Раньше каждое изменение настроек создавало 40 новых анимированных
+  // узлов, и страница заметно тормозила.
+  const existing = document.querySelector('.sakura-layer');
+  if (existing && existing.childElementCount === count) {
+    localStorage.setItem(SAKURA_KEY, 'on');
+    syncSakuraSwitch(true);
+    return;
+  }
+
   stopSakura(true);
 
   let layer = document.querySelector('.sakura-layer');
@@ -110,10 +149,6 @@ function startSakura() {
     layer.className = 'sakura-layer';
     document.body.appendChild(layer);
   }
-
-  // Берём уровень из настроек: 0–100, по умолчанию 40
-  const level = Number(getSettingValueSafe('features.sakuraLevel', 40));
-  const count = Math.max(6, Math.round((level / 100) * 40));
 
   for (let i = 0; i < count; i++) {
     const petal = document.createElement('span');
@@ -184,6 +219,21 @@ function setSakuraLevel(level) {
   if (localStorage.getItem(SAKURA_KEY) === 'on') startSakura();
 }
 
+/**
+ * Ставит базовый размер текста на <html>.
+ * В css/style.css все размеры шрифтов переведены в rem, поэтому
+ * одно значение меняет текст на всех страницах и во всех блоках.
+ * @param {number} size — 13…19 px
+ */
+function applyBaseFontSize(size) {
+  const value = size >= 13 && size <= 19 ? Math.round(size) : 15;
+  document.documentElement.style.fontSize = value + 'px';
+  document.documentElement.dataset.fontSize = String(value);
+
+  // Старое значение на body могло остаться от прошлых версий
+  document.body.style.fontSize = '';
+}
+
 /** Безопасное чтение настройки (settings.js грузится не на всех страницах). */
 function getSettingValueSafe(key, fallback) {
   try {
@@ -215,7 +265,7 @@ function applyStoredSettings() {
 
   // Тема: настройки важнее отдельного ключа
   const theme = settings['interface.theme'] || localStorage.getItem(THEME_KEY) || 'default';
-  setTheme(theme, false);
+  setTheme(theme, false, { source: 'restore' });
 
   // Фон
   const background = settings['interface.background'] || 'city';
@@ -233,9 +283,9 @@ function applyStoredSettings() {
   // Компактный режим
   document.body.classList.toggle('compact', Boolean(settings['interface.compact']));
 
-  // Размер шрифта
-  const fontSize = Number(settings['interface.fontSize'] || 15);
-  document.body.style.fontSize = (fontSize >= 13 && fontSize <= 19 ? fontSize : 15) + 'px';
+  // Размер шрифта: все размеры в стилях заданы в rem,
+  // поэтому меняем базу у html — текст растёт по всему сайту
+  applyBaseFontSize(Number(settings['interface.fontSize'] || 15));
 
   // Форма аватара
   const avatarStyle = settings['features.avatarStyle'] || 'circle';
@@ -311,7 +361,35 @@ function startReleaseTimer() {
   }
 
   update();
-  setInterval(update, 1000);
+
+  // Секундный тик нужен только на видимой вкладке и когда таймер
+  // действительно виден: лишние перерисовки грели процессор
+  let timerId = null;
+
+  function loop() {
+    if (!document.hidden) update();
+  }
+
+  timerId = setInterval(loop, 1000);
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) return;
+    update();
+  });
+
+  // Таймер ушёл из вида — обновляем реже
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(entries => {
+      const visible = entries.some(entry => entry.isIntersecting);
+      clearInterval(timerId);
+
+      timerId = visible
+        ? setInterval(loop, 1000)
+        : setInterval(loop, 30000);
+    }, { threshold: 0 });
+
+    observer.observe(daysEl);
+  }
 }
 
 /* ---------- Плавное появление блоков ---------- */
@@ -346,6 +424,19 @@ document.addEventListener('DOMContentLoaded', () => {
   startReleaseTimer();
   initReveal();
 
+  // Фоновая вкладка: останавливаем лепестки и прочие анимации,
+  // чтобы браузер не жёг процессор и не подвешивал страницу
+  document.body.classList.toggle('is-hidden', document.hidden);
+
+  document.addEventListener('visibilitychange', () => {
+    document.body.classList.toggle('is-hidden', document.hidden);
+  });
+
+  // Страховка: если какой-то скрипт позже сбросил класс темы или размер
+  // шрифта, возвращаем сохранённое значение (переходы, bfcache, вторая вкладка)
+  window.addEventListener('load', () => setTimeout(applyStoredSettings, 120));
+  window.addEventListener('pageshow', event => { if (event.persisted) applyStoredSettings(); });
+
   // Клик по затемнению не должен влиять на панель
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape') closeDesignPanel();
@@ -362,5 +453,6 @@ window.stopSakura = stopSakura;
 window.toggleSakura = toggleSakura;
 window.setSakuraLevel = setSakuraLevel;
 window.applyStoredSettings = applyStoredSettings;
+window.applyBaseFontSize = applyBaseFontSize;
 window.startReleaseTimer = startReleaseTimer;
 window.getReleaseDate = getReleaseDate;

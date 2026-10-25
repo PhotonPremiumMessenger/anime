@@ -963,6 +963,16 @@ function applyInterfaceSetting(kind, value) {
   const key = map[kind];
   if (key) setSettingValue(key, value);
 
+  // Тему ставим как ручной выбор: так авто-тема не перебьёт её при переходе
+  if (kind === 'theme' && typeof setTheme === 'function') {
+    setTheme(value, false, { source: 'user' });
+    if (typeof showToast === 'function') {
+      const names = { default: 'Стандартная', sakura: 'Сакура', light: 'Светлая' };
+      showToast('Тема изменена', 'Включена тема «' + (names[value] || value) + '»', 'success', { duration: 2200 });
+    }
+    return;
+  }
+
   if (typeof applyStoredSettings === 'function') applyStoredSettings();
 
   if (kind === 'sakura') {
@@ -1131,32 +1141,152 @@ async function checkConnection() {
   }
 }
 
-/* ---------- Удаление аккаунта ---------- */
+/* ---------- Удаление аккаунта: подтверждение кодом с почты ---------- */
 
-/** Удаляет аккаунт после подтверждения. */
+// Почта, на которую отправлен код, и признак «код уже отправлен»
+let deleteCodeEmail = '';
+let deleteCodeSent = false;
+
+/** Шаг 1: окно с предупреждением и полем для кода. */
 function deleteAccount() {
   const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
 
+  if (!user) {
+    showToast('Нет активного аккаунта', 'Сначала войдите, чтобы удалить аккаунт', 'warning');
+    return;
+  }
+
+  deleteCodeEmail = String(user.email || '').trim().toLowerCase();
+  deleteCodeSent = false;
+
   openSettingsModal('Удалить аккаунт', `
-    <p class="muted small">Аккаунт <b>${user ? user.username : 'гостя'}</b> будет удалён из этого браузера
-      вместе с ником и почтой. Прогресс, слова и настройки останутся — их можно стереть отдельно
-      кнопкой в политике cookies.</p>
+    <p class="muted small">Аккаунт <b>${user.username}</b> будет удалён из этого браузера вместе с ником и почтой.
+      Прогресс, слова и настройки останутся — их можно стереть отдельно кнопкой в политике cookies.</p>
+
+    <div class="delete-confirm-note">
+      <b>Нужно подтверждение почты.</b>
+      <span>Мы отправим код на <b>${deleteCodeEmail || 'почту аккаунта'}</b>. Без кода аккаунт удалить нельзя —
+        так его не удалят случайно с чужого устройства.</span>
+    </div>
+
+    <div class="field mt-16">
+      <label for="deleteCode">Код из письма</label>
+      <input class="input code-input" type="text" id="deleteCode" maxlength="10"
+             placeholder="XXXXXXXXXX" autocomplete="one-time-code"
+             oninput="this.value = this.value.toUpperCase()">
+      <div class="field-hint" id="deleteCodeHint">Код из 10 символов, действует 10 минут</div>
+    </div>
+
     <div class="btn-row mt-20">
-      <button class="btn btn-danger-outline" onclick="confirmDeleteAccount()">Удалить навсегда</button>
-      <button class="btn btn-outline" onclick="closeSettingsModal()">Отмена</button>
+      <button class="btn btn-outline" id="deleteSendBtn" type="button" onclick="deleteAccountSendCode()">Отправить код</button>
+      <button class="btn btn-danger-outline" id="deleteConfirmBtn" type="button" onclick="deleteAccountConfirm()" disabled>Удалить навсегда</button>
+    </div>
+
+    <div class="btn-row mt-12">
+      <button class="btn btn-ghost btn-small" type="button" onclick="closeSettingsModal()">Отмена</button>
     </div>
   `);
 }
 
-/** Подтверждение удаления аккаунта. */
-async function confirmDeleteAccount() {
-  if (typeof apiDeleteAccount !== 'function') return;
+/** Шаг 2: отправляет код на почту аккаунта. */
+async function deleteAccountSendCode() {
+  if (typeof apiSendCode !== 'function') {
+    showToast('Недоступно', 'Проверка кода не загрузилась. Обновите страницу', 'error');
+    return;
+  }
+
+  if (!deleteCodeEmail) {
+    showToast('Нет почты', 'У аккаунта не указана почта — подтверждение невозможно', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('deleteSendBtn');
+  const confirmBtn = document.getElementById('deleteConfirmBtn');
+  const hint = document.getElementById('deleteCodeHint');
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Отправляем...';
+  }
+
+  const result = await apiSendCode(deleteCodeEmail);
+
+  if (btn) {
+    btn.disabled = false;
+    btn.textContent = deleteCodeSent ? 'Отправить ещё раз' : 'Отправить код';
+  }
+
+  if (!result.ok) {
+    showToast('Не удалось отправить код', (result.data && result.data.message) || 'Попробуйте позже', 'error');
+    return;
+  }
+
+  deleteCodeSent = true;
+  if (confirmBtn) confirmBtn.disabled = false;
+
+  // Демо-режим: письма нет, код показываем прямо в окне
+  const demoCode = result.data && result.data.code;
+  const codeInput = document.getElementById('deleteCode');
+
+  if (demoCode) {
+    if (codeInput) codeInput.value = demoCode;
+    if (hint) hint.textContent = 'Демо-режим: письмо не отправляется, код — ' + demoCode;
+    showToast('Ваш код: ' + demoCode, 'Демо-режим: письмо не отправляется, код действует 10 минут', 'success');
+  } else {
+    if (hint) hint.textContent = 'Код отправлен на ' + deleteCodeEmail;
+    showToast('Код отправлен', 'Проверьте почту ' + deleteCodeEmail, 'success');
+  }
+
+  if (codeInput) codeInput.focus();
+}
+
+/** Шаг 3: проверяет код и удаляет аккаунт. */
+async function deleteAccountConfirm() {
+  const codeInput = document.getElementById('deleteCode');
+  const code = codeInput ? String(codeInput.value || '').trim().toUpperCase() : '';
+  const confirmBtn = document.getElementById('deleteConfirmBtn');
+
+  if (!deleteCodeSent) {
+    showToast('Сначала код', 'Нажмите «Отправить код» — без него удаление недоступно', 'warning');
+    return;
+  }
+
+  if (code.length !== 10) {
+    showToast('Код неполный', 'Код состоит из 10 символов', 'warning');
+    if (codeInput) codeInput.focus();
+    return;
+  }
+
+  if (typeof apiVerifyCode !== 'function' || typeof apiDeleteAccount !== 'function') {
+    showToast('Недоступно', 'Проверка кода не загрузилась. Обновите страницу', 'error');
+    return;
+  }
+
+  if (confirmBtn) {
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = 'Проверяем...';
+  }
+
+  const verify = await apiVerifyCode(deleteCodeEmail, code);
+
+  if (!verify.ok) {
+    if (confirmBtn) {
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = 'Удалить навсегда';
+    }
+    showToast('Код неверный', (verify.data && verify.data.message) || 'Проверьте код и попробуйте снова', 'error');
+    if (codeInput) codeInput.focus();
+    return;
+  }
 
   const result = await apiDeleteAccount();
   closeSettingsModal();
 
+  deleteCodeEmail = '';
+  deleteCodeSent = false;
+
   if (!result.ok) {
-    showToast('Не удалось удалить', result.data.message || 'Попробуй позже', 'error');
+    showToast('Не удалось удалить', (result.data && result.data.message) || 'Попробуй позже', 'error');
     return;
   }
 
@@ -1164,7 +1294,12 @@ async function confirmDeleteAccount() {
 
   setTimeout(() => {
     window.location.href = 'index.html';
-  }, 1200);
+  }, 1400);
+}
+
+/** Обратная совместимость: старые ссылки вели сразу на удаление. */
+function confirmDeleteAccount() {
+  return deleteAccountConfirm();
 }
 
 /* ---------- Маленькая модалка для настроек ---------- */
@@ -1490,6 +1625,8 @@ window.toggleSecurity = toggleSecurity;
 window.checkConnection = checkConnection;
 window.deleteAccount = deleteAccount;
 window.confirmDeleteAccount = confirmDeleteAccount;
+window.deleteAccountSendCode = deleteAccountSendCode;
+window.deleteAccountConfirm = deleteAccountConfirm;
 window.openSettingsModal = openSettingsModal;
 window.closeSettingsModal = closeSettingsModal;
 window.stubAction = stubAction;

@@ -81,20 +81,48 @@ function mountSectionStars() {
   });
 }
 
-/** Лёгкий наклон карточек при наведении — «оживляет» сетку. */
+/**
+ * Лёгкий наклон карточек при наведении — «оживляет» сетку.
+ * Пересчёт идёт не чаще одного раза за кадр: pointermove сыплется
+ * десятками событий в секунду, а getBoundingClientRect заставляет
+ * браузер пересчитывать раскладку каждый раз.
+ */
 function mountTilt() {
   if (window.matchMedia && window.matchMedia('(hover: none)').matches) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
   document.querySelectorAll('.anime-card').forEach(card => {
-    card.addEventListener('pointermove', event => {
+    if (card.dataset.tiltMounted === '1') return;
+    card.dataset.tiltMounted = '1';
+
+    let frame = 0;
+    let lastX = 0;
+    let lastY = 0;
+
+    const apply = () => {
+      frame = 0;
+
       const rect = card.getBoundingClientRect();
-      const x = (event.clientX - rect.left) / rect.width - 0.5;
-      const y = (event.clientY - rect.top) / rect.height - 0.5;
+      if (!rect.width || !rect.height) return;
+
+      const x = lastX / rect.width - 0.5;
+      const y = lastY / rect.height - 0.5;
 
       card.style.transform = 'translateY(-4px) rotateX(' + (-y * 3).toFixed(2) + 'deg) rotateY(' + (x * 3).toFixed(2) + 'deg)';
+    };
+
+    card.addEventListener('pointermove', event => {
+      const rect = card.getBoundingClientRect();
+      lastX = event.clientX - rect.left;
+      lastY = event.clientY - rect.top;
+
+      if (frame) return;
+      frame = requestAnimationFrame(apply);
     });
 
     card.addEventListener('pointerleave', () => {
+      if (frame) cancelAnimationFrame(frame);
+      frame = 0;
       card.style.transform = '';
     });
   });
