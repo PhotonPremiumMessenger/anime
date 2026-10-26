@@ -682,8 +682,25 @@ function hasCustomMusic() {
 
 /* ---------- Старт ---------- */
 
+/**
+ * Переносит трек из старой версии (он лежал одним файлом в
+ * nihongo_custom_music) в новый плейлист.
+ */
+function mpMigrateOldTrack() {
+  const old = mpRead('nihongo_custom_music', '');
+  if (!old) return;
+
+  if (!mpTracks.length) {
+    mpTracks = [{ id: 'tr' + Date.now(), name: 'Мой трек', data: old }];
+    mpSaveTracks();
+  }
+
+  try { localStorage.removeItem('nihongo_custom_music'); } catch (error) { /* пусто */ }
+}
+
 function initMusicPlayer() {
   mpLoadTracks();
+  mpMigrateOldTrack();
 
   const state = mpState();
 
