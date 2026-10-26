@@ -1,20 +1,14 @@
 /* ============================================================
    donate.js — поддержать проект
-   Небольшая модалка с вариантами суммы. Платёжной системы пока
-   нет, поэтому кнопки показывают честную заглушку и копируют
-   реквизиты. Когда появится ссылка на донат — достаточно
-   заменить DONATE_URL.
+   Небольшая модалка с одной кнопкой. Кнопка открывает ссылку
+   СБП: на телефоне — приложение банка, на компьютере — страница
+   с QR-кодом. Сумму плательщик выбирает сам.
    ============================================================ */
 
 'use strict';
 
-// Куда вести после подключения платёжки (пока пусто — заглушка)
-const DONATE_URL = '';
-
-// Суммы-варианты
-const DONATE_AMOUNTS = [99, 199, 499, 999];
-
-let donateAmount = 199;
+// Ссылка СБП для приёма переводов (выдана банком)
+const DONATE_URL = 'https://c2c.cbrpay.ru/BS1I0024P52CBIED8I4QA06DAM67E6RS';
 
 /** Собирает модалку один раз. */
 function mountDonateModal() {
@@ -40,27 +34,19 @@ function mountDonateModal() {
            за уроки, постеры и мини-игры.</p>
       </div>
 
-      <div class="donate-amounts" id="donateAmounts">
-        ${DONATE_AMOUNTS.map(sum => `
-          <button class="donate-sum${sum === donateAmount ? ' is-active' : ''}" onclick="pickDonateAmount(${sum}, this)">
-            ${sum} ₽
-          </button>
-        `).join('')}
-      </div>
-
       <div class="donate-note">
         <span class="donate-note-icon">i</span>
-        <span>Платёжный сервис ещё подключается. Кнопка ниже скопирует реквизиты —
-          перевод можно сделать вручную из любого банка.</span>
+        <span>Перевод по СБП с карты любого банка. Откроется страница оплаты:
+          на телефоне — приложение банка, на компьютере — QR-код.</span>
       </div>
 
       <div class="btn-row">
-        <button class="btn btn-primary" onclick="sendDonate()">Поддержать на <span id="donateChosen">199</span> ₽</button>
+        <button class="btn btn-primary" onclick="sendDonate()">Поддержать</button>
         <button class="btn btn-outline" onclick="closeDonate()">Позже</button>
       </div>
 
-      <p class="donate-fine muted small">Донат не открывает платные функции: всё на сайте
-        и так доступно целиком. Спасибо, что помогаешь проекту жить.</p>
+      <p class="donate-fine muted small">Сумма любая — сколько не жалко. Донат не открывает платные функции:
+        всё на сайте и так доступно целиком. Спасибо, что помогаешь проекту жить.</p>
     </div>
   `;
 
@@ -96,35 +82,13 @@ function donateEsc(event) {
   if (event.key === 'Escape') closeDonate();
 }
 
-/** Выбор суммы. */
-function pickDonateAmount(sum, button) {
-  donateAmount = sum;
-
-  document.querySelectorAll('#donateAmounts .donate-sum').forEach(item => {
-    item.classList.toggle('is-active', item === button);
-  });
-
-  const chosen = document.getElementById('donateChosen');
-  if (chosen) chosen.textContent = sum;
-}
-
-/** Кнопка «Поддержать». */
+/** Кнопка «Поддержать»: уводит на страницу оплаты СБП. */
 function sendDonate() {
-  if (DONATE_URL) {
-    window.open(DONATE_URL, '_blank', 'noopener');
-    return;
-  }
+  // Новая вкладка, чтобы сайт остался открытым
+  const win = window.open(DONATE_URL, '_blank', 'noopener');
 
-  // Реквизиты-заглушка: показываем тост и копируем текст
-  const details = 'Нерюнгри — Nihongo · сбер 0000 0000 0000 0000';
-
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(details).catch(() => {});
-  }
-
-  if (typeof showToast === 'function') {
-    showToast('Спасибо за поддержку', 'Реквизиты скопированы. Платёжка скоро появится — пока перевод вручную.', 'success');
-  }
+  // Если браузер заблокировал новую вкладку — переходим в текущей
+  if (!win) window.location.href = DONATE_URL;
 
   closeDonate();
 }
@@ -139,5 +103,4 @@ document.addEventListener('DOMContentLoaded', () => {
 /* Экспорт в глобальную область */
 window.openDonate = openDonate;
 window.closeDonate = closeDonate;
-window.pickDonateAmount = pickDonateAmount;
 window.sendDonate = sendDonate;

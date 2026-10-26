@@ -12850,38 +12850,6 @@ body.no-anim .page-loader-bar span {
   color: var(--text-dim);
 }
 
-.donate-amounts {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.donate-sum {
-  padding: 11px 6px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.03);
-  color: var(--text-gray);
-  font-family: var(--font-body);
-  font-size: 0.9333rem;
-  font-weight: 700;
-  transition: var(--transition);
-}
-
-.donate-sum:hover {
-  color: var(--text-main);
-  border-color: var(--border-strong);
-  transform: translateY(-1px);
-}
-
-.donate-sum.is-active {
-  color: #17130c;
-  border-color: transparent;
-  background: linear-gradient(140deg, #FFC46B, #FF9B3D);
-  box-shadow: 0 10px 24px rgba(255, 155, 61, 0.28);
-}
-
 .donate-note {
   display: flex;
   align-items: flex-start;
@@ -13620,10 +13588,6 @@ body.theme-light .donate-note {
   .cookie-link {
     width: 100%;
     text-align: center;
-  }
-
-  .donate-amounts {
-    grid-template-columns: repeat(2, 1fr);
   }
 
   .privacy-block {
