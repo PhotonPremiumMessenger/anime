@@ -7,7 +7,7 @@
 
 'use strict';
 
-const VERSION = 'nihongo-v4';
+const VERSION = 'nihongo-v5';
 const STATIC_CACHE = VERSION + '-static';
 const IMAGE_CACHE = VERSION + '-images';
 

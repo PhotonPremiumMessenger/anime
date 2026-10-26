@@ -128,6 +128,21 @@ function mountTilt() {
   });
 }
 
+/* ---------- Манга-края страницы ---------- */
+
+/** Тонкая штриховка по краям экрана — как поля страницы манги. */
+function mountEdges() {
+  if (document.querySelector('.anime-edge')) return;
+  if (window.matchMedia && window.matchMedia('(max-width: 900px)').matches) return;
+
+  ['left', 'right'].forEach(side => {
+    const edge = document.createElement('div');
+    edge.className = 'anime-edge anime-edge-' + side;
+    edge.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(edge);
+  });
+}
+
 /* ---------- Старт ---------- */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -135,9 +150,11 @@ document.addEventListener('DOMContentLoaded', () => {
   mountSideMark();
   mountSectionStars();
   mountTilt();
+  mountEdges();
 });
 
 /* Карточки каталога перерисовываются фильтрами — навешиваем заново */
 document.addEventListener('anime-grid-rendered', mountTilt);
 
 window.mountTilt = mountTilt;
+window.mountEdges = mountEdges;

@@ -302,6 +302,10 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.owner-only').forEach(el => el.classList.add('hidden'));
 
   renderPublicProfile();
+
+  // Блоки создаются после initReveal — иначе они остаются прозрачными
+  if (typeof observeReveals === 'function') observeReveals(document);
+  document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
 });
 
 /* Экспорт в глобальную область */

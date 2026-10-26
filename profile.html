@@ -19,8 +19,8 @@
 
   <!-- ============ ШАПКА ============ -->
   <header class="header">
-    <div class="container">
-      <a class="logo" href="index.html" aria-label="Nihongo — на главную">
+    <div class="container" data-sortable="header">
+      <a class="logo" href="index.html" data-sortable-pin="1" aria-label="Nihongo — на главную">
         <span class="logo-badge">
           <svg viewBox="0 0 48 48" aria-hidden="true">
             <rect x="6" y="10" width="36" height="4.5" rx="2.2" fill="currentColor"></rect>
@@ -119,12 +119,12 @@
         </button>
       </nav>
 
-      <div class="header-actions">
-        <div class="is-guest">
+      <div class="header-actions" data-sortable="header-actions">
+        <div class="is-guest" data-block-key="header-guest">
           <a class="btn btn-ghost btn-small" href="register.html">Войти</a>
           <a class="btn btn-primary btn-small" href="register.html">Регистрация</a>
         </div>
-        <a class="user-chip is-auth" href="profile.html">
+        <a class="user-chip is-auth" href="profile.html" data-block-key="header-user">
           <img src="assets/images/avatars/avatar1.png" alt="Аватар" data-header-avatar data-avatar-img>
           <span class="user-name" data-header-nick>Игрок</span>
         </a>
@@ -164,6 +164,14 @@
         <input type="checkbox" id="sakuraSwitch" onchange="toggleSakura(this)">
         <span class="track"></span>
       </label>
+    </div>
+
+    <div class="switch-row">
+      <div>
+        <div class="switch-label">Раскладка блоков</div>
+        <div class="switch-hint">Меняй местами шапку, блоки главной и профиля</div>
+      </div>
+      <button class="btn btn-ghost btn-small" onclick="toggleLayoutEdit()">Двигать</button>
     </div>
 
     <div class="switch-row">
@@ -234,10 +242,10 @@
         </aside>
 
         <!-- ---------- Правая колонка ---------- -->
-        <div class="profile-main">
+        <div class="profile-main" data-sortable="profile">
 
           <!-- Статистика -->
-          <section class="block reveal">
+          <section class="block reveal" data-block-title="Твоя статистика">
             <div class="block-head">
               <h3>Твоя статистика</h3>
               <span class="block-note">обновляется после каждого урока</span>
@@ -268,7 +276,7 @@
           </section>
 
           <!-- Био -->
-          <section class="block reveal">
+          <section class="block reveal" data-block-title="О себе">
             <div class="block-head">
               <h3>О себе</h3>
               <span class="block-note">видно в публичном профиле</span>
@@ -277,7 +285,7 @@
           </section>
 
           <!-- Уровень и награды -->
-          <section class="block reveal">
+          <section class="block reveal" data-block-title="Уровень и опыт">
             <div class="block-head">
               <h3>Уровень и опыт</h3>
               <span class="block-note" id="profileXPTotal">0 XP</span>
@@ -309,7 +317,7 @@
           </section>
 
           <!-- Стрик -->
-          <section class="block reveal">
+          <section class="block reveal" data-block-title="Серия дней">
             <div class="block-head">
               <h3>Серия дней</h3>
               <span class="block-note">заходи каждый день</span>
@@ -318,7 +326,7 @@
           </section>
 
           <!-- Достижения -->
-          <section class="block reveal">
+          <section class="block reveal" data-block-title="Достижения">
             <div class="block-head">
               <h3>Достижения</h3>
               <span class="block-note" id="achNote">открыто 0 из 100</span>
@@ -335,7 +343,7 @@
           </section>
 
           <!-- Недельный отчёт (пункт 39) -->
-          <section class="block reveal">
+          <section class="block reveal" data-block-title="Недельный отчёт">
             <div class="block-head">
               <h3>Недельный отчёт</h3>
               <span class="block-note">последние 7 дней</span>
@@ -345,7 +353,7 @@
           </section>
 
           <!-- Цели на день и неделю (пункт 42) -->
-          <section class="block reveal">
+          <section class="block reveal" data-block-title="Цели">
             <div class="block-head">
               <h3>Цели</h3>
               <span class="block-note">норма на день</span>
@@ -355,7 +363,7 @@
           </section>
 
           <!-- Статистика за всё время (пункт 50) -->
-          <section class="block reveal">
+          <section class="block reveal" data-block-title="За всё время">
             <div class="block-head">
               <h3>За всё время</h3>
               <span class="block-note">с первого дня</span>
@@ -365,7 +373,7 @@
           </section>
 
           <!-- Графики -->
-          <section class="block reveal">
+          <section class="block reveal" data-block-title="Статистика в графиках">
             <div class="block-head">
               <h3>Статистика в графиках</h3>
               <span class="block-note">опыт за две недели</span>
@@ -386,7 +394,7 @@
           </section>
 
           <!-- История активности -->
-          <section class="block reveal">
+          <section class="block reveal" data-block-title="История активности">
             <div class="block-head">
               <h3>История активности</h3>
               <span class="block-note" id="activityCount">пока пусто</span>
@@ -405,7 +413,7 @@
           </section>
 
           <!-- Слабые места (пункт 41) -->
-          <section class="block reveal">
+          <section class="block reveal" data-block-title="Слабые места">
             <div class="block-head">
               <h3>Слабые места</h3>
               <span class="block-note">по ошибкам</span>
@@ -415,7 +423,7 @@
           </section>
 
           <!-- Избранное (пункт 43) -->
-          <section class="block reveal">
+          <section class="block reveal" data-block-title="Избранное">
             <div class="block-head">
               <h3>Избранное</h3>
               <span class="block-note"><a href="favorites.html">весь список</a></span>
@@ -425,7 +433,7 @@
           </section>
 
           <!-- Друзья -->
-          <section class="block reveal">
+          <section class="block reveal" data-block-title="Друзья">
             <div class="block-head">
               <h3>Друзья</h3>
               <span class="block-note" id="friendsCount">0</span>
@@ -446,7 +454,7 @@
           </section>
 
           <!-- Уровень JLPT -->
-          <section class="block reveal">
+          <section class="block reveal" data-block-title="Уровень подготовки">
             <div class="block-head">
               <h3>Уровень подготовки</h3>
               <span class="block-note">сейчас: <b data-jlpt-label>Все уровни</b></span>
@@ -746,6 +754,8 @@
   <script src="js/smoothscroll.js"></script>
   <script src="js/anime-style.js"></script>
   <script src="js/collapse.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/customize.js"></script>
   <script src="js/easter.js"></script>
 </body>
 </html>
