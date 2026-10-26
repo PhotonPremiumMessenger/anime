@@ -14824,7 +14824,7 @@ body.theme-light .command-box {
 
 /* ---------- 14.9 Настройки и вход на телефоне ---------- */
 @media (max-width: 900px) {
-  /* Настройки: меню больше не жмётся сбоку — уходит вверх полосой */
+  /* Настройки: разделы стоят столбиком, как блоки в профиле */
   .settings-layout {
     grid-template-columns: minmax(0, 1fr);
     gap: 14px;
@@ -14833,24 +14833,16 @@ body.theme-light .command-box {
   .settings-menu {
     position: static;
     display: flex;
-    flex-wrap: nowrap;
-    gap: 8px;
+    flex-direction: column;
+    gap: 4px;
     padding: 8px;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scrollbar-width: none;
-  }
-
-  .settings-menu::-webkit-scrollbar {
-    display: none;
+    overflow: visible;
   }
 
   .settings-menu .menu-item {
-    flex: 0 0 auto;
-    width: auto;
+    width: 100%;
     margin-bottom: 0;
     padding: 9px 13px;
-    white-space: nowrap;
   }
 
   .settings-menu .menu-sep,
@@ -16278,184 +16270,68 @@ body.cursor-anime option {
   cursor: pointer !important;
 }
 
-/* ---------- 16.4 Раскладка блоков ---------- */
-.layout-edit [data-sortable] > *:not([data-sortable-pin]) {
-  position: relative;
-  outline: 1px dashed hsl(var(--accent-hue, 38) 90% 65% / 0.55);
-  outline-offset: 3px;
-  border-radius: 8px;
-  cursor: grab !important;
-  transition: outline-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
-}
-
-.layout-edit [data-sortable] > *:not([data-sortable-pin]):hover {
-  outline-color: hsl(var(--accent-hue, 38) 95% 68%);
-  box-shadow: 0 0 0 4px hsl(var(--accent-hue, 38) 95% 68% / 0.12);
-}
-
-.layout-edit [data-sortable] > *:not([data-sortable-pin])::after {
-  content: '⠿';
-  position: absolute;
-  top: 6px;
-  right: 8px;
-  z-index: 5;
-  width: 20px;
-  height: 20px;
-  display: grid;
-  place-items: center;
-  border-radius: 6px;
-  font-size: 12px;
-  line-height: 1;
-  color: #16100a;
-  background: hsl(var(--accent-hue, 38) 95% 66%);
-  opacity: 0.85;
-  pointer-events: none;
-}
-
-.layout-edit .is-layout-selected {
-  outline: 2px solid hsl(var(--accent-hue, 38) 95% 66%) !important;
-  outline-offset: 4px;
-  box-shadow: 0 12px 36px hsl(var(--accent-hue, 38) 95% 66% / 0.25) !important;
-}
-
-.layout-edit .is-layout-dragging {
-  opacity: 0.55;
-  transform: scale(0.985);
-}
-
-.layout-moved,
-.is-layout-moved {
-  animation: layoutMovePulse 0.32s ease;
-}
-
-@keyframes layoutMovePulse {
-  0% { transform: scale(1); }
-  45% { transform: scale(1.02); }
-  100% { transform: scale(1); }
-}
-
-/* Панель управления раскладкой */
-.layout-bar {
-  position: fixed;
-  left: 50%;
-  bottom: 18px;
-  z-index: 9400;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  max-width: calc(100vw - 24px);
-  padding: 10px 14px;
-  border-radius: 16px;
-  border: 1px solid var(--border-strong);
-  background: rgba(14, 14, 22, 0.96);
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
-  animation: layoutBarIn 0.28s var(--ease-smooth, ease);
-}
-
-@keyframes layoutBarIn {
-  from { opacity: 0; transform: translate(-50%, 14px); }
-  to { opacity: 1; transform: translate(-50%, 0); }
-}
-
-.layout-bar-hint {
-  font-size: 0.8rem;
-  color: var(--text-gray);
-  max-width: 320px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.layout-bar-actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.layout-bar .btn {
-  min-width: 38px;
-}
-
-body.theme-light .layout-bar {
-  background: rgba(255, 255, 255, 0.98);
-}
-
-@media (max-width: 760px) {
-  .layout-bar {
-    left: 10px;
-    right: 10px;
-    bottom: 12px;
-    transform: none;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-  }
-
-  .layout-bar-hint {
-    max-width: none;
-    text-align: center;
-  }
-
-  .layout-bar-actions {
-    justify-content: space-between;
-  }
-
-  @keyframes layoutBarIn {
-    from { opacity: 0; transform: translateY(14px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-}
-
 /* ---------- 16.5 Настройки: курсоры, палитра, файлы ---------- */
 .settings-note {
-  margin: -4px 0 14px;
-  font-size: 0.8rem;
-  line-height: 1.6;
+  margin: -4px 0 12px;
+  font-size: 0.78rem;
+  line-height: 1.55;
   color: var(--text-dim);
 }
 
+/* Курсоры: плотная сетка маленьких плиток — ничего не слипается */
 .cursor-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(62px, 1fr));
+  gap: 8px;
 }
 
 .cursor-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 12px 8px 10px;
-  border-radius: var(--radius-md);
+  gap: 5px;
+  padding: 8px 4px 6px;
+  border-radius: 12px;
   border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.03);
-  transition: var(--transition);
+  background: rgba(255, 255, 255, 0.025);
+  transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
 }
 
 .cursor-card:hover {
   border-color: var(--border-strong);
-  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-1px);
 }
 
 .cursor-card.is-active {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft);
   background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px hsl(var(--accent-hue, 38) 90% 60% / 0.35);
 }
 
 .cursor-preview {
-  width: 28px;
-  height: 28px;
+  width: 22px;
+  height: 22px;
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
 }
 
+/* Превью аниме-курсора — та же картинка, что и сам курсор */
+.cursor-preview[style] {
+  background-image: var(--cursor-thumb);
+}
+
 .cursor-name {
-  font-size: 0.72rem;
+  font-size: 0.63rem;
+  line-height: 1.1;
   color: var(--text-gray);
   text-align: center;
+  white-space: nowrap;
+}
+
+.cursor-card.is-active .cursor-name {
+  color: var(--accent);
 }
 
 .cursor-preview-default {
@@ -16466,42 +16342,126 @@ body.theme-light .layout-bar {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 3l14 8-6 1.6L10 20z' fill='%23ffb347' stroke='%23b25f10'/%3E%3C/svg%3E");
 }
 
+.custom-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.custom-hint {
+  font-size: 0.68rem;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  opacity: 0.75;
+}
+
+/* Цвет сайта: палитра и две «таблетки» в одной компактной панели */
+.accent-panel {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.02);
+}
+
 .accent-grid {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  align-items: center;
+  gap: 7px;
 }
 
 .accent-swatch {
-  width: 40px;
-  height: 40px;
+  position: relative;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   border: 2px solid transparent;
   background: linear-gradient(135deg,
     hsl(var(--swatch-hue) 95% 74%),
-    hsl(var(--swatch-hue) 90% 56%));
-  cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    hsl(var(--swatch-hue) 90% 54%));
+  display: grid;
+  place-items: center;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
 }
 
 .accent-swatch:hover {
-  transform: scale(1.08);
-  box-shadow: 0 6px 18px hsl(var(--swatch-hue) 90% 55% / 0.4);
+  transform: scale(1.12);
+  box-shadow: 0 4px 14px hsl(var(--swatch-hue) 90% 55% / 0.45);
 }
 
 .accent-swatch.is-active {
   border-color: #fff;
-  box-shadow: 0 0 0 3px hsl(var(--swatch-hue) 90% 60% / 0.35);
+  box-shadow: 0 0 0 3px hsl(var(--swatch-hue) 90% 60% / 0.3);
+}
+
+.accent-check {
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: #16161d;
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.accent-swatch.is-active .accent-check {
+  opacity: 0.9;
+  transform: scale(1);
+}
+
+.accent-extra {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  padding-left: 12px;
+  border-left: 1px solid var(--border);
+}
+
+.accent-pick {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  color: var(--text-gray);
 }
 
 .accent-color-input {
-  width: 46px;
-  height: 34px;
-  padding: 2px;
-  border-radius: 8px;
-  border: 1px solid var(--border-strong);
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid var(--border-strong);
   background: var(--bg-card);
+  overflow: hidden;
   cursor: pointer;
+}
+
+.accent-color-input::-webkit-color-swatch-wrapper { padding: 0; }
+.accent-color-input::-webkit-color-swatch { border: 0; border-radius: 50%; }
+.accent-color-input::-moz-color-swatch { border: 0; border-radius: 50%; }
+
+.accent-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px 4px 12px;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 0.72rem;
+  color: var(--text-gray);
+  cursor: pointer;
+}
+
+.switch-mini {
+  transform: scale(0.78);
+  transform-origin: right center;
 }
 
 .file-btn {
@@ -16742,5 +16702,692 @@ body.theme-light .badge {
   .progress-bar span::after {
     animation: none;
     opacity: 0;
+  }
+}
+
+/* ============================================================
+   ЧАСТЬ 18. Мини-плеер в углу и ещё больше аниме-эффектов
+   Всё декоративное прижато к своим контейнерам: не выходит
+   за края экрана и не ловит клики.
+   ============================================================ */
+
+/* ---------- 18.1 Мини-плеер: кнопка в правом нижнем углу ---------- */
+.music-dock {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 1150;
+  font-family: var(--font-body, inherit);
+  pointer-events: none;
+}
+
+.music-dock > * {
+  pointer-events: auto;
+}
+
+.music-dock-toggle {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  border: 1px solid hsl(var(--accent-hue, 38) 90% 65% / 0.45);
+  background: linear-gradient(160deg, rgba(28, 28, 40, 0.94), rgba(16, 16, 24, 0.94));
+  color: var(--accent);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(10px);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.music-dock-toggle svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.music-dock-label {
+  font-size: 0.55rem;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.music-dock-toggle:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.5), 0 0 0 4px hsl(var(--accent-hue, 38) 90% 60% / 0.12);
+}
+
+.music-dock.is-open .music-dock-toggle {
+  opacity: 0;
+  transform: scale(0.8);
+  pointer-events: none;
+}
+
+.music-dock-dot {
+  position: absolute;
+  top: 8px;
+  right: 9px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0;
+}
+
+.music-dock.is-playing .music-dock-dot {
+  opacity: 1;
+  animation: mpDot 1.6s ease-in-out infinite;
+}
+
+@keyframes mpDot {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--accent-hue, 38) 95% 62% / 0.55); }
+  50% { box-shadow: 0 0 0 6px hsl(var(--accent-hue, 38) 95% 62% / 0); }
+}
+
+/* ---------- 18.2 Окно плеера ---------- */
+.music-dock-panel {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 300px;
+  max-width: calc(100vw - 24px);
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid hsl(var(--accent-hue, 38) 80% 65% / 0.28);
+  background: linear-gradient(165deg, rgba(24, 24, 34, 0.96), rgba(13, 13, 20, 0.97));
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px);
+  color: var(--text-main);
+  display: none;
+  opacity: 0;
+  transform: translateY(8px) scale(0.98);
+  transform-origin: bottom right;
+}
+
+.music-dock.is-open .music-dock-panel {
+  display: block;
+  animation: mpPanelIn 0.22s ease forwards;
+}
+
+@keyframes mpPanelIn {
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.music-dock-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.music-dock-eyebrow {
+  font-size: 0.66rem;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.music-dock-hide {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.04);
+  transition: var(--transition);
+}
+
+.music-dock-hide:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.music-dock-hide svg,
+.mp-controls svg,
+.mp-volume svg,
+.mp-row-del svg,
+.mp-list-toggle svg {
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.music-dock-track {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.mp-cover {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  color: #1a1206;
+  background: linear-gradient(140deg,
+    hsl(var(--accent-hue, 38) 95% 72%),
+    hsl(var(--accent-hue, 38) 85% 52%));
+  box-shadow: 0 6px 16px hsl(var(--accent-hue, 38) 90% 55% / 0.35);
+}
+
+.music-dock.is-playing .mp-cover {
+  animation: mpCover 3.2s ease-in-out infinite;
+}
+
+@keyframes mpCover {
+  0%, 100% { transform: rotate(-2deg); }
+  50% { transform: rotate(2deg); }
+}
+
+.mp-meta {
+  min-width: 0;
+}
+
+.mp-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mp-note {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mp-seek {
+  position: relative;
+  height: 6px;
+  border-radius: 100px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  touch-action: none;
+}
+
+.mp-seek-fill {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: 100px;
+  background: linear-gradient(90deg,
+    hsl(var(--accent-hue, 38) 95% 70%),
+    hsl(var(--accent-hue, 38) 90% 55%));
+  box-shadow: 0 0 10px hsl(var(--accent-hue, 38) 90% 60% / 0.6);
+}
+
+.mp-time {
+  display: flex;
+  justify-content: space-between;
+  margin: 4px 0 8px;
+  font-size: 0.63rem;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.mp-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.mp-btn {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  color: var(--text-gray);
+  background: rgba(255, 255, 255, 0.05);
+  transition: var(--transition);
+}
+
+.mp-btn:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.mp-btn-small {
+  width: 30px;
+  height: 30px;
+}
+
+.mp-btn-play {
+  width: 44px;
+  height: 44px;
+  color: #16161d;
+  background: linear-gradient(150deg,
+    hsl(var(--accent-hue, 38) 95% 72%),
+    hsl(var(--accent-hue, 38) 88% 55%));
+  box-shadow: 0 8px 20px hsl(var(--accent-hue, 38) 90% 55% / 0.35);
+}
+
+.mp-btn-play svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+  stroke: none;
+}
+
+.mp-btn-play .mp-icon-pause,
+.mp-btn-play[data-playing="true"] .mp-icon-play {
+  display: none;
+}
+
+.mp-btn-play[data-playing="true"] .mp-icon-pause {
+  display: block;
+}
+
+.mp-volume {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  color: var(--text-dim);
+}
+
+.mp-volume input[type="range"] {
+  flex: 1;
+  min-width: 0;
+  height: 4px;
+  accent-color: var(--accent);
+}
+
+.mp-list-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+  margin-top: 10px;
+  padding: 7px 10px;
+  border-radius: 10px;
+  font-size: 0.72rem;
+  color: var(--text-gray);
+  background: rgba(255, 255, 255, 0.04);
+  transition: var(--transition);
+}
+
+.mp-list-toggle:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.mp-list {
+  margin-top: 8px;
+  max-height: 150px;
+  overflow-y: auto;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.mp-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 6px;
+}
+
+.mp-row + .mp-row {
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.mp-row.is-current {
+  background: hsl(var(--accent-hue, 38) 90% 60% / 0.12);
+}
+
+.mp-row-play {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  font-size: 0.64rem;
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.mp-row.is-current .mp-row-play {
+  color: #16161d;
+  background: var(--accent);
+}
+
+.mp-row-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.72rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mp-row-del {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  color: var(--text-dim);
+  opacity: 0.6;
+}
+
+.mp-row-del:hover {
+  color: #ff6b81;
+  opacity: 1;
+}
+
+.mp-empty {
+  padding: 10px;
+  font-size: 0.7rem;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+.mp-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px dashed hsl(var(--accent-hue, 38) 80% 65% / 0.4);
+  font-size: 0.74rem;
+  color: var(--accent);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.mp-add:hover {
+  background: hsl(var(--accent-hue, 38) 90% 60% / 0.1);
+}
+
+/* Светлая тема */
+body.theme-light .music-dock-panel {
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.97), rgba(244, 241, 236, 0.97));
+  box-shadow: 0 22px 46px rgba(60, 50, 30, 0.22);
+}
+
+body.theme-light .music-dock-toggle {
+  background: linear-gradient(160deg, #fff, #f3efe8);
+  box-shadow: 0 12px 26px rgba(60, 50, 30, 0.2);
+}
+
+body.theme-light .mp-seek,
+body.theme-light .mp-btn,
+body.theme-light .mp-list-toggle,
+body.theme-light .mp-row-play {
+  background: rgba(20, 20, 30, 0.07);
+}
+
+body.theme-light .mp-list {
+  background: rgba(20, 20, 30, 0.04);
+}
+
+@media (max-width: 520px) {
+  .music-dock {
+    right: 12px;
+    bottom: 12px;
+  }
+
+  .music-dock-toggle {
+    width: 50px;
+    height: 50px;
+  }
+
+  .music-dock-panel {
+    width: calc(100vw - 24px);
+  }
+}
+
+/* ---------- 18.3 Ещё эффекты: сияние заголовка, карточки, кнопки ---------- */
+
+/* Блик по первой строке заголовка — только там, где текст можно
+   залить градиентом; иначе строка остаётся обычной и читаемой */
+@supports ((background-clip: text) or (-webkit-background-clip: text)) {
+  .hero h1 .hero-line:first-child {
+    background: linear-gradient(100deg,
+      var(--text-main) 30%,
+      hsl(var(--accent-hue, 38) 95% 70%) 50%,
+      var(--text-main) 70%);
+    background-size: 220% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: heroShimmer 7s ease-in-out infinite;
+  }
+}
+
+@keyframes heroShimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Мягкое сияние под карточками при наведении */
+.anime-card,
+.lesson-card,
+.grammar-card,
+.test-card,
+.shop-card,
+.video-card,
+.block {
+  transition: transform 0.28s var(--ease-smooth, ease),
+              box-shadow 0.28s ease,
+              border-color 0.28s ease;
+}
+
+.anime-card:hover,
+.lesson-card:hover,
+.grammar-card:hover,
+.test-card:hover,
+.shop-card:hover,
+.video-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.4),
+              0 0 0 1px hsl(var(--accent-hue, 38) 90% 65% / 0.25),
+              0 0 26px hsl(var(--accent-hue, 38) 90% 60% / 0.16);
+}
+
+body.theme-light .anime-card:hover,
+body.theme-light .lesson-card:hover,
+body.theme-light .grammar-card:hover,
+body.theme-light .test-card:hover,
+body.theme-light .shop-card:hover,
+body.theme-light .video-card:hover {
+  box-shadow: 0 16px 34px rgba(50, 40, 20, 0.16),
+              0 0 0 1px hsl(var(--accent-hue, 38) 90% 55% / 0.3);
+}
+
+/* Полоска акцента, которая прочерчивается по нижней грани блока.
+   Верхнюю грань не трогаем — там уже зеркальный блик. */
+.block {
+  position: relative;
+}
+
+.block::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 22px;
+  width: 0;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: linear-gradient(90deg,
+    hsl(var(--accent-hue, 38) 95% 65%),
+    transparent);
+  transition: width 0.45s var(--ease-smooth, ease);
+  pointer-events: none;
+}
+
+.block:hover::after {
+  width: calc(100% - 44px);
+}
+
+/* Кнопка-акцент мягко дышит */
+.btn-primary {
+  box-shadow: 0 10px 26px hsl(var(--accent-hue, 38) 90% 55% / 0.22);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 14px 34px hsl(var(--accent-hue, 38) 90% 55% / 0.32);
+}
+
+/* Выделение текста и фокус в цвет акцента */
+::selection {
+  background: hsl(var(--accent-hue, 38) 90% 60% / 0.32);
+  color: var(--text-main);
+}
+
+:focus-visible {
+  outline: 2px solid hsl(var(--accent-hue, 38) 90% 65% / 0.75);
+  outline-offset: 2px;
+}
+
+/* Скроллбар в тон сайту */
+html {
+  scrollbar-color: hsl(var(--accent-hue, 38) 60% 45% / 0.6) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 100px;
+  background-clip: content-box;
+  background-color: hsl(var(--accent-hue, 38) 60% 48% / 0.55);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--accent-hue, 38) 70% 55% / 0.8);
+}
+
+/* Кнопки «избранное»/иконки в шапке — лёгкий подъём */
+.icon-btn:hover,
+.header-actions a:hover {
+  transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero h1 .hero-line:first-child,
+  .music-dock.is-playing .mp-cover,
+  .music-dock.is-playing .music-dock-dot {
+    animation: none;
+  }
+
+  .anime-card:hover,
+  .lesson-card:hover,
+  .grammar-card:hover,
+  .test-card:hover,
+  .shop-card:hover,
+  .video-card:hover {
+    transform: none;
+  }
+}
+
+/* ---------- 18.4 Микроанимации, которые видно сразу ---------- */
+
+/* Цифры в статистике первого экрана — с мягким свечением */
+.hero-stat b {
+  background: linear-gradient(120deg,
+    var(--text-main),
+    hsl(var(--accent-hue, 38) 95% 70%));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Плашки статистики чуть приподнимаются */
+.hero-stat {
+  transition: transform 0.25s var(--ease-smooth, ease);
+}
+
+.hero-stat:hover {
+  transform: translateY(-2px);
+}
+
+/* Карточки статистики в профиле */
+.stat-card {
+  transition: transform 0.25s var(--ease-smooth, ease), box-shadow 0.25s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.35),
+              0 0 0 1px hsl(var(--accent-hue, 38) 90% 65% / 0.22);
+}
+
+body.theme-light .stat-card:hover {
+  box-shadow: 0 14px 28px rgba(50, 40, 20, 0.14),
+              0 0 0 1px hsl(var(--accent-hue, 38) 90% 55% / 0.28);
+}
+
+/* Чёрточка-акцент после заголовка блока */
+.block-head h3::after {
+  content: '';
+  display: inline-block;
+  width: 26px;
+  height: 2px;
+  margin-left: 10px;
+  vertical-align: middle;
+  border-radius: 2px;
+  background: linear-gradient(90deg,
+    hsl(var(--accent-hue, 38) 95% 65%),
+    transparent);
+}
+
+/* Полосатая лента под заголовком страницы — как обложка тома манги */
+.settings-title::after {
+  content: '';
+  display: block;
+  width: 64px;
+  height: 3px;
+  margin-top: 14px;
+  border-radius: 3px;
+  background: repeating-linear-gradient(90deg,
+    hsl(var(--accent-hue, 38) 95% 65%) 0 8px,
+    transparent 8px 14px);
+}
+
+/* Поля ввода: акцентная рамка при фокусе (ползунки и галочки не трогаем) */
+input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+textarea:focus,
+select:focus {
+  border-color: hsl(var(--accent-hue, 38) 90% 62% / 0.65);
+  box-shadow: 0 0 0 3px hsl(var(--accent-hue, 38) 90% 60% / 0.12);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-stat:hover,
+  .stat-card:hover {
+    transform: none;
   }
 }

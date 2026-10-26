@@ -3,7 +3,7 @@
    Всё живёт только в localStorage, сервер не нужен:
    • свой фон из файла + затемнение и размытие;
    • цвет сайта: готовые палитры, любой свой цвет и радужный режим;
-   • своя музыка из файла (mp3/ogg/wav) или встроенный синтез;
+   • курсоры и палитры. Музыка живёт в player.js — там плейлист и плеер;
    • восемь аниме-курсоров, плюс кнопка «загрузить свой» (заглушка).
    ============================================================ */
 
@@ -13,7 +13,6 @@
 const CUSTOM_BG_KEY = 'nihongo_custom_bg';        // data URL картинки
 const CUSTOM_BG_DIM = 'nihongo_bg_dim';           // затемнение, 0–90
 const CUSTOM_BG_BLUR = 'nihongo_bg_blur';         // размытие, 0–20 px
-const CUSTOM_MUSIC_KEY = 'nihongo_custom_music';  // data URL трека
 const CUSTOM_ACCENT_KEY = 'nihongo_accent';       // свой цвет, #rrggbb
 const CUSTOM_RAINBOW_KEY = 'nihongo_accent_rainbow'; // радужный режим
 const CUSTOM_CURSOR_KEY = 'nihongo_cursor';       // id курсора
@@ -21,8 +20,6 @@ const CUSTOM_CURSOR_KEY = 'nihongo_cursor';       // id курсора
 // Ограничения: localStorage небольшой, поэтому файлы ужимаем
 const BG_MAX_SIDE = 1920;
 const BG_QUALITY = 0.82;
-// base64 прибавляет ~33%, поэтому реальный потолок файла — 2,5 МБ
-const MUSIC_MAX_BYTES = 2.5 * 1024 * 1024;
 
 /* ---------- Готовые палитры ---------- */
 
@@ -49,7 +46,7 @@ function animeCursor(body, hotX = 4, hotY = 4) {
   const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">' +
     body + '</svg>';
 
-  return 'url("data:image/svg+xml,' + encodeURIComponent(svg) + '") ' + hotX + ' ' + hotY + ', auto';
+  return 'url("data:image/svg+xml,' + encodeURIComponent(svg) + '") ' + hotX + ' ' + hotY;
 }
 
 // Семь аниме-курсоров: каждый — маленькая картинка, нарисованная кодом
@@ -400,134 +397,6 @@ function applyAccentSettings() {
   if (rainbow) applyAccent(340, null);
 }
 
-/* ---------- Своя музыка ---------- */
-
-let customAudio = null;
-
-/** Аудио-элемент для своего трека. */
-function customMusicElement() {
-  if (customAudio) return customAudio;
-
-  customAudio = document.createElement('audio');
-  customAudio.id = 'customMusicPlayer';
-  customAudio.loop = true;
-  customAudio.preload = 'none';
-  customAudio.style.display = 'none';
-  document.body.appendChild(customAudio);
-
-  return customAudio;
-}
-
-/** Есть ли свой трек. */
-function hasCustomMusic() {
-  return Boolean(customGet(CUSTOM_MUSIC_KEY, ''));
-}
-
-/** Загружает свой трек. */
-function pickCustomMusic(input) {
-  const file = input && input.files && input.files[0];
-  if (!file) return;
-
-  if (!/^audio\//.test(file.type) && !/\.(mp3|ogg|wav|m4a|flac)$/i.test(file.name)) {
-    if (typeof showToast === 'function') showToast('Нужен аудиофайл', 'Подойдёт MP3, OGG или WAV', 'error');
-    input.value = '';
-    return;
-  }
-
-  if (file.size > MUSIC_MAX_BYTES) {
-    if (typeof showToast === 'function') {
-      showToast('Файл слишком большой',
-        'Лимит — 2,5 МБ: больше браузер не сохранит. Сожми трек или возьми короткий фрагмент',
-        'error', { duration: 6000 });
-    }
-    input.value = '';
-    return;
-  }
-
-  const reader = new FileReader();
-
-  reader.onerror = () => {
-    if (typeof showToast === 'function') showToast('Не удалось прочитать файл', 'Попробуй другой трек', 'error');
-  };
-
-  reader.onload = () => {
-    try { localStorage.removeItem(CUSTOM_MUSIC_KEY); } catch (error) { /* пусто */ }
-
-    if (!customSet(CUSTOM_MUSIC_KEY, String(reader.result))) return;
-
-    stopCustomMusic();
-    renderCustomizationState();
-
-    if (typeof showToast === 'function') {
-      showToast('Музыка загружена', 'Теперь кнопка «Играть» включит твой трек', 'success', { icon: 'music' });
-    }
-  };
-
-  reader.readAsDataURL(file);
-  input.value = '';
-}
-
-/** Включает свой трек. */
-function playCustomMusic() {
-  const data = customGet(CUSTOM_MUSIC_KEY, '');
-  if (!data) {
-    if (typeof showToast === 'function') showToast('Нет своего трека', 'Сначала загрузи музыку', 'warning');
-    return;
-  }
-
-  const audio = customMusicElement();
-  if (audio.src !== data) audio.src = data;
-
-  // Синтез глушим, чтобы не играли две дорожки одновременно
-  if (typeof stopAmbient === 'function') stopAmbient();
-
-  const volume = typeof musicVolume === 'function' ? musicVolume() : 0.4;
-  audio.volume = Math.min(1, Math.max(0, volume));
-
-  const promise = audio.play();
-  if (promise && promise.catch) {
-    promise.catch(() => {
-      if (typeof showToast === 'function') showToast('Браузер не дал включить', 'Нажми «Играть» ещё раз — нужен клик', 'info');
-    });
-  }
-
-  updateMusicLabel(true);
-}
-
-/** Останавливает свой трек. */
-function stopCustomMusic() {
-  if (customAudio) {
-    customAudio.pause();
-    try { customAudio.currentTime = 0; } catch (error) { /* пусто */ }
-  }
-
-  updateMusicLabel(false);
-}
-
-/** Убирает свой трек. */
-function clearCustomMusic() {
-  stopCustomMusic();
-
-  try { localStorage.removeItem(CUSTOM_MUSIC_KEY); } catch (error) { /* пусто */ }
-  if (customAudio) customAudio.removeAttribute('src');
-
-  renderCustomizationState();
-  if (typeof showToast === 'function') showToast('Трек убран', 'Вернулась встроенная музыка', 'info');
-}
-
-/** Подпись у кнопки музыки. */
-function updateMusicLabel(playing) {
-  const label = document.getElementById('customMusicState');
-  if (!label) return;
-
-  if (!hasCustomMusic()) {
-    label.textContent = 'Свой трек не загружен';
-    return;
-  }
-
-  label.textContent = playing ? 'Играет твой трек' : 'Твой трек готов к запуску';
-}
-
 /* ---------- Курсоры ---------- */
 
 /** Применяет выбранный курсор. */
@@ -626,7 +495,6 @@ function renderCustomizationState() {
       : 'Сейчас стандартный фон сайта';
   }
 
-  updateMusicLabel(customAudio ? !customAudio.paused : false);
   updateCustomLabels();
 }
 
@@ -651,12 +519,6 @@ document.addEventListener('DOMContentLoaded', () => {
     renderCustomizationState();
   });
 
-  // Громкость своего трека следует за ползунком музыки
-  document.addEventListener('change', event => {
-    if (!event.target.closest('[data-setting="sound.musicVolume"]')) return;
-    if (!customAudio) return;
-    customAudio.volume = Math.min(1, Math.max(0, Number(event.target.value) / 100));
-  }, true);
 });
 
 /* Экспорт */
@@ -673,11 +535,6 @@ window.setBackgroundBlur = setBackgroundBlur;
 window.setAccentPreset = setAccentPreset;
 window.setAccentCustom = setAccentCustom;
 window.toggleRainbowAccent = toggleRainbowAccent;
-window.pickCustomMusic = pickCustomMusic;
-window.playCustomMusic = playCustomMusic;
-window.stopCustomMusic = stopCustomMusic;
-window.clearCustomMusic = clearCustomMusic;
-window.hasCustomMusic = hasCustomMusic;
 window.applyCursorSetting = applyCursorSetting;
 window.uploadCustomCursor = uploadCustomCursor;
 window.renderCustomizationState = renderCustomizationState;

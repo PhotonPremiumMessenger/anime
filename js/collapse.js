@@ -148,7 +148,6 @@ function mountBlockTools() {
   tools.className = 'profile-blocks-tools';
   tools.id = 'blockTools';
   // Служебная панель: в раскладке блоков не участвует
-  tools.setAttribute('data-sortable-pin', '1');
   tools.innerHTML = `
     <button class="btn btn-ghost btn-small" onclick="toggleAllBlocks(true)">Свернуть все</button>
     <button class="btn btn-ghost btn-small" onclick="toggleAllBlocks(false)">Раскрыть все</button>
