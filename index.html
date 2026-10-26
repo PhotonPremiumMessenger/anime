@@ -20,8 +20,8 @@
 
   <!-- ============ ШАПКА ============ -->
   <header class="header">
-    <div class="container" data-sortable="header">
-      <a class="logo" href="index.html" data-sortable-pin="1" aria-label="Nihongo — на главную">
+    <div class="container">
+      <a class="logo" href="index.html" aria-label="Nihongo — на главную">
         <span class="logo-badge">
           <svg viewBox="0 0 48 48" aria-hidden="true">
             <rect x="6" y="10" width="36" height="4.5" rx="2.2" fill="currentColor"></rect>
@@ -120,12 +120,12 @@
         </button>
       </nav>
 
-      <div class="header-actions" data-sortable="header-actions">
-        <div class="is-guest" data-block-key="header-guest">
+      <div class="header-actions">
+        <div class="is-guest">
           <a class="btn btn-ghost btn-small" href="register.html">Войти</a>
           <a class="btn btn-primary btn-small" href="register.html">Регистрация</a>
         </div>
-        <a class="user-chip is-auth" href="profile.html" data-block-key="header-user">
+        <a class="user-chip is-auth" href="profile.html">
           <img src="assets/images/avatars/avatar1.png" alt="Аватар" data-header-avatar data-avatar-img>
           <span class="user-name" data-header-nick>Игрок</span>
         </a>
@@ -169,14 +169,6 @@
 
     <div class="switch-row">
       <div>
-        <div class="switch-label">Раскладка блоков</div>
-        <div class="switch-hint">Меняй местами шапку, блоки главной и профиля</div>
-      </div>
-      <button class="btn btn-ghost btn-small" onclick="toggleLayoutEdit()">Двигать</button>
-    </div>
-
-    <div class="switch-row">
-      <div>
         <div class="switch-label">Все настройки</div>
         <div class="switch-hint">Звук, уведомления, лаунчер</div>
       </div>
@@ -184,9 +176,9 @@
     </div>
   </aside>
 
-  <main data-sortable="home">
+  <main>
     <!-- ============ HERO ============ -->
-    <section class="hero" data-block-key="hero" data-block-title="Первый экран">
+    <section class="hero">
       <div class="container">
         <div class="hero-text">
           <span class="badge">
@@ -270,7 +262,7 @@
     </section>
 
     <!-- ============ ТВОЙ ДЕНЬ: ЗАДАНИЯ, СТРИК, ЧЕЛЛЕНДЖ, ВИКТОРИНА ============ -->
-    <section class="section game-hub" id="today" data-block-key="today" data-block-title="Твой день">
+    <section class="section game-hub" id="today">
       <div class="container">
         <div class="section-head reveal" data-jp="今日">
           <span class="badge badge-muted">Каждый день</span>
@@ -278,9 +270,9 @@
           <p>Задания, серия дней, челлендж недели и викторина. Всё обновляется автоматически.</p>
         </div>
 
-        <div class="game-grid" data-sortable="home-widgets">
+        <div class="game-grid">
           <!-- Цели дня (пункт 42) -->
-          <section class="block goals-block reveal" id="goalsMiniWrap" data-block-title="Цель дня">
+          <section class="block goals-block reveal" id="goalsMiniWrap">
             <div class="block-head">
               <h3>Цель дня</h3>
               <a class="block-note" href="profile.html">настроить</a>
@@ -289,29 +281,29 @@
           </section>
 
           <!-- Ежедневные задания -->
-          <section class="block game-col game-col-wide reveal" id="dailyBlock" data-block-title="Задания"></section>
+          <section class="block game-col game-col-wide reveal" id="dailyBlock"></section>
 
           <!-- Стрик -->
-          <section class="block streak-block-wrap reveal" id="streakBlock" data-block-title="Серия дней"></section>
+          <section class="block streak-block-wrap reveal" id="streakBlock"></section>
 
           <!-- Челлендж недели -->
-          <section class="block weekly-block reveal" id="weeklyBlock" data-block-title="Челлендж недели"></section>
+          <section class="block weekly-block reveal" id="weeklyBlock"></section>
 
           <!-- Викторина дня -->
-          <section class="block quiz-block reveal" id="quizBlock" data-block-title="Викторина дня"></section>
+          <section class="block quiz-block reveal" id="quizBlock"></section>
         </div>
       </div>
     </section>
 
     <!-- ============ ЦИТАТА ДНЯ ============ -->
-    <section class="section quote-section" id="quotes" data-block-key="quotes" data-block-title="Цитата дня">
+    <section class="section quote-section" id="quotes">
       <div class="container">
         <div class="block quote-block reveal" id="quoteBlock"></div>
       </div>
     </section>
 
     <!-- ============ ЧТО ВНУТРИ ============ -->
-    <section class="section" id="features" data-block-key="features" data-block-title="Что внутри">
+    <section class="section" id="features">
       <div class="container">
         <div class="section-head reveal" data-jp="中身">
           <span class="badge badge-muted">Что внутри</span>
@@ -363,7 +355,7 @@
     </section>
 
     <!-- ============ В РАЗРАБОТКЕ ============ -->
-    <section class="section" id="development" data-block-key="development" data-block-title="Платформа растёт">
+    <section class="section" id="development">
       <div class="container">
         <div class="progress-card reveal">
           <div class="progress-top">
@@ -427,7 +419,7 @@
     </section>
 
     <!-- ============ МИНИ-CTA ============ -->
-    <section class="section" style="padding-top:0" data-block-key="cta" data-block-title="Призыв">
+    <section class="section" style="padding-top:0">
       <div class="container">
         <div class="cta reveal">
           <span class="badge badge-muted">Первый год — бесплатно</span>
@@ -581,8 +573,8 @@
   <script src="js/smoothscroll.js"></script>
   <script src="js/anime-style.js"></script>
   <script src="js/collapse.js"></script>
-  <script src="js/layout.js"></script>
   <script src="js/customize.js"></script>
+  <script src="js/player.js"></script>
   <script src="js/easter.js"></script>
   <script src="js/quotes.js"></script>
 </body>

@@ -271,23 +271,33 @@ const SETTINGS_CONTENT = {
 
       <div class="settings-group">
         <h4>Своя музыка</h4>
-        <p class="settings-note">MP3, OGG или WAV до 2,5 МБ. Трек хранится в этом браузере.</p>
+        <p class="settings-note">Плейлист до 8 треков по 1,8 МБ. Файлы живут только в этом браузере, а плеер в правом нижнем углу играет их на всех страницах.</p>
 
         <div class="setting-row">
           <div class="setting-info">
-            <div class="setting-name">Файл трека</div>
-            <div class="setting-desc" id="customMusicState">Свой трек не загружен</div>
+            <div class="setting-name">Плейлист</div>
+            <div class="setting-desc" id="customMusicState">Плейлист пуст — добавь первый трек</div>
           </div>
           <div class="setting-control">
             <div class="btn-row">
               <label class="btn btn-outline btn-small file-btn">
-                Загрузить
+                Добавить трек
                 <input type="file" accept="audio/*" onchange="pickCustomMusic(this)" hidden>
               </label>
               <button class="btn btn-ghost btn-small" type="button" onclick="playCustomMusic()">Играть</button>
-              <button class="btn btn-ghost btn-small" type="button" onclick="stopCustomMusic()">Стоп</button>
-              <button class="btn btn-ghost btn-small" type="button" onclick="clearCustomMusic()">Убрать</button>
+              <button class="btn btn-ghost btn-small" type="button" onclick="stopCustomMusic()">Пауза</button>
+              <button class="btn btn-ghost btn-small" type="button" onclick="toggleMusicDock(true)">Плеер</button>
             </div>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Управление</div>
+            <div class="setting-desc">Пауза, перемотка, следующий трек, громкость и сворачивание — всё в окошке плеера</div>
+          </div>
+          <div class="setting-control">
+            <button class="btn btn-ghost btn-small" type="button" onclick="clearCustomMusic()">Убрать текущий</button>
           </div>
         </div>
       </div>
@@ -402,39 +412,36 @@ const SETTINGS_CONTENT = {
 
       <div class="settings-group">
         <h4>Курсор</h4>
-        <p class="settings-note">Обычный или один из семи аниме-курсоров. Свой курсор можно будет загрузить позже.</p>
+        <p class="settings-note">Обычный, акцентный или один из семи аниме. Свой курсор — позже.</p>
+
         <div class="cursor-grid" id="cursorGrid"></div>
-        <div class="btn-row mt-12">
+
+        <div class="custom-actions">
           <button class="btn btn-outline btn-small" type="button" onclick="uploadCustomCursor()">Загрузить свой курсор</button>
+          <span class="custom-hint">пока заглушка</span>
         </div>
       </div>
 
       <div class="settings-group">
         <h4>Цвет сайта</h4>
-        <p class="settings-note">Выбери готовую палитру, свой цвет или радужный режим — акцент меняется на всём сайте.</p>
+        <p class="settings-note">Палитра, свой оттенок или радуга — акцент меняется на всём сайте сразу.</p>
 
-        <div class="accent-grid" id="accentGrid"></div>
+        <div class="accent-panel">
+          <div class="accent-grid" id="accentGrid"></div>
 
-        <div class="setting-row mt-16">
-          <div class="setting-info">
-            <div class="setting-name">Свой цвет</div>
-            <div class="setting-desc">Любой оттенок из палитры браузера</div>
-          </div>
-          <div class="setting-control">
-            <input class="accent-color-input" type="color" id="accentColorInput" value="#ffb347"
-                   oninput="setAccentCustom(this.value)" aria-label="Свой цвет акцента">
-          </div>
-        </div>
+          <div class="accent-extra">
+            <label class="accent-pick" title="Свой цвет">
+              <input class="accent-color-input" type="color" id="accentColorInput" value="#ffb347"
+                     oninput="setAccentCustom(this.value)" aria-label="Свой цвет акцента">
+              <span>Свой</span>
+            </label>
 
-        <div class="setting-row">
-          <div class="setting-info">
-            <div class="setting-name">Радужный режим</div>
-            <div class="setting-desc">Акцент переливается всеми цветами по кругу</div>
-          </div>
-          <div class="setting-control">
-            <label class="switch">
-              <input type="checkbox" id="rainbowSwitch" onchange="toggleRainbowAccent(this)">
-              <span class="track"></span>
+            <label class="accent-pill" title="Радужный режим">
+              <span>Радуга</span>
+              <span class="switch switch-mini">
+                <input type="checkbox" id="rainbowSwitch" onchange="toggleRainbowAccent(this)">
+                <span class="track"></span>
+              </span>
             </label>
           </div>
         </div>
@@ -466,7 +473,7 @@ const SETTINGS_CONTENT = {
             <div class="setting-desc">Чтобы текст читался на любой картинке</div>
           </div>
           <div class="setting-control">
-            <div class="range-row" style="width:260px">
+            <div class="range-row" style="width:200px">
               <input class="range" type="range" min="0" max="90" step="5" value="35" id="bgDimRange"
                      oninput="setBackgroundDim(this.value)">
               <span class="range-value" id="bgDimValue">35%</span>
@@ -480,26 +487,10 @@ const SETTINGS_CONTENT = {
             <div class="setting-desc">0 — картинка чёткая, 20 px — мягкое свечение</div>
           </div>
           <div class="setting-control">
-            <div class="range-row" style="width:260px">
+            <div class="range-row" style="width:200px">
               <input class="range" type="range" min="0" max="20" step="1" value="0" id="bgBlurRange"
                      oninput="setBackgroundBlur(this.value)">
               <span class="range-value" id="bgBlurValue">0px</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="settings-group">
-        <h4>Раскладка</h4>
-        <div class="setting-row">
-          <div class="setting-info">
-            <div class="setting-name">Порядок блоков</div>
-            <div class="setting-desc">Меняй местами кнопки в шапке, блоки главной и профиля — порядок запомнится</div>
-          </div>
-          <div class="setting-control">
-            <div class="btn-row">
-              <button class="btn btn-outline btn-small" type="button" onclick="toggleLayoutEdit(true)">Двигать блоки</button>
-              <button class="btn btn-ghost btn-small" type="button" onclick="resetLayout()">Сбросить</button>
             </div>
           </div>
         </div>
@@ -897,6 +888,8 @@ function showSettingsTab(tabId, buttonElement) {
   bindSettingsTab(tabId);
 
   // Дополнительные виджеты, которым нужен готовый DOM
+  if (typeof renderCustomizationState === 'function') renderCustomizationState();
+  if (typeof refreshPlayerLabels === 'function') refreshPlayerLabels();
   if (typeof renderVoicePicker === 'function') renderVoicePicker();
   if (typeof renderJLPTSwitchers === 'function') renderJLPTSwitchers();
   if (typeof renderAutoThemeSwitch === 'function') renderAutoThemeSwitch();
@@ -926,7 +919,7 @@ function renderCursorGrid() {
     // У аниме-курсоров превью — та же картинка, что и сам курсор
     const found = anime.find(entry => entry.id === item.id);
     const urlMatch = found ? /url\("?([^")]+)"?\)/.exec(found.css) : null;
-    const style = urlMatch ? ` style="background-image:url('${urlMatch[1]}')"` : '';
+    const style = urlMatch ? ` style="--cursor-thumb:url('${urlMatch[1]}')"` : '';
 
     return `
     <button class="cursor-card${item.id === saved ? ' is-active' : ''}" type="button"
@@ -950,7 +943,9 @@ function renderAccentGrid() {
     <button class="accent-swatch" type="button" data-accent-id="${item.id}"
             data-accent-hue="${item.hue}" style="--swatch-hue:${item.hue}"
             onclick="setAccentPreset('${item.id}', ${item.hue})"
-            title="${item.name}" aria-label="Цвет: ${item.name}"></button>
+            title="${item.name}" aria-label="Цвет: ${item.name}">
+      <span class="accent-check" aria-hidden="true">✓</span>
+    </button>
   `).join('');
 }
 

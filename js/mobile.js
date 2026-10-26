@@ -90,7 +90,6 @@ function mountMobileNav() {
   const button = document.createElement('button');
   button.className = 'nav-burger';
   // Кнопка меню всегда на своём месте: раскладка её не двигает
-  button.setAttribute('data-sortable-pin', '1');
   button.type = 'button';
   button.setAttribute('aria-label', 'Меню');
   button.setAttribute('aria-expanded', 'false');
