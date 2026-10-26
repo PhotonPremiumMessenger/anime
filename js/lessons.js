@@ -48,9 +48,19 @@ function renderLessons() {
     return;
   }
 
+  const fragment = document.createDocumentFragment();
+
   filtered.forEach((lesson, index) => {
-    grid.appendChild(buildLessonCard(lesson, index));
+    fragment.appendChild(buildLessonCard(lesson, index));
   });
+
+  grid.appendChild(fragment);
+
+  // Карточки рисуются после initReveal(), поэтому подключаем их к наблюдателю,
+  // а на всякий случай сразу показываем — раньше сетка оставалась пустой,
+  // потому что .reveal без .visible имеет opacity: 0
+  if (typeof observeReveals === 'function') observeReveals(grid);
+  grid.querySelectorAll('.lesson-card').forEach(card => card.classList.add('visible'));
 }
 
 /**

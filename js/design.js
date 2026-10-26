@@ -303,26 +303,62 @@ function applyStoredSettings() {
 
 /* ---------- Таймер до релиза ---------- */
 
-// Через сколько месяцев после первого визита планируется релиз
-const RELEASE_MONTHS = 6;
+// Сколько всего дней растёт платформа (пункт 1: было «60 месяцев», стало 250 дней)
+const RELEASE_DAYS = 250;
 
-/** Возвращает дату релиза, создавая её при первом заходе. */
-function getReleaseDate() {
-  let saved = Number(localStorage.getItem(RELEASE_KEY));
+// Ключ схемы: если он изменился — отсчёт начинается заново
+const RELEASE_SCHEMA = 'nihongo_release_start_v2';
 
-  if (!saved || Number.isNaN(saved)) {
-    const date = new Date();
-    date.setMonth(date.getMonth() + RELEASE_MONTHS);
-    saved = date.getTime();
-    localStorage.setItem(RELEASE_KEY, String(saved));
+/**
+ * Дата старта отсчёта. Хранится в localStorage, поэтому при перезагрузке
+ * и переходах между страницами ничего не обнуляется.
+ * Старый ключ releaseDate больше не используется — счёт идёт от старта.
+ */
+function getReleaseStart() {
+  let saved = Number(localStorage.getItem(RELEASE_SCHEMA));
+
+  if (!Number.isFinite(saved) || saved <= 0) {
+    saved = Date.now();
+    try {
+      localStorage.setItem(RELEASE_SCHEMA, String(saved));
+      // Чистим устаревшую дату «через 6 месяцев»
+      localStorage.removeItem(RELEASE_KEY);
+    } catch (error) {
+      /* приватный режим — считаем от текущей сессии */
+    }
   }
 
-  return new Date(saved);
+  return saved;
+}
+
+/** Дата открытия платформы: старт + 250 дней. */
+function getReleaseDate() {
+  return new Date(getReleaseStart() + RELEASE_DAYS * 86400000);
 }
 
 /**
- * Запускает обратный отсчёт до релиза.
- * Дата хранится в localStorage, поэтому перезагрузка её не сбрасывает.
+ * Сколько платформа уже растёт.
+ * @returns {{passed:number, left:number, percent:number, ms:number, total:number}}
+ */
+function getReleaseProgress() {
+  const start = getReleaseStart();
+  const total = RELEASE_DAYS * 86400000;
+  const passedMs = Math.max(0, Date.now() - start);
+  const leftMs = Math.max(0, total - passedMs);
+
+  return {
+    total: RELEASE_DAYS,
+    ms: leftMs,
+    passed: Math.floor(passedMs / 86400000),
+    left: Math.ceil(leftMs / 86400000),
+    percent: Math.min(100, Math.max(0, (passedMs / total) * 100))
+  };
+}
+
+/**
+ * Запускает обратный отсчёт до открытия и двигает полосу готовности.
+ * Полоса растёт сама: её ширина — это доля прошедшего времени,
+ * поэтому она обновляется и без перезагрузки страницы.
  */
 function startReleaseTimer() {
   const daysEl = document.getElementById('timerDays');
@@ -331,20 +367,43 @@ function startReleaseTimer() {
   const hoursEl = document.getElementById('timerHours');
   const minutesEl = document.getElementById('timerMinutes');
   const secondsEl = document.getElementById('timerSeconds');
+  const barEl = document.getElementById('devProgress');
+  const percentEl = document.getElementById('devPercent');
+  const passedEl = document.getElementById('devPassed');
+  const totalEl = document.getElementById('devTotal');
+
   const releaseDate = getReleaseDate().getTime();
 
   // Двузначные числа: 7 → 07
   const pad = value => String(value).padStart(2, '0');
 
+  function updateProgress() {
+    const progress = getReleaseProgress();
+
+    if (barEl) barEl.style.width = progress.percent.toFixed(2) + '%';
+    if (percentEl) percentEl.textContent = Math.floor(progress.percent) + '%';
+    if (passedEl) passedEl.textContent = String(progress.passed);
+    if (totalEl) totalEl.textContent = String(progress.total);
+
+    // Подпись у полосы: сколько дней уже прошло
+    const note = document.getElementById('devNote');
+    if (note) {
+      note.textContent = progress.left > 0
+        ? 'Прошло ' + progress.passed + ' из ' + progress.total + ' дней · осталось ' + progress.left
+        : 'Отсчёт закончен — платформа открыта';
+    }
+  }
+
   function update() {
     const diff = releaseDate - Date.now();
 
-    // Если время вышло — показываем нули и останавливаемся
+    // Время вышло — показываем нули и открытую платформу
     if (diff <= 0) {
       if (daysEl) daysEl.textContent = '00';
       if (hoursEl) hoursEl.textContent = '00';
       if (minutesEl) minutesEl.textContent = '00';
       if (secondsEl) secondsEl.textContent = '00';
+      updateProgress();
       return;
     }
 
@@ -358,6 +417,8 @@ function startReleaseTimer() {
     if (hoursEl) hoursEl.textContent = pad(hours);
     if (minutesEl) minutesEl.textContent = pad(minutes);
     if (secondsEl) secondsEl.textContent = pad(seconds);
+
+    updateProgress();
   }
 
   update();
@@ -394,27 +455,72 @@ function startReleaseTimer() {
 
 /* ---------- Плавное появление блоков ---------- */
 
-/** Подсвечивает блоки .reveal, когда они попадают в экран. */
-function initReveal() {
-  const items = document.querySelectorAll('.reveal');
+// Один наблюдатель на всю страницу: к нему добавляются и блоки,
+// которые появились позже (карточки уроков, публичный профиль и т.п.)
+let revealObserver = null;
+
+/** Показывает блоки, которые ещё не попали в зону видимости. */
+function observeReveals(root) {
+  const scope = root || document;
+  const items = scope.querySelectorAll('.reveal:not(.visible):not([data-reveal-watched])');
+
   if (!items.length) return;
 
   // Если браузер не умеет IntersectionObserver — просто показываем всё
-  if (!('IntersectionObserver' in window)) {
+  if (!('IntersectionObserver' in window) || !revealObserver) {
     items.forEach(item => item.classList.add('visible'));
     return;
   }
 
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.12 });
+  items.forEach(item => {
+    item.setAttribute('data-reveal-watched', '1');
+    revealObserver.observe(item);
+  });
+}
 
-  items.forEach(item => observer.observe(item));
+/** Подсвечивает блоки .reveal, когда они попадают в экран. */
+function initReveal() {
+  if (!('IntersectionObserver' in window)) {
+    document.querySelectorAll('.reveal').forEach(item => item.classList.add('visible'));
+    return;
+  }
+
+  if (!revealObserver) {
+    revealObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+
+        entry.target.classList.add('visible');
+
+        // Если блок так и не проявился за 1.2 с (например, анимация отключена
+        // или элемент вне зоны), показываем принудительно — пустых блоков быть не должно
+        setTimeout(() => entry.target.classList.add('visible'), 1200);
+        revealObserver.unobserve(entry.target);
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  }
+
+  observeReveals(document);
+
+  // Новые блоки приходят после отрисовки скриптов — подхватываем их
+  [400, 1000, 2000, 3500].forEach(delay => {
+    setTimeout(() => observeReveals(document), delay);
+  });
+
+  // И по событию от модулей, которые рисуют контент сами
+  document.addEventListener('content-rendered', event => {
+    observeReveals(event.detail && event.detail.root ? event.detail.root : document);
+  });
+
+  // Страховка: через 4 секунды в зоне видимости не должно быть невидимых блоков
+  setTimeout(() => {
+    document.querySelectorAll('.reveal:not(.visible)').forEach(item => {
+      const rect = item.getBoundingClientRect();
+      const inView = rect.top < window.innerHeight && rect.bottom > 0;
+
+      if (inView || !rect.height) item.classList.add('visible');
+    });
+  }, 4000);
 }
 
 /* ---------- Инициализация ---------- */
@@ -454,5 +560,9 @@ window.toggleSakura = toggleSakura;
 window.setSakuraLevel = setSakuraLevel;
 window.applyStoredSettings = applyStoredSettings;
 window.applyBaseFontSize = applyBaseFontSize;
+window.observeReveals = observeReveals;
 window.startReleaseTimer = startReleaseTimer;
 window.getReleaseDate = getReleaseDate;
+window.getReleaseStart = getReleaseStart;
+window.getReleaseProgress = getReleaseProgress;
+window.RELEASE_DAYS = RELEASE_DAYS;

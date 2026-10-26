@@ -19,8 +19,8 @@
 
   <!-- ============ ШАПКА ============ -->
   <header class="header">
-    <div class="container">
-      <a class="logo" href="index.html" aria-label="Nihongo — на главную">
+    <div class="container" data-sortable="header">
+      <a class="logo" href="index.html" data-sortable-pin="1" aria-label="Nihongo — на главную">
         <span class="logo-badge">
           <svg viewBox="0 0 48 48" aria-hidden="true">
             <rect x="6" y="10" width="36" height="4.5" rx="2.2" fill="currentColor"></rect>
@@ -119,12 +119,12 @@
         </button>
       </nav>
 
-      <div class="header-actions">
-        <div class="is-guest">
+      <div class="header-actions" data-sortable="header-actions">
+        <div class="is-guest" data-block-key="header-guest">
           <a class="btn btn-ghost btn-small" href="register.html">Войти</a>
           <a class="btn btn-primary btn-small" href="register.html">Регистрация</a>
         </div>
-        <a class="user-chip is-auth" href="profile.html">
+        <a class="user-chip is-auth" href="profile.html" data-block-key="header-user">
           <img src="assets/images/avatars/avatar1.png" alt="Аватар" data-header-avatar data-avatar-img>
           <span class="user-name" data-header-nick>Игрок</span>
         </a>
@@ -168,6 +168,14 @@
 
     <div class="switch-row">
       <div>
+        <div class="switch-label">Раскладка блоков</div>
+        <div class="switch-hint">Меняй местами шапку, блоки главной и профиля</div>
+      </div>
+      <button class="btn btn-ghost btn-small" onclick="toggleLayoutEdit()">Двигать</button>
+    </div>
+
+    <div class="switch-row">
+      <div>
         <div class="switch-label">Все настройки</div>
         <div class="switch-hint">Звук, уведомления, лаунчер</div>
       </div>
@@ -197,7 +205,7 @@
     <!-- ============ ЧТО ТАКОЕ NIHONGO ============ -->
     <section class="section" style="padding-top:20px">
       <div class="container">
-        <div class="section-head reveal">
+        <div class="section-head reveal" data-jp="物語">
           <span class="badge badge-muted">Что такое Nihongo</span>
           <h2 class="mt-16">Четыре причины <span class="accent">остаться</span></h2>
           <p>Не курс на 500 часов, а короткие разборы, которые встраиваются в привычку смотреть аниме.</p>
@@ -238,7 +246,7 @@
     <!-- ============ ПОЧЕМУ МЫ ============ -->
     <section class="section" style="padding-top:0">
       <div class="container">
-        <div class="section-head reveal">
+        <div class="section-head reveal" data-jp="仕組">
           <span class="badge badge-muted">Почему мы</span>
           <h2 class="mt-16">Наш подход</h2>
           <p>Три принципа, по которым строится каждый урок.</p>
@@ -278,7 +286,7 @@
     <!-- ============ КАК ЭТО РАБОТАЕТ ============ -->
     <section class="section" style="padding-top:0">
       <div class="container">
-        <div class="section-head reveal">
+        <div class="section-head reveal" data-jp="中身">
           <span class="badge badge-muted">Как это работает</span>
           <h2 class="mt-16">Три шага до первого <span class="accent">урока</span></h2>
         </div>
@@ -308,7 +316,7 @@
     <!-- ============ FAQ ============ -->
     <section class="section" style="padding-top:0">
       <div class="container">
-        <div class="section-head reveal" style="margin-left:auto;margin-right:auto;text-align:center">
+        <div class="section-head reveal" style="margin-left:auto;margin-right:auto;text-align:center" data-jp="一緒に">
           <span class="badge badge-muted">FAQ</span>
           <h2 class="mt-16">Частые вопросы</h2>
           <p class="muted">Если ответа нет — напиши нам в Discord.</p>
@@ -535,6 +543,8 @@
   <script src="js/smoothscroll.js"></script>
   <script src="js/anime-style.js"></script>
   <script src="js/collapse.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/customize.js"></script>
   <script src="js/easter.js"></script>
 
   <!-- Аккордеон FAQ: открывает один вопрос, закрывает остальные -->

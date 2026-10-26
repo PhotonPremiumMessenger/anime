@@ -270,6 +270,29 @@ const SETTINGS_CONTENT = {
       </div>
 
       <div class="settings-group">
+        <h4>Своя музыка</h4>
+        <p class="settings-note">MP3, OGG или WAV до 2,5 МБ. Трек хранится в этом браузере.</p>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Файл трека</div>
+            <div class="setting-desc" id="customMusicState">Свой трек не загружен</div>
+          </div>
+          <div class="setting-control">
+            <div class="btn-row">
+              <label class="btn btn-outline btn-small file-btn">
+                Загрузить
+                <input type="file" accept="audio/*" onchange="pickCustomMusic(this)" hidden>
+              </label>
+              <button class="btn btn-ghost btn-small" type="button" onclick="playCustomMusic()">Играть</button>
+              <button class="btn btn-ghost btn-small" type="button" onclick="stopCustomMusic()">Стоп</button>
+              <button class="btn btn-ghost btn-small" type="button" onclick="clearCustomMusic()">Убрать</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-group">
         <h4>Эффекты</h4>
         <div class="setting-row">
           <div class="setting-info">
@@ -375,16 +398,109 @@ const SETTINGS_CONTENT = {
             </select>
           </div>
         </div>
-        <div class="setting-row">
+      </div>
+
+      <div class="settings-group">
+        <h4>Курсор</h4>
+        <p class="settings-note">Обычный или один из семи аниме-курсоров. Свой курсор можно будет загрузить позже.</p>
+        <div class="cursor-grid" id="cursorGrid"></div>
+        <div class="btn-row mt-12">
+          <button class="btn btn-outline btn-small" type="button" onclick="uploadCustomCursor()">Загрузить свой курсор</button>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <h4>Цвет сайта</h4>
+        <p class="settings-note">Выбери готовую палитру, свой цвет или радужный режим — акцент меняется на всём сайте.</p>
+
+        <div class="accent-grid" id="accentGrid"></div>
+
+        <div class="setting-row mt-16">
           <div class="setting-info">
-            <div class="setting-name">Курсор</div>
-            <div class="setting-desc">Форма курсора в интерфейсе</div>
+            <div class="setting-name">Свой цвет</div>
+            <div class="setting-desc">Любой оттенок из палитры браузера</div>
           </div>
           <div class="setting-control">
-            <select class="select" data-setting="interface.cursor" onchange="applyInterfaceSetting('cursor', this.value)">
-              <option value="default">Стандартный</option>
-              <option value="accent">Акцентный</option>
-            </select>
+            <input class="accent-color-input" type="color" id="accentColorInput" value="#ffb347"
+                   oninput="setAccentCustom(this.value)" aria-label="Свой цвет акцента">
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Радужный режим</div>
+            <div class="setting-desc">Акцент переливается всеми цветами по кругу</div>
+          </div>
+          <div class="setting-control">
+            <label class="switch">
+              <input type="checkbox" id="rainbowSwitch" onchange="toggleRainbowAccent(this)">
+              <span class="track"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <h4>Свой фон</h4>
+        <p class="settings-note">Картинка хранится в этом браузере (localStorage) и никуда не отправляется.</p>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Картинка фона</div>
+            <div class="setting-desc" id="customBgState">Сейчас стандартный фон сайта</div>
+          </div>
+          <div class="setting-control">
+            <div class="btn-row">
+              <label class="btn btn-outline btn-small file-btn">
+                Загрузить
+                <input type="file" accept="image/*" onchange="pickCustomBackground(this)" hidden>
+              </label>
+              <button class="btn btn-ghost btn-small" type="button" onclick="clearCustomBackground()">Убрать</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Затемнение фона</div>
+            <div class="setting-desc">Чтобы текст читался на любой картинке</div>
+          </div>
+          <div class="setting-control">
+            <div class="range-row" style="width:260px">
+              <input class="range" type="range" min="0" max="90" step="5" value="35" id="bgDimRange"
+                     oninput="setBackgroundDim(this.value)">
+              <span class="range-value" id="bgDimValue">35%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Размытие фона</div>
+            <div class="setting-desc">0 — картинка чёткая, 20 px — мягкое свечение</div>
+          </div>
+          <div class="setting-control">
+            <div class="range-row" style="width:260px">
+              <input class="range" type="range" min="0" max="20" step="1" value="0" id="bgBlurRange"
+                     oninput="setBackgroundBlur(this.value)">
+              <span class="range-value" id="bgBlurValue">0px</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <h4>Раскладка</h4>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Порядок блоков</div>
+            <div class="setting-desc">Меняй местами кнопки в шапке, блоки главной и профиля — порядок запомнится</div>
+          </div>
+          <div class="setting-control">
+            <div class="btn-row">
+              <button class="btn btn-outline btn-small" type="button" onclick="toggleLayoutEdit(true)">Двигать блоки</button>
+              <button class="btn btn-ghost btn-small" type="button" onclick="resetLayout()">Сбросить</button>
+            </div>
           </div>
         </div>
       </div>
@@ -790,6 +906,68 @@ function showSettingsTab(tabId, buttonElement) {
   if (romajiSwitch && typeof isRomajiOn === 'function') romajiSwitch.checked = isRomajiOn();
 }
 
+/**
+ * Рисует сетку курсоров: обычный, акцентный и семь аниме.
+ */
+function renderCursorGrid() {
+  const grid = document.getElementById('cursorGrid');
+  if (!grid) return;
+
+  const cursors = [{ id: 'default', name: 'Обычный' }, { id: 'accent', name: 'Акцентный' }]
+    .concat((window.ANIME_CURSORS || []).map(item => ({ id: item.id, name: item.name })));
+
+  const saved = typeof prefValue === 'function'
+    ? String(prefValue('interface.cursor', 'default'))
+    : 'default';
+
+  const anime = window.ANIME_CURSORS || [];
+
+  grid.innerHTML = cursors.map(item => {
+    // У аниме-курсоров превью — та же картинка, что и сам курсор
+    const found = anime.find(entry => entry.id === item.id);
+    const urlMatch = found ? /url\("?([^")]+)"?\)/.exec(found.css) : null;
+    const style = urlMatch ? ` style="background-image:url('${urlMatch[1]}')"` : '';
+
+    return `
+    <button class="cursor-card${item.id === saved ? ' is-active' : ''}" type="button"
+            data-cursor-id="${item.id}" onclick="applyCursorSetting('${item.id}')"
+            title="${item.name}" aria-label="Курсор: ${item.name}">
+      <span class="cursor-preview cursor-preview-${item.id}"${style}></span>
+      <span class="cursor-name">${item.name}</span>
+    </button>
+  `;
+  }).join('');
+}
+
+/** Рисует палитру акцентов. */
+function renderAccentGrid() {
+  const grid = document.getElementById('accentGrid');
+  if (!grid) return;
+
+  const presets = window.ACCENT_PRESETS || [];
+
+  grid.innerHTML = presets.map(item => `
+    <button class="accent-swatch" type="button" data-accent-id="${item.id}"
+            data-accent-hue="${item.hue}" style="--swatch-hue:${item.hue}"
+            onclick="setAccentPreset('${item.id}', ${item.hue})"
+            title="${item.name}" aria-label="Цвет: ${item.name}"></button>
+  `).join('');
+}
+
+/** Ставит ползунки фона на сохранённые значения. */
+function syncBackgroundControls() {
+  const dim = Number(localStorage.getItem('nihongo_bg_dim') || 35);
+  const blur = Number(localStorage.getItem('nihongo_bg_blur') || 0);
+
+  const dimRange = document.getElementById('bgDimRange');
+  const blurRange = document.getElementById('bgBlurRange');
+
+  if (dimRange) dimRange.value = String(Number.isFinite(dim) ? dim : 35);
+  if (blurRange) blurRange.value = String(Number.isFinite(blur) ? blur : 0);
+
+  if (typeof updateCustomLabels === 'function') updateCustomLabels();
+}
+
 /** Подставляет сохранённые значения в поля активной вкладки. */
 function restoreSettingsValues(container) {
   const settings = getSettings();
@@ -852,6 +1030,12 @@ function bindSettingsTab(tabId) {
   if (tabId === 'interface') {
     const lightSwitch = document.getElementById('lightThemeSwitch');
     if (lightSwitch) lightSwitch.checked = document.body.classList.contains('theme-light');
+
+    renderCursorGrid();
+    renderAccentGrid();
+    syncBackgroundControls();
+
+    if (typeof renderCustomizationState === 'function') renderCustomizationState();
     return;
   }
 
@@ -1626,6 +1810,8 @@ window.checkConnection = checkConnection;
 window.deleteAccount = deleteAccount;
 window.confirmDeleteAccount = confirmDeleteAccount;
 window.deleteAccountSendCode = deleteAccountSendCode;
+window.renderCursorGrid = renderCursorGrid;
+window.renderAccentGrid = renderAccentGrid;
 window.deleteAccountConfirm = deleteAccountConfirm;
 window.openSettingsModal = openSettingsModal;
 window.closeSettingsModal = closeSettingsModal;
