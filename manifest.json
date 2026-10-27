@@ -17,6 +17,7 @@
   "shortcuts": [
     { "name": "Уроки", "url": "./lessons.html" },
     { "name": "Флешкарты", "url": "./flashcards.html" },
-    { "name": "Профиль", "url": "./profile.html" }
+    { "name": "Профиль", "url": "./profile.html" },
+    { "name": "Собери слово", "url": "./game.html" }
   ]
 }

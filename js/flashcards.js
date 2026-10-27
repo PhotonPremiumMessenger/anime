@@ -205,6 +205,8 @@ function finishFlashcards() {
   srsSession.finished = true;
   srsSession.bonus = bonus;
 
+  if (typeof markStudyDone === 'function') markStudyDone();
+
   const stage = document.getElementById('fcStage');
   if (stage) {
     stage.innerHTML = `

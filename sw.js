@@ -7,7 +7,7 @@
 
 'use strict';
 
-const VERSION = 'nihongo-v7';
+const VERSION = 'nihongo-v8';
 const STATIC_CACHE = VERSION + '-static';
 const IMAGE_CACHE = VERSION + '-images';
 
@@ -17,8 +17,24 @@ const CORE = [
   'index.html',
   'offline.html',
   'privacy.html',
+  'lessons.html',
+  'lesson.html',
+  'profile.html',
+  'search.html',
+  'settings.html',
+  'game.html',
   'css/style.css',
-  'manifest.json'
+  'manifest.json',
+  // Скрипты волны 10: учёба, подсказки, фокус, дневник ошибок
+  'js/search-data.js',
+  'js/suggest.js',
+  'js/study.js',
+  'js/quick-review.js',
+  'js/mistakes.js',
+  'js/tts-select.js',
+  'js/progress-map.js',
+  'js/lesson-tools.js',
+  'js/game.js'
 ];
 
 /* ---------- Установка ---------- */

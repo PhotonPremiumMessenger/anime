@@ -163,6 +163,10 @@ function finishQuiz() {
   }
 
   if (typeof checkAchievements === 'function') checkAchievements();
+
+  // Отметка «сегодня занимался» для точки у логотипа
+  if (typeof markStudyDone === 'function') markStudyDone();
+
   renderQuizBlock();
 }
 

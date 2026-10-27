@@ -17355,3 +17355,894 @@ select:focus {
     transform: none;
   }
 }
+
+/* ============================================================
+   19. ВОЛНА 10 — учёба, подсказки, фокус и дневник ошибок
+   ============================================================ */
+
+/* ---------- 19.1 Подсказки под поиском ---------- */
+.suggest-pop {
+  position: fixed;
+  z-index: 400;
+  padding: 6px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-strong);
+  background: rgba(16, 16, 24, 0.97);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 20px 46px rgba(0, 0, 0, 0.55);
+}
+
+.suggest-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-main);
+  font-family: var(--font-body);
+  font-size: 0.8667rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease;
+}
+
+.suggest-item:hover,
+.suggest-item.is-active {
+  background: hsl(var(--accent-hue, 38) 90% 62% / 0.14);
+}
+
+.suggest-type {
+  flex-shrink: 0;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: hsl(var(--accent-hue, 38) 90% 62% / 0.16);
+  color: hsl(var(--accent-hue, 38) 92% 70%);
+  font-size: 0.6667rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.suggest-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.suggest-body b {
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.suggest-body span {
+  color: var(--text-dim);
+  font-size: 0.7333rem;
+}
+
+/* ---------- 19.2 Точка «сегодня занимался» ---------- */
+.study-dot {
+  flex-shrink: 0;
+  width: 9px;
+  height: 9px;
+  margin-left: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  transition: background 0.25s ease, box-shadow 0.25s ease;
+}
+
+.study-dot.is-today {
+  background: #3ddc84;
+  box-shadow: 0 0 10px rgba(61, 220, 132, 0.6);
+}
+
+/* ---------- 19.3 Блок «Продолжим?» на главной ---------- */
+.study-launch-card {
+  padding: 30px 32px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background:
+    radial-gradient(120% 140% at 0% 0%, hsl(var(--accent-hue, 38) 90% 60% / 0.14), transparent 60%),
+    var(--bg-card);
+}
+
+.study-launch-head h2 {
+  margin: 10px 0 6px;
+  font-size: 1.6rem;
+}
+
+.study-launch-head p {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+.study-launch-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.study-launch-row .btn svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.study-continue svg {
+  fill: currentColor;
+  stroke: none;
+}
+
+.study-launch-note {
+  width: 100%;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+}
+
+.study-launch-hint {
+  margin-top: 14px;
+  color: var(--text-dim);
+  font-size: 0.8333rem;
+}
+
+.study-launch-hint b {
+  color: hsl(var(--accent-hue, 38) 92% 68%);
+}
+
+/* ---------- 19.4 Быстрый повтор ---------- */
+.quick-review-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.review-card {
+  position: relative;
+  height: 132px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  perspective: 900px;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+
+.review-card-inner {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.review-card.is-flipped .review-card-inner {
+  transform: rotateY(180deg);
+}
+
+.review-card-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.review-card-front {
+  color: var(--text-main);
+}
+
+.review-card-front b {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.review-card-back {
+  transform: rotateY(180deg);
+  border-color: hsl(var(--accent-hue, 38) 90% 62% / 0.4);
+  background: hsl(var(--accent-hue, 38) 90% 62% / 0.12);
+}
+
+.review-card-back b {
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.review-card small {
+  color: var(--text-dim);
+  font-size: 0.7333rem;
+}
+
+.quick-review-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 18px 0;
+  color: var(--text-dim);
+  font-size: 0.8667rem;
+}
+
+/* ---------- 19.5 Карта прогресса ---------- */
+.progress-map {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.progress-map .lesson-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  overflow: visible;
+}
+
+.pm-index {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.pm-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.pm-body b {
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pm-body small {
+  color: var(--text-dim);
+  font-size: 0.7333rem;
+}
+
+.pm-mark {
+  margin-left: auto;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+/* Пройденный урок — оранжевый */
+.lesson-card.completed {
+  border-color: hsl(var(--accent-hue, 38) 90% 60% / 0.45);
+  background: hsl(var(--accent-hue, 38) 90% 60% / 0.1);
+}
+
+.lesson-card.completed .pm-index {
+  background: linear-gradient(140deg, #FFC46B, #FF9B3D);
+  color: #17130c;
+}
+
+.lesson-card.completed .pm-mark {
+  color: hsl(var(--accent-hue, 38) 92% 66%);
+}
+
+/* Текущий урок — пульсирует */
+.lesson-card.current {
+  border-color: hsl(var(--accent-hue, 38) 90% 62% / 0.6);
+  box-shadow: 0 0 0 1px hsl(var(--accent-hue, 38) 90% 62% / 0.25);
+  animation: progressPulse 2.2s ease-in-out infinite;
+}
+
+.lesson-card.current .pm-index {
+  background: hsl(var(--accent-hue, 38) 90% 62% / 0.2);
+  color: hsl(var(--accent-hue, 38) 92% 70%);
+}
+
+@keyframes progressPulse {
+  0%, 100% { box-shadow: 0 0 0 1px hsl(var(--accent-hue, 38) 90% 62% / 0.22); }
+  50% { box-shadow: 0 0 22px hsl(var(--accent-hue, 38) 90% 62% / 0.35); }
+}
+
+/* Будущие уроки — серые */
+.lesson-card.locked {
+  opacity: 0.55;
+  filter: grayscale(0.5);
+}
+
+.progress-map-legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.legend-dot.is-completed { background: #FF9B3D; }
+.legend-dot.is-current { background: hsl(var(--accent-hue, 38) 92% 66%); }
+.legend-dot.is-locked { background: rgba(255, 255, 255, 0.18); }
+
+/* ---------- 19.6 Карточки по темпу ---------- */
+.pace-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.pace-card {
+  position: relative;
+  min-height: 78px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-main);
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.pace-card:hover {
+  border-color: hsl(var(--accent-hue, 38) 90% 62% / 0.45);
+}
+
+.pace-card-front {
+  display: block;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.pace-card-back {
+  display: block;
+  margin-top: 6px;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.pace-card.is-open {
+  border-color: hsl(var(--accent-hue, 38) 90% 62% / 0.55);
+  background: hsl(var(--accent-hue, 38) 90% 62% / 0.1);
+}
+
+.pace-card.is-open .pace-card-back {
+  opacity: 1;
+}
+
+/* ---------- 19.7 Режим фокуса ---------- */
+.focus-toggle {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 3;
+  gap: 8px;
+  background: rgba(16, 16, 24, 0.62);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.focus-toggle svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+}
+
+body.focus-mode .header,
+body.focus-mode .footer,
+body.focus-mode .design-panel,
+body.focus-mode .lesson-nav,
+body.focus-mode .cookie-banner {
+  display: none !important;
+}
+
+body.focus-mode .lesson-page {
+  padding-top: 28px;
+}
+
+body.focus-mode .lesson-layout {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+body.focus-mode .lesson-side {
+  max-width: 620px;
+}
+
+.focus-exit {
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+  z-index: 320;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: rgba(16, 16, 24, 0.92);
+  color: var(--text-main);
+  font-family: var(--font-body);
+  font-size: 0.8333rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5);
+}
+
+.focus-exit svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.focus-exit:hover {
+  border-color: hsl(var(--accent-hue, 38) 90% 62% / 0.6);
+  color: hsl(var(--accent-hue, 38) 92% 70%);
+}
+
+/* ---------- 19.8 Помодоро ---------- */
+.pomodoro {
+  position: fixed;
+  top: 84px;
+  right: 20px;
+  z-index: 90;
+  width: 190px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: rgba(16, 16, 24, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.42);
+}
+
+body.focus-mode .pomodoro {
+  top: 20px;
+}
+
+.pomodoro-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.pomodoro-label {
+  color: var(--text-dim);
+  font-size: 0.7333rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.pomodoro-time {
+  font-size: 1.15rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.pomodoro-bar {
+  height: 4px;
+  margin: 10px 0 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.pomodoro-bar span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, hsl(var(--accent-hue, 38) 92% 62%), #FF9B3D);
+  transition: width 0.4s linear;
+}
+
+.pomodoro.is-running .pomodoro-time {
+  color: hsl(var(--accent-hue, 38) 92% 70%);
+}
+
+.pomodoro-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.pomodoro-actions .btn {
+  flex: 1;
+  justify-content: center;
+}
+
+/* ---------- 19.9 Озвучка выделенного ---------- */
+.tts-button {
+  position: fixed;
+  z-index: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 13px;
+  border-radius: 999px;
+  border: 1px solid hsl(var(--accent-hue, 38) 90% 62% / 0.5);
+  background: rgba(16, 16, 24, 0.96);
+  color: var(--text-main);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+}
+
+.tts-button svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+}
+
+.tts-button:hover {
+  color: hsl(var(--accent-hue, 38) 92% 70%);
+  border-color: hsl(var(--accent-hue, 38) 92% 66%);
+}
+
+/* ---------- 19.10 Дневник ошибок ---------- */
+.diary-table-wrap {
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+}
+
+.diary-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8667rem;
+}
+
+.diary-table th {
+  padding: 10px 14px;
+  text-align: left;
+  color: var(--text-dim);
+  font-size: 0.7333rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(255, 255, 255, 0.03);
+  white-space: nowrap;
+}
+
+.diary-table td {
+  padding: 12px 14px;
+  border-top: 1px solid var(--border);
+  vertical-align: top;
+}
+
+.diary-table td b {
+  display: block;
+  font-weight: 700;
+}
+
+.diary-topic {
+  display: block;
+  margin-top: 3px;
+  color: var(--text-dim);
+  font-size: 0.7333rem;
+}
+
+.diary-right {
+  color: #3ddc84;
+  font-weight: 700;
+}
+
+.diary-wrong {
+  color: #ff6b6b;
+}
+
+.diary-action {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.diary-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.mistake-diary .empty-state {
+  padding: 18px;
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--border);
+  color: var(--text-dim);
+  font-size: 0.8667rem;
+}
+
+.mistake-modal {
+  max-width: 520px;
+}
+
+.mistake-question {
+  margin: 4px 0 16px;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.mistake-options {
+  display: grid;
+  gap: 8px;
+}
+
+.mistake-options .test-option {
+  width: 100%;
+  text-align: left;
+}
+
+.mistake-hint {
+  margin-top: 14px;
+}
+
+.mistake-result {
+  padding: 10px 0;
+  text-align: center;
+}
+
+.mistake-result b {
+  display: block;
+  font-size: 1.6rem;
+  margin-bottom: 8px;
+}
+
+/* ---------- 19.11 Переворот аватара ---------- */
+.avatar-changing {
+  animation: flip 0.5s ease;
+}
+
+@keyframes flip {
+  from { transform: rotateY(0deg); }
+  to { transform: rotateY(360deg); }
+}
+
+/* ---------- 19.12 Мини-игра «Собери слово» ---------- */
+.game-task {
+  margin: 4px 0 16px;
+  text-align: center;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.game-slots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 18px;
+  min-height: 62px;
+}
+
+.game-slot {
+  display: grid;
+  place-items: center;
+  min-width: 56px;
+  height: 56px;
+  padding: 0 10px;
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--border-strong);
+  color: var(--text-dim);
+  font-size: 1.25rem;
+}
+
+.game-slot.is-filled {
+  border-style: solid;
+  border-color: hsl(var(--accent-hue, 38) 90% 62% / 0.5);
+  color: var(--text-main);
+  background: hsl(var(--accent-hue, 38) 90% 62% / 0.1);
+}
+
+.game-syllables {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.game-tile {
+  min-width: 64px;
+  height: 58px;
+  padding: 0 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-main);
+  font-family: var(--font-body);
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.16s ease, border-color 0.16s ease, opacity 0.16s ease;
+}
+
+.game-tile:hover:not(.is-used) {
+  transform: translateY(-2px);
+  border-color: hsl(var(--accent-hue, 38) 90% 62% / 0.5);
+}
+
+.game-tile.is-used {
+  opacity: 0.25;
+  pointer-events: none;
+}
+
+.game-hint {
+  margin-top: 18px;
+  text-align: center;
+}
+
+.game-result {
+  margin: 10px 0 20px;
+  text-align: center;
+}
+
+.game-result-score {
+  font-size: 2.6rem;
+  font-weight: 900;
+  color: hsl(var(--accent-hue, 38) 92% 68%);
+}
+
+.is-shaking {
+  animation: gameShake 0.36s ease;
+}
+
+@keyframes gameShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+/* ---------- 19.13 Телефоны и планшеты ---------- */
+@media (max-width: 900px) {
+  .study-launch-card {
+    padding: 22px 20px;
+  }
+
+  .quick-review-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .quick-review-grid .review-card:last-child {
+    grid-column: span 2;
+  }
+
+  .review-card {
+    height: 118px;
+  }
+
+  .progress-map {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pomodoro {
+    top: auto;
+    bottom: 84px;
+    right: 12px;
+    width: 168px;
+    padding: 12px 14px;
+  }
+
+  .focus-toggle {
+    position: static;
+    margin-top: 12px;
+  }
+
+  .diary-table {
+    min-width: 560px;
+  }
+
+  .study-launch-row .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 520px) {
+  .quick-review-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .quick-review-grid .review-card:last-child {
+    grid-column: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lesson-card.current,
+  .avatar-changing,
+  .is-shaking {
+    animation: none;
+  }
+}
+
+/* ---------- 19.14 Светлая тема для новых блоков ---------- */
+body.theme-light .suggest-pop {
+  background: rgba(255, 255, 255, 0.98);
+  border-color: rgba(0, 0, 0, 0.12);
+  box-shadow: 0 18px 40px rgba(60, 45, 30, 0.18);
+}
+
+body.theme-light .suggest-item {
+  color: #2a2620;
+}
+
+body.theme-light .suggest-item:hover,
+body.theme-light .suggest-item.is-active {
+  background: hsl(var(--accent-hue, 38) 90% 60% / 0.16);
+}
+
+body.theme-light .suggest-body span {
+  color: #62594c;
+}
+
+body.theme-light .pm-index {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+body.theme-light .diary-table th {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+body.theme-light .diary-right {
+  color: #178a4a;
+}
+
+body.theme-light .diary-wrong {
+  color: #c93b3b;
+}
+
+body.theme-light .pomodoro,
+body.theme-light .focus-exit,
+body.theme-light .tts-button {
+  background: rgba(255, 255, 255, 0.97);
+  border-color: rgba(0, 0, 0, 0.12);
+  color: #2a2620;
+  box-shadow: 0 14px 32px rgba(60, 45, 30, 0.16);
+}
+
+body.theme-light .pomodoro-bar {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+body.theme-light .lesson-card.locked {
+  filter: grayscale(0.35);
+}

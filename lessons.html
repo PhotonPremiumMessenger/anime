@@ -66,7 +66,7 @@
               <button class="nav-group-btn" type="button" onclick="toggleNavGroup(event, this)" aria-expanded="false">
                 <span class="nav-group-icon">🎯</span>
                 <b>Практика</b>
-                <span class="nav-group-count">5</span>
+                <span class="nav-group-count">6</span>
                 <span class="nav-group-caret">▾</span>
               </button>
               <div class="nav-group-list">
@@ -74,6 +74,7 @@
                 <a href="match.html"><b>Кандзи-пары</b><span>мини-игра</span></a>
                 <a href="listening.html"><b>Аудирование</b><span>слова на слух</span></a>
                 <a href="speed.html"><b>Скорость</b><span>60 секунд</span></a>
+                <a href="game.html"><b>Собери слово</b><span>мини-игра</span></a>
                 <a href="weakspots.html"><b>Слабые места</b><span>разбор ошибок</span></a>
               </div>
             </div>
@@ -211,6 +212,26 @@
               <span id="catalogBar" style="width:0%"></span>
             </div>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ КАРТА ПРОГРЕССА ============ -->
+    <section class="section progress-map-section" id="progressMapBlock">
+      <div class="container">
+        <div class="block">
+          <div class="block-head">
+            <h3>Карта прогресса</h3>
+            <span class="block-note" id="progressMapNote">0 из 0 пройдено</span>
+          </div>
+
+          <div class="progress-map" id="progressMap"></div>
+
+          <p class="progress-map-legend small muted">
+            <span class="legend-dot is-completed"></span> пройден
+            <span class="legend-dot is-current"></span> сейчас
+            <span class="legend-dot is-locked"></span> впереди
+          </p>
         </div>
       </div>
     </section>
@@ -402,6 +423,13 @@
   <script src="js/anime-style.js"></script>
   <script src="js/collapse.js"></script>
   <script src="js/customize.js"></script>
+  <script src="js/search-data.js"></script>
+  <script src="js/suggest.js"></script>
+  <script src="js/study.js"></script>
+  <script src="js/quick-review.js"></script>
+  <script src="js/mistakes.js"></script>
+  <script src="js/tts-select.js"></script>
+  <script src="js/progress-map.js"></script>
   <script src="js/player.js"></script>
   <script src="js/easter.js"></script>
 </body>
