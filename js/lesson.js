@@ -277,7 +277,18 @@ function checkTest() {
       button.disabled = true;
     });
 
-    if (chosen === question.correct) correctCount += 1;
+    if (chosen === question.correct) {
+      correctCount += 1;
+    } else if (typeof recordMistake === 'function') {
+      // Ошибка попадает в дневник ошибок (js/mistakes.js, профиль)
+      recordMistake(
+        'Урок',
+        currentLesson.title,
+        question.question,
+        question.options[question.correct],
+        chosen >= 0 ? question.options[chosen] : ''
+      );
+    }
   });
 
   const percent = Math.round((correctCount / currentLesson.test.length) * 100);
@@ -338,6 +349,11 @@ function finishLesson() {
       ? 'Новых слов в копилке: +' + result.newWords
       : 'Все слова этого урока уже были в копилке';
   }
+
+  // Урок закрыт: обновляем карту прогресса, копилку слов и точку у логотипа
+  if (typeof markLessonCompleted === 'function') markLessonCompleted(currentLesson.id);
+  if (typeof logWordsLearned === 'function') logWordsLearned(currentLesson.words);
+  if (typeof markStudyDone === 'function') markStudyDone();
 
   if (typeof showToast === 'function') {
     showToast('Урок пройден', 'Результат: ' + result.percent + '%. Прогресс сохранён.', 'success');

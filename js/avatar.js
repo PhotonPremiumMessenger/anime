@@ -208,6 +208,29 @@ function renderAvatarGrid() {
 }
 
 /**
+ * Анимация переворота при смене аватара.
+ * Класс .avatar-changing висит полсекунды и снимается сам.
+ * @param {HTMLElement} element — по какой карточке кликнули
+ */
+function animateAvatarChange(element) {
+  const targets = [];
+
+  if (element) targets.push(element);
+  document.querySelectorAll('[data-avatar-img]').forEach(img => {
+    if (!targets.includes(img)) targets.push(img);
+  });
+
+  targets.forEach(node => {
+    node.classList.remove('avatar-changing');
+    // Перезапуск анимации: браузер должен пересчитать стили
+    void node.offsetWidth;
+    node.classList.add('avatar-changing');
+
+    setTimeout(() => node.classList.remove('avatar-changing'), 600);
+  });
+}
+
+/**
  * Выбирает аватар из сетки и закрывает модалку.
  * @param {string} path
  * @param {HTMLElement} element — нажатая кнопка
@@ -216,10 +239,13 @@ function selectAvatar(path, element) {
   document.querySelectorAll('.avatar-option').forEach(option => option.classList.remove('selected'));
   if (element) element.classList.add('selected');
 
+  // Переворот запускаем до подмены картинки — так виден сам переход
+  animateAvatarChange(element);
+
   setAvatar(path);
 
-  // Небольшая пауза, чтобы пользователь увидел галочку
-  setTimeout(closeAvatarModal, 320);
+  // Небольшая пауза, чтобы пользователь увидел галочку и анимацию
+  setTimeout(closeAvatarModal, 520);
 }
 
 /* ---------- Инициализация ---------- */
@@ -252,3 +278,4 @@ window.updateAllAvatars = updateAllAvatars;
 window.openAvatarModal = openAvatarModal;
 window.closeAvatarModal = closeAvatarModal;
 window.selectAvatar = selectAvatar;
+window.animateAvatarChange = animateAvatarChange;

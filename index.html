@@ -67,7 +67,7 @@
               <button class="nav-group-btn" type="button" onclick="toggleNavGroup(event, this)" aria-expanded="false">
                 <span class="nav-group-icon">🎯</span>
                 <b>Практика</b>
-                <span class="nav-group-count">5</span>
+                <span class="nav-group-count">6</span>
                 <span class="nav-group-caret">▾</span>
               </button>
               <div class="nav-group-list">
@@ -75,6 +75,7 @@
                 <a href="match.html"><b>Кандзи-пары</b><span>мини-игра</span></a>
                 <a href="listening.html"><b>Аудирование</b><span>слова на слух</span></a>
                 <a href="speed.html"><b>Скорость</b><span>60 секунд</span></a>
+                <a href="game.html"><b>Собери слово</b><span>мини-игра</span></a>
                 <a href="weakspots.html"><b>Слабые места</b><span>разбор ошибок</span></a>
               </div>
             </div>
@@ -261,6 +262,20 @@
       </div>
     </section>
 
+    <!-- ============ СТАРТ УЧЁБЫ: ПРОДОЛЖИТЬ УРОК / СЛУЧАЙНЫЙ УРОК ============ -->
+    <section class="section study-launch" id="studyLaunch">
+      <div class="container">
+        <div class="study-launch-card">
+          <div class="study-launch-head">
+            <span class="badge badge-muted">Твой прогресс</span>
+            <h2>Продолжим?</h2>
+            <p>Начни с того места, где остановился, или доверься случаю.</p>
+          </div>
+          <div id="studyLaunchInner"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- ============ ТВОЙ ДЕНЬ: ЗАДАНИЯ, СТРИК, ЧЕЛЛЕНДЖ, ВИКТОРИНА ============ -->
     <section class="section game-hub" id="today">
       <div class="container">
@@ -295,6 +310,25 @@
       </div>
     </section>
 
+    <!-- ============ БЫСТРЫЙ ПОВТОР: ПЯТЬ КАРТОЧЕК ============ -->
+    <section class="section quick-review-section" id="quickReviewSection">
+      <div class="container">
+        <div class="section-head" data-jp="復習">
+          <span class="badge badge-muted">Повторение</span>
+          <h2 class="mt-16">Быстрый <span class="accent">повтор</span></h2>
+          <p>Пять карточек из слов, которые учил вчера. Нажми на карточку — и увидишь перевод.</p>
+        </div>
+
+        <div class="block quick-review-block">
+          <div class="block-head">
+            <h3>Карточки</h3>
+            <span class="block-note" id="quickReviewNote">слова за вчера</span>
+          </div>
+          <div class="quick-review-grid" id="quickReview"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- ============ ЦИТАТА ДНЯ ============ -->
     <section class="section quote-section" id="quotes">
       <div class="container">
@@ -318,7 +352,7 @@
             <path d="M20 20l-3.6-3.6"></path>
           </svg>
           <input type="text" placeholder="Найти фразу, аниме или грамматику…"
-                 onkeydown="if (event.key === 'Enter') { event.preventDefault(); showToast('Поиск', 'Каталог откроется после релиза', 'info'); }">
+                 data-suggest="1" data-suggest-go="search" aria-label="Поиск по сайту">
           <span class="search-hint">Enter</span>
         </div>
 
@@ -574,6 +608,12 @@
   <script src="js/anime-style.js"></script>
   <script src="js/collapse.js"></script>
   <script src="js/customize.js"></script>
+  <script src="js/search-data.js"></script>
+  <script src="js/suggest.js"></script>
+  <script src="js/study.js"></script>
+  <script src="js/quick-review.js"></script>
+  <script src="js/mistakes.js"></script>
+  <script src="js/tts-select.js"></script>
   <script src="js/player.js"></script>
   <script src="js/easter.js"></script>
   <script src="js/quotes.js"></script>

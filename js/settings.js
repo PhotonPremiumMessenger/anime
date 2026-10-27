@@ -411,6 +411,28 @@ const SETTINGS_CONTENT = {
       </div>
 
       <div class="settings-group">
+        <h4>Учёба</h4>
+        <p class="settings-note">Сколько времени в день готов заниматься. От темпа зависит объём карточек в уроке.</p>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Темп учёбы</div>
+            <div class="setting-desc">От 5 до 30 минут в день. Карточек на урок: темп / 5</div>
+          </div>
+          <div class="setting-control">
+            <div class="range-row" style="width:260px">
+              <input class="range" type="range" min="5" max="30" step="5" value="15" id="studyPaceRange"
+                     data-setting="study.pace"
+                     oninput="updatePaceValue(this.value)"
+                     onchange="setStudyPace(this.value)"
+                     aria-label="Темп учёбы в минутах">
+              <span class="range-value" id="studyPaceValue">15 мин</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-group">
         <h4>Курсор</h4>
         <p class="settings-note">Обычный, акцентный или один из семи аниме. Свой курсор — позже.</p>
 
@@ -1029,6 +1051,7 @@ function bindSettingsTab(tabId) {
     renderCursorGrid();
     renderAccentGrid();
     syncBackgroundControls();
+    syncStudyPaceControl();
 
     if (typeof renderCustomizationState === 'function') renderCustomizationState();
     return;
@@ -1162,6 +1185,22 @@ function applyInterfaceSetting(kind, value) {
 }
 
 /** Обновляет подпись рядом со слайдером. */
+/** Подпись ползунка темпа: «15 мин». */
+function updatePaceValue(value) {
+  const label = document.getElementById('studyPaceValue');
+  if (label) label.textContent = value + ' мин';
+}
+
+/** Ставит ползунок темпа на сохранённое значение. */
+function syncStudyPaceControl() {
+  const input = document.getElementById('studyPaceRange');
+  if (!input || typeof getStudyPace !== 'function') return;
+
+  const pace = getStudyPace();
+  input.value = String(pace);
+  updatePaceValue(pace);
+}
+
 function updateRangeValue(input, unit = '%') {
   const valueEl = input.closest('.range-row');
   if (!valueEl) return;

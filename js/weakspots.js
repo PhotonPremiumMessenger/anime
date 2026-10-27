@@ -49,6 +49,10 @@ function recordMistake(subject, topic, prompt, right, picked) {
   else list.unshift(mistake);
 
   writeJSON(WEAK_KEY, list.slice(0, WEAK_LIMIT));
+
+  // Дневник ошибок в профиле перерисовывается сразу
+  document.dispatchEvent(new CustomEvent('nihongo:mistake', { detail: { mistake: mistake } }));
+
   return mistake;
 }
 
@@ -56,6 +60,9 @@ function recordMistake(subject, topic, prompt, right, picked) {
 function clearMistakes() {
   writeJSON(WEAK_KEY, []);
   renderWeakSpots();
+
+  // Дневник ошибок в профиле тоже должен опустеть
+  document.dispatchEvent(new CustomEvent('nihongo:mistake', { detail: { cleared: true } }));
   if (typeof showToast === 'function') showToast('История ошибок очищена', 'Начинаем с чистого листа', 'info');
 }
 
