@@ -107,8 +107,12 @@ function renderProfileLevel() {
   if (big) big.textContent = info.level;
 
   const title = getPlayerTitle(info.level);
-  const titleEl = document.getElementById('profileTitle');
-  if (titleEl) titleEl.textContent = title;
+
+  // Две подписи звания: в шапке профиля и в блоке уровня
+  ['profileTitle', 'profileTitleBig'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = title;
+  });
 
   const text = document.getElementById('profileXPText');
   if (text) {

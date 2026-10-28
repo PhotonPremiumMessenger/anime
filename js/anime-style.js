@@ -54,7 +54,23 @@ const ANIME_EPISODES = {
   'dictionary.html': '第七話',
   'video.html': '第八話',
   'profile.html': '第九話',
-  'rating.html': '第十話'
+  'rating.html': '第十話',
+  'shop.html': '第十一話',
+  'favorites.html': '第十二話',
+  'flashcards.html': '第十三話',
+  'match.html': '第十四話',
+  'listening.html': '第十五話',
+  'speed.html': '第十六話',
+  'game.html': '第十七話',
+  'weakspots.html': '第十八話',
+  'search.html': '第十九話',
+  'exam.html': '第二十話',
+  'updates.html': '第二十一話',
+  'about.html': '第二十二話',
+  'settings.html': '第二十三話',
+  'register.html': '第二十四話',
+  'offline.html': '第二十五話',
+  'privacy.html': '第二十六話'
 };
 
 /** Нынешняя страница без пути. */
@@ -79,10 +95,25 @@ function mountHalftone() {
   document.body.appendChild(layer);
 }
 
-/** Вертикальная надпись слева у первого раздела. */
+/**
+ * Вертикальная надпись слева у первого раздела.
+ * Раньше она искала только .section / .hero — на страницах с другой
+ * разметкой (урок, профиль, настройки, регистрация) пропадала совсем,
+ * а на страницах без position: relative уезжала в начало документа.
+ * Теперь есть запасной вариант main, и якорь ставится явно.
+ */
 function mountSideMark() {
-  const section = document.querySelector('main .section, main .catalog-hero, main .hero');
+  const section =
+    document.querySelector('main .section, main .catalog-hero, main .hero') ||
+    document.querySelector('main');
+
   if (!section || section.querySelector('.anime-side-mark')) return;
+
+  // В сетку .container его вставлять нельзя — сломает раскладку,
+  // поэтому ставим в сам раздел и позиционируем от его края
+
+  // Надпись абсолютная — родителю нужен свой контекст позиционирования
+  section.classList.add('has-side-mark');
 
   const text = ANIME_SIDE_MARKS[currentAnimePage()] || '日本語';
   const mark = document.createElement('span');
@@ -209,7 +240,6 @@ function mountFrame() {
  * слой убирается из DOM, чтобы не занимать память.
  */
 function mountKatakanaRun() {
-  if (animeLiteMode()) return;
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   if (document.querySelector('.anime-run')) return;
 
@@ -218,8 +248,11 @@ function mountKatakanaRun() {
   strip.className = 'anime-run';
   strip.setAttribute('aria-hidden', 'true');
 
+  // На телефоне строка короче, чтобы не тащить через экран километр текста
+  const repeats = window.innerWidth < 760 ? 3 : 6;
+
   // Собираем длинную строку один раз, дальше её двигает CSS
-  strip.innerHTML = '<span>' + (words.join(' · ') + ' · ').repeat(6) + '</span>';
+  strip.innerHTML = '<span>' + (words.join(' · ') + ' · ').repeat(repeats) + '</span>';
 
   document.body.appendChild(strip);
 
@@ -232,16 +265,21 @@ function mountKatakanaRun() {
  * это compositor-only анимация, поэтому дешёвая.
  */
 function mountTapBurst() {
-  if (animeLiteMode()) return;
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   if (document.documentElement.dataset.tapBurst === '1') return;
 
   document.documentElement.dataset.tapBurst = '1';
 
+  // В облегчённом режиме сыплем искрами только по кнопкам:
+  // карточка сразу открывает окно, искру за ним не видно
+  const selector = animeLiteMode()
+    ? '.btn-primary, .btn-large'
+    : '.btn-primary, .btn-large, .lesson-card, .anime-card';
+
   document.addEventListener('pointerdown', event => {
     if (event.button !== 0) return;
 
-    const button = event.target.closest('.btn-primary, .btn-large, .lesson-card, .anime-card');
+    const button = event.target.closest(selector);
     if (!button) return;
 
     // Не сыплем искрами на каждом клике — только по свежим кнопкам
