@@ -941,7 +941,175 @@ function showSettingsTab(tabId, buttonElement) {
 
   const romajiSwitch = container.querySelector('input[onchange="setRomajiOn(this.checked)"]');
   if (romajiSwitch && typeof isRomajiOn === 'function') romajiSwitch.checked = isRomajiOn();
+
+  // Окошко снизу держим в курсе, какой раздел открыт
+  syncSettingsSheet(tabId);
 }
+
+/* ---------- Разделы настроек: окошко снизу ---------- */
+
+/**
+ * Окошко с разделами настроек. На компьютере меню и так стоит
+ * слева, поэтому там оно не открывается. На телефоне это
+ * выезжающая снизу панель: выбрать раздел, потянуть вниз или
+ * нажать «Закрыть».
+ */
+function buildSettingsSheet() {
+  const list = document.getElementById('settingsSheetList');
+  if (!list || list.dataset.built === '1') return;
+
+  list.dataset.built = '1';
+
+  // Тап по затемнению закрывает окошко, как обычное модальное окно
+  const overlay = document.getElementById('settingsSheet');
+  if (overlay) {
+    overlay.addEventListener('click', event => {
+      if (event.target === overlay) closeSettingsSheet();
+    });
+  }
+
+  // Пункты берём из настоящего меню — разметка и иконки те же
+  document.querySelectorAll('.settings-menu .menu-item').forEach(source => {
+    const item = document.createElement(source.tagName === 'A' ? 'a' : 'button');
+
+    if (source.tagName === 'A') {
+      item.href = source.getAttribute('href');
+      item.className = 'sheet-item sheet-link';
+      item.innerHTML = source.innerHTML;
+      list.appendChild(item);
+      return;
+    }
+
+    item.type = 'button';
+    item.className = 'sheet-item';
+    item.dataset.tab = source.dataset.tab;
+
+    // Бейдж «скоро» оставляем, а подпись берём из живого меню
+    item.innerHTML = source.innerHTML;
+
+    item.addEventListener('click', () => {
+      const original = document.querySelector('.settings-menu .menu-item[data-tab="' + source.dataset.tab + '"]');
+      showSettingsTab(source.dataset.tab, original || null);
+      closeSettingsSheet();
+    });
+
+    list.appendChild(item);
+  });
+}
+
+/** Подсвечивает текущий раздел в окошке и подписывает кнопку. */
+function syncSettingsSheet(tabId) {
+  document.querySelectorAll('.settings-sheet .sheet-item[data-tab]').forEach(item => {
+    item.classList.toggle('active', item.dataset.tab === tabId);
+  });
+
+  const label = document.getElementById('settingsPickerLabel');
+  if (!label) return;
+
+  const source = document.querySelector('.settings-menu .menu-item[data-tab="' + tabId + '"]');
+  if (!source) return;
+
+  // Имя раздела без бейджа «скоро»
+  const copy = source.cloneNode(true);
+  copy.querySelectorAll('.menu-badge').forEach(badge => badge.remove());
+  label.textContent = copy.textContent.trim();
+}
+
+/** Открывает окошко. */
+function openSettingsSheet() {
+  if (window.innerWidth > 900) return;
+
+  const overlay = document.getElementById('settingsSheet');
+  if (!overlay) return;
+
+  buildSettingsSheet();
+
+  const active = document.querySelector('.settings-menu .menu-item.active');
+  if (active) syncSettingsSheet(active.dataset.tab);
+
+  overlay.classList.add('open');
+  document.documentElement.classList.add('settings-sheet-open');
+  bindSettingsSheetSwipe();
+
+  const picker = document.getElementById('settingsPicker');
+  if (picker) picker.setAttribute('aria-expanded', 'true');
+
+  const current = overlay.querySelector('.sheet-item.active') || overlay.querySelector('.sheet-item');
+  if (current) window.setTimeout(() => current.focus({ preventScroll: true }), 320);
+}
+
+/** Закрывает окошко. */
+function closeSettingsSheet() {
+  const overlay = document.getElementById('settingsSheet');
+  if (!overlay || !overlay.classList.contains('open')) return;
+
+  overlay.classList.remove('open');
+  document.documentElement.classList.remove('settings-sheet-open');
+
+  const picker = document.getElementById('settingsPicker');
+  if (picker) {
+    picker.setAttribute('aria-expanded', 'false');
+    picker.focus({ preventScroll: true });
+  }
+}
+
+/**
+ * Свайп: тянем панель вниз за ручку или за шапку.
+ * Список внутри прокручивается как обычно.
+ */
+function bindSettingsSheetSwipe() {
+  const sheet = document.querySelector('.settings-sheet');
+  const head = document.getElementById('settingsSheetHead');
+  if (!sheet || !head || sheet.dataset.swipe === '1') return;
+
+  sheet.dataset.swipe = '1';
+
+  let startY = 0;
+  let delta = 0;
+  let dragging = false;
+
+  const onDown = event => {
+    if (event.button !== 0) return;
+
+    dragging = true;
+    startY = event.clientY;
+    delta = 0;
+    sheet.style.transition = 'none';
+  };
+
+  const onMove = event => {
+    if (!dragging) return;
+
+    delta = Math.max(0, event.clientY - startY);
+    sheet.style.transform = 'translateY(' + delta + 'px)';
+  };
+
+  const onUp = () => {
+    if (!dragging) return;
+
+    dragging = false;
+    sheet.style.transition = '';
+    sheet.style.transform = '';
+
+    // Потянули достаточно далеко — закрываем
+    if (delta > 80) closeSettingsSheet();
+    delta = 0;
+  };
+
+  head.addEventListener('pointerdown', onDown);
+  window.addEventListener('pointermove', onMove, { passive: true });
+  window.addEventListener('pointerup', onUp);
+  window.addEventListener('pointercancel', onUp);
+}
+
+// Escape и поворот экрана закрывают окошко
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape') closeSettingsSheet();
+});
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 900) closeSettingsSheet();
+});
 
 /**
  * Рисует сетку курсоров: обычный, акцентный и семь аниме.
@@ -1911,4 +2079,7 @@ window.stubToggle = stubToggle;
 window.downloadMyData = downloadMyData;
 window.nicknameCooldownDays = nicknameCooldownDays;
 window.toggleLightGraphics = toggleLightGraphics;
+window.openSettingsSheet = openSettingsSheet;
+window.closeSettingsSheet = closeSettingsSheet;
+window.syncSettingsSheet = syncSettingsSheet;
 window.syncLightGraphicsSwitch = syncLightGraphicsSwitch;

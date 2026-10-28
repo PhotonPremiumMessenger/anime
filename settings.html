@@ -204,6 +204,22 @@
 
       <div class="settings-layout">
 
+        <!-- ---------- Выбор раздела на телефоне ---------- -->
+        <button class="settings-picker" id="settingsPicker" type="button"
+                aria-haspopup="dialog" aria-expanded="false" aria-controls="settingsSheet"
+                onclick="openSettingsSheet()">
+          <span class="sp-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h11"/></svg>
+          </span>
+          <span class="sp-label">
+            <span class="sp-caption">Раздел настроек</span>
+            <span class="sp-value" id="settingsPickerLabel">Аккаунт</span>
+          </span>
+          <span class="sp-chevron" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></svg>
+          </span>
+        </button>
+
         <!-- ---------- Левое меню ---------- -->
         <nav class="settings-menu" aria-label="Разделы настроек">
           <button class="menu-item active" data-tab="account" onclick="showSettingsTab('account', this)">
@@ -393,6 +409,22 @@
   <script src="js/auth.js"></script>
   <script src="js/avatar.js"></script>
   <script src="js/progress.js"></script>
+  <!-- ============ РАЗДЕЛЫ НАСТРОЕК: ОКОШКО СНИЗУ ============ -->
+  <div class="settings-sheet-overlay" id="settingsSheet">
+    <div class="settings-sheet" role="dialog" aria-modal="true" aria-label="Разделы настроек">
+      <div class="sheet-head" id="settingsSheetHead">
+        <span class="sheet-grip" aria-hidden="true"></span>
+        <p class="sheet-title">Разделы настроек</p>
+        <p class="sheet-sub">Потяни вниз, чтобы закрыть</p>
+      </div>
+
+      <div class="sheet-list" id="settingsSheetList"></div>
+
+      <button class="btn btn-ghost btn-small sheet-cancel" type="button"
+              onclick="closeSettingsSheet()">Закрыть</button>
+    </div>
+  </div>
+
   <script src="js/settings.js"></script>
   <script src="js/jlpt.js"></script>
   <script src="js/badges.js"></script>

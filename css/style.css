@@ -19158,3 +19158,283 @@ body.theme-light .af-corner {
     display: none;
   }
 }
+
+/* ============================================================
+   ЧАСТЬ 21. РАЗДЕЛЫ НАСТРОЕК — ОКОШКО СНИЗУ
+   На компьютере меню остаётся слева. На телефоне это
+   компактная кнопка, которая поднимает снизу панель со
+   списком разделов: свайп вниз или «Закрыть» убирают её.
+   Панель двигается только через transform — кадров не ест.
+   ============================================================ */
+
+/* По умолчанию (компьютер) ничего этого не видно */
+.settings-picker,
+.settings-sheet-overlay {
+  display: none;
+}
+
+/* Пока окошко открыто, страница не прокручивается */
+html.settings-sheet-open {
+  overflow: hidden;
+}
+
+@media (max-width: 900px) {
+  /* Длинный столбик разделов на телефоне больше не нужен */
+  .settings-menu {
+    display: none;
+  }
+
+  /* ---------- 21.1 Кнопка «Раздел настроек» ---------- */
+  .settings-picker {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    width: 100%;
+    padding: 12px 15px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    background:
+      linear-gradient(160deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01)),
+      var(--bg-card);
+    color: var(--text-main);
+    text-align: left;
+    cursor: pointer;
+    transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .settings-picker:active {
+    transform: scale(0.985);
+  }
+
+  .settings-picker .sp-icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid hsl(var(--accent-hue) var(--accent-sat) 62% / 0.22);
+  }
+
+  .settings-picker .sp-icon svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+  }
+
+  .settings-picker .sp-label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .settings-picker .sp-caption {
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-gray);
+  }
+
+  .settings-picker .sp-value {
+    font-family: var(--font-head);
+    font-size: 1.13rem;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .settings-picker .sp-chevron {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  .settings-picker .sp-chevron svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* ---------- 21.2 Затемнение ---------- */
+  .settings-sheet-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 1300;
+    background: rgba(6, 6, 10, 0.58);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s var(--ease-soft), visibility 0.3s;
+  }
+
+  .settings-sheet-overlay.open {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* ---------- 21.3 Сама панель ---------- */
+  .settings-sheet {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    max-height: 82vh;
+    padding: 6px 14px calc(14px + env(safe-area-inset-bottom, 0px));
+    border-radius: 24px 24px 0 0;
+    border-top: 1px solid hsl(var(--accent-hue) var(--accent-sat) 62% / 0.26);
+    background:
+      linear-gradient(180deg, rgba(26, 26, 34, 0.99), rgba(11, 11, 14, 1));
+    box-shadow: 0 -22px 60px rgba(0, 0, 0, 0.62);
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.25, 1);
+    will-change: transform;
+  }
+
+  .settings-sheet-overlay.open .settings-sheet {
+    transform: translateY(0);
+  }
+
+  .sheet-head {
+    position: relative;
+    padding: 12px 4px 10px;
+    text-align: center;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+  }
+
+  .sheet-head:active {
+    cursor: grabbing;
+  }
+
+  /* Полоска-ручка */
+  .sheet-grip {
+    display: block;
+    width: 44px;
+    height: 4px;
+    margin: 0 auto 12px;
+    border-radius: 2px;
+    background: hsl(var(--accent-hue) var(--accent-sat) 78% / 0.45);
+  }
+
+  .sheet-title {
+    font-family: var(--font-head);
+    font-size: 1.06rem;
+    letter-spacing: 0.01em;
+  }
+
+  .sheet-sub {
+    margin-top: 3px;
+    font-size: 0.76rem;
+    color: var(--text-gray);
+  }
+
+  /* ---------- 21.4 Список разделов ---------- */
+  .sheet-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 4px 0 10px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+
+  .sheet-item {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    width: 100%;
+    padding: 13px 14px;
+    border-radius: 14px;
+    border: 1px solid transparent;
+    color: var(--text-gray);
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-align: left;
+    text-decoration: none;
+    transition: background var(--transition), color var(--transition), border-color var(--transition);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .sheet-item svg {
+    width: 19px;
+    height: 19px;
+    flex-shrink: 0;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .sheet-item:active {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .sheet-item.active {
+    color: var(--text-main);
+    border-color: hsl(var(--accent-hue) var(--accent-sat) 62% / 0.28);
+    background: var(--accent-soft);
+  }
+
+  .sheet-item.active svg {
+    color: var(--accent);
+  }
+
+  .sheet-item .menu-badge {
+    margin-left: auto;
+  }
+
+  .sheet-cancel {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* ---------- 21.5 Светлая тема ---------- */
+  body.theme-light .settings-sheet {
+    background: linear-gradient(180deg, #ffffff, #f4f4f7);
+    box-shadow: 0 -22px 60px rgba(24, 24, 34, 0.28);
+  }
+
+  body.theme-light .settings-sheet-overlay {
+    background: rgba(24, 24, 34, 0.35);
+  }
+
+  body.theme-light .sheet-item:active {
+    background: rgba(20, 20, 30, 0.06);
+  }
+
+  /* ---------- 21.6 «Меньше движения» ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    .settings-sheet {
+      transition: none;
+    }
+  }
+}
+
+/* Облегчённый режим: без размытия, только плотная подложка */
+.perf-lite .settings-sheet-overlay {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
