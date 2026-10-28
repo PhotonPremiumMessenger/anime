@@ -1,0 +1,162 @@
+/* ============================================================
+   perf.css — облегчённый режим для телефонов и слабых устройств
+   Подключается в <head> сразу после style.css и срабатывает
+   только когда perf.js поставил класс .perf-lite на <html>.
+
+   Правила подобраны так, чтобы вид оставался прежним: те же цвета,
+   те же тени, та же композиция. Убирается только то, что не видно
+   или видно только в движении.
+   ============================================================ */
+
+/* ---------- 1. Бесконечные анимации: гасим ----------
+   Бегущие блики, вращающиеся кольца и пульсации в покое не видны,
+   но каждый кадр требуют перерисовки. Оставляем один эффект —
+   падающие лепестки, если их включили сами. */
+.perf-lite .hero-card,
+.perf-lite .hero h1 .hero-line:first-child,
+.perf-lite .avatar-frame::after,
+.perf-lite .badge-dot,
+.perf-lite .hero-card-top .live i,
+.perf-lite .donate-beat,
+.perf-lite .progress-bar span::after {
+  animation: none !important;
+}
+
+/* Зеркальный «пробег» по кнопкам — дорогая анимация фона */
+.perf-lite .btn::after,
+.perf-lite .btn::before {
+  display: none !important;
+}
+
+/* Блик по карточкам каталога при наведении — на телефоне наведения нет,
+   а слой всё равно создаётся */
+.perf-lite .anime-card::after,
+.perf-lite .video-card::after,
+.perf-lite .shop-preview::after {
+  display: none !important;
+}
+
+/* Мерцание звёзд и «дыхание» панелей */
+.perf-lite .anime-star,
+.perf-lite .footer-sign,
+.perf-lite .quote-mark,
+.perf-lite .exam-timer.is-low {
+  animation: none !important;
+}
+
+/* ---------- 2. Стекло: дорогой backdrop-filter ----------
+   Панели и так лежат на тёмном фоне. Плотная подложка того же
+   цвета даёт почти ту же картинку без размытия каждого кадра:
+   это самая тяжёлая операция на мобильных GPU. */
+.perf-lite .header,
+.perf-lite .design-panel,
+.perf-lite .modal,
+.perf-lite .toast,
+.perf-lite .music-dock-panel,
+.perf-lite .music-dock-toggle,
+.perf-lite .translate-popup,
+.perf-lite .nav.is-mobile-open,
+.perf-lite .commands-palette,
+.perf-lite .cookies-card,
+.perf-lite .suggest-pop,
+.perf-lite .lesson-hero,
+.perf-lite .tts-button,
+.perf-lite .pomodoro,
+.perf-lite .focus-exit,
+.perf-lite .tour-card {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.perf-lite .header {
+  background: rgba(12, 12, 15, 0.94);
+}
+
+.perf-lite .design-panel,
+.perf-lite .music-dock-panel {
+  background: rgba(16, 16, 19, 0.97);
+}
+
+body.theme-light.perf-lite .header {
+  background: rgba(255, 255, 255, 0.96);
+}
+
+body.theme-light.perf-lite .design-panel,
+body.theme-light.perf-lite .music-dock-panel {
+  background: rgba(255, 255, 255, 0.98);
+}
+
+/* ---------- 3. Тяжёлые тени: проще, но того же цвета ----------
+   Большие размытия теней пересчитываются при каждом движении
+   элемента. Уменьшаем радиус, а не убираем тень совсем, чтобы
+   глубина осталась. */
+.perf-lite .anime-card,
+.perf-lite .lesson-card,
+.perf-lite .grammar-card,
+.perf-lite .test-card,
+.perf-lite .shop-card,
+.perf-lite .video-card,
+.perf-lite .block,
+.perf-lite .stat-card,
+.perf-lite .modal,
+.perf-lite .design-panel,
+.perf-lite .music-dock-panel {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.32) !important;
+}
+
+/* ---------- 4. Главный экран: убираем параллакс и большие blur ----------
+   Скоростные линии и манга-штриховка — чистый декор на весь экран,
+   на телефоне стоят дороже всего, а вид почти не меняют. */
+.perf-lite .anime-edge,
+.perf-lite .anime-halftone,
+.perf-lite .hero::before,
+.perf-lite .hero-speed,
+.perf-lite .speed-lines {
+  display: none !important;
+}
+
+/* Вертикальная надпись и наклейки на телефоне и так за краем */
+.perf-lite .anime-side-mark {
+  display: none !important;
+}
+
+/* ---------- 5. Сакура: меньше лепестков ----------
+   Лепестки оставляем (их включают специально), но слой
+   перестаёт быть отдельным составным слоем на весь экран. */
+.perf-lite .sakura-layer {
+  will-change: auto;
+}
+
+.perf-lite .petal {
+  will-change: auto;
+}
+
+/* ---------- 6. Скрытая вкладка ничего не рисует ---------- */
+.perf-hidden *,
+.perf-hidden *::before,
+.perf-hidden *::after {
+  animation-play-state: paused !important;
+}
+
+/* ---------- 7. Ручной режим «лёгкая графика» в настройках ----------
+   Класс ставится вручную, даже на компьютере. */
+.light-graphics .hero-card,
+.light-graphics .anime-card::after,
+.light-graphics .btn::after {
+  animation: none !important;
+}
+
+.light-graphics .header,
+.light-graphics .design-panel,
+.light-graphics .modal {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* ---------- 8. Печать и «меньше движения» ---------- */
+@media print {
+  .music-dock,
+  .perf-lite .anime-edge {
+    display: none !important;
+  }
+}

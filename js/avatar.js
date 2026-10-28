@@ -176,6 +176,11 @@ function renderAvatarGrid() {
     const img = document.createElement('img');
     img.src = path;
     img.alt = 'Аватар ' + (index + 1);
+    // Сетка из 16 аватаров: грузим только те, что вот-вот появятся
+    img.loading = 'lazy';
+    img.decoding = 'async';
+    img.width = 96;
+    img.height = 96;
 
     // Закрытый премиум-аватар: замок вместо картинки
     if (entry.locked) {

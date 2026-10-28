@@ -100,10 +100,14 @@ body::before {
   position: fixed;
   inset: 0;
   z-index: -2;
-  background: url('../assets/images/background.jpg') center / cover no-repeat;
+  /* Фотография уже обесцвечена и пересжата в WebP — фильтр grayscale
+     здесь больше не нужен: он заставлял браузер держать отдельный
+     слой на весь экран и перекрашивать его при каждой прокрутке */
+  background: url('../assets/images/background.webp') center / cover no-repeat;
+  background-image: image-set(
+    url('../assets/images/background.webp') type('image/webp'),
+    url('../assets/images/background.jpg') type('image/jpeg'));
   opacity: 0.42;
-  /* Фотография ночная и тёплая — обесцвечиваем, чтобы не было жёлтого */
-  filter: grayscale(1) contrast(1.05) brightness(0.9);
 }
 
 body::after {
@@ -3891,6 +3895,15 @@ body.theme-light .textarea:-webkit-autofill {
   animation-timing-function: linear;
   animation-iteration-count: infinite;
   will-change: transform;
+}
+
+/* На телефоне лепестки падают без 3D: одна ось вместо трёх —
+   та же картина, но без пересчёта перспективы на каждом кадре */
+@media (max-width: 900px) {
+  .petal {
+    animation-name: petalFall;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.22);
+  }
 }
 
 /* Полёт с вращением по трём осям — появляется объём */
@@ -16676,7 +16689,7 @@ body.theme-light .badge {
    за края экрана и не ловит клики.
    ============================================================ */
 
-/* ---------- 18.1 Мини-плеер: кнопка в правом нижнем углу ---------- */
+/* ---------- 18.1 Мини-плеер: виниловая кнопка в правом нижнем углу ---------- */
 .music-dock {
   position: fixed;
   right: 20px;
@@ -16690,44 +16703,139 @@ body.theme-light .badge {
   pointer-events: auto;
 }
 
+/* Кнопка-винил. Диск собран из трёх кругов и вращается только
+   при воспроизведении — ни одного лишнего пикселя и слоя. */
 .music-dock-toggle {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  width: 58px;
-  height: 58px;
+  width: 62px;
+  height: 62px;
   border-radius: 50%;
-  border: 1px solid hsl(var(--accent-hue) var(--accent-sat) 65% / 0.45);
-  background: linear-gradient(160deg, rgba(28, 28, 40, 0.94), rgba(16, 16, 24, 0.94));
-  color: var(--accent);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(10px);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.music-dock-toggle svg {
-  width: 20px;
-  height: 20px;
-  stroke: currentColor;
-  fill: none;
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.music-dock-label {
-  font-size: 0.55rem;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-  color: var(--text-dim);
+  border: 1px solid hsl(var(--accent-hue) var(--accent-sat) 70% / 0.5);
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.18), transparent 45%),
+    linear-gradient(160deg, #1b1b22, #0b0b0f 62%, #16161c);
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    0 0 26px hsl(var(--accent-hue) var(--accent-sat) 60% / 0.16);
+  display: grid;
+  place-items: center;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
 }
 
 .music-dock-toggle:hover {
-  transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.5), 0 0 0 4px hsl(var(--accent-hue) var(--accent-sat) 60% / 0.12);
+  transform: translateY(-3px) scale(1.04);
+  border-color: hsl(var(--accent-hue) var(--accent-sat) 75% / 0.8);
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.6),
+    0 0 0 5px hsl(var(--accent-hue) var(--accent-sat) 60% / 0.12);
+}
+
+.music-dock-toggle:active {
+  transform: scale(0.97);
+}
+
+/* Сам диск: чёрный винил с бороздками и цветной наклейкой */
+.mdt-disc {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background:
+    repeating-radial-gradient(circle at 50% 50%,
+      rgba(255, 255, 255, 0.06) 0 1px,
+      transparent 1px 3px),
+    radial-gradient(circle at 50% 50%, #101014 40%, #1c1c24 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  display: grid;
+  place-items: center;
+  animation: mpDiscSpin 9s linear infinite;
+  animation-play-state: paused;
+}
+
+.music-dock.is-playing .mdt-disc {
+  animation-play-state: running;
+}
+
+@keyframes mpDiscSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* Наклейка в центре — акцентным цветом сайта */
+.mdt-label {
+  display: grid;
+  place-items: center;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  font-size: 0.6rem;
+  font-weight: 800;
+  color: var(--accent-ink);
+  background: linear-gradient(140deg,
+    hsl(var(--accent-hue) var(--accent-sat) 78%),
+    hsl(var(--accent-hue) var(--accent-sat) 52%));
+  box-shadow: 0 0 12px hsl(var(--accent-hue) var(--accent-sat) 60% / 0.55);
+}
+
+/* Тонкое кольцо-ободок снаружи диска */
+.mdt-grooves {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1px dashed hsl(var(--accent-hue) var(--accent-sat) 70% / 0.22);
+}
+
+/* Мини-эквалайзер под диском: 4 полоски, танцуют при игре */
+.mdt-eq {
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 11px;
+  padding: 2px 5px;
+  border-radius: 6px;
+  background: rgba(10, 10, 14, 0.92);
+  border: 1px solid hsl(var(--accent-hue) var(--accent-sat) 60% / 0.35);
+}
+
+.mdt-eq i {
+  display: block;
+  width: 2px;
+  height: 100%;
+  border-radius: 1px;
+  background: hsl(var(--accent-hue) var(--accent-sat) 72%);
+  transform-origin: bottom;
+  animation: mpBar 0.9s ease-in-out infinite alternate;
+  animation-delay: var(--d, 0s);
+  animation-play-state: paused;
+  transform: scaleY(0.35);
+}
+
+.music-dock.is-playing .mdt-eq i {
+  animation-play-state: running;
+}
+
+/* Счётчик треков на кнопке */
+.mdt-badge {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 9px;
+  font-size: 0.6rem;
+  font-weight: 800;
+  line-height: 18px;
+  text-align: center;
+  color: var(--accent-ink);
+  background: linear-gradient(140deg,
+    hsl(var(--accent-hue) var(--accent-sat) 82%),
+    hsl(var(--accent-hue) var(--accent-sat) 58%));
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45);
 }
 
 .music-dock.is-open .music-dock-toggle {
@@ -16736,50 +16844,45 @@ body.theme-light .badge {
   pointer-events: none;
 }
 
-.music-dock-dot {
-  position: absolute;
-  top: 8px;
-  right: 9px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--accent);
-  opacity: 0;
-}
-
-.music-dock.is-playing .music-dock-dot {
-  opacity: 1;
-  animation: mpDot 1.6s ease-in-out infinite;
-}
-
-@keyframes mpDot {
-  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--accent-hue) var(--accent-sat) 62% / 0.55); }
-  50% { box-shadow: 0 0 0 6px hsl(var(--accent-hue) var(--accent-sat) 62% / 0); }
-}
-
 /* ---------- 18.2 Окно плеера ---------- */
 .music-dock-panel {
   position: absolute;
   right: 0;
   bottom: 0;
-  width: 300px;
+  width: 336px;
   max-width: calc(100vw - 24px);
   padding: 14px;
-  border-radius: 18px;
-  border: 1px solid hsl(var(--accent-hue) var(--accent-sat) 65% / 0.28);
-  background: linear-gradient(165deg, rgba(24, 24, 34, 0.96), rgba(13, 13, 20, 0.97));
-  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(16px);
+  border-radius: 22px;
+  border: 1px solid hsl(var(--accent-hue) var(--accent-sat) 66% / 0.26);
+  background:
+    linear-gradient(170deg, rgba(26, 26, 30, 0.97), rgba(10, 10, 12, 0.98));
+  box-shadow:
+    0 28px 64px rgba(0, 0, 0, 0.62),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
   color: var(--text-main);
   display: none;
   opacity: 0;
-  transform: translateY(8px) scale(0.98);
+  transform: translateY(10px) scale(0.97);
   transform-origin: bottom right;
+  overflow: hidden;
+}
+
+/* Мягкое свечение за содержимым — один слой, без blur */
+.mdp-glow {
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  width: 240px;
+  height: 160px;
+  transform: translateX(-50%);
+  background: radial-gradient(closest-side,
+    hsl(var(--accent-hue) var(--accent-sat) 60% / 0.22), transparent 70%);
+  pointer-events: none;
 }
 
 .music-dock.is-open .music-dock-panel {
   display: block;
-  animation: mpPanelIn 0.22s ease forwards;
+  animation: mpPanelIn 0.24s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @keyframes mpPanelIn {
@@ -16787,40 +16890,66 @@ body.theme-light .badge {
 }
 
 .music-dock-head {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .music-dock-eyebrow {
-  font-size: 0.66rem;
-  letter-spacing: 1.2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 1.6px;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--accent-text, var(--accent));
+}
+
+.mdp-wave {
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
+.music-dock.is-playing .mdp-wave {
+  animation: mpWave 1.4s ease-in-out infinite;
+}
+
+@keyframes mpWave {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(0.75); }
 }
 
 .music-dock-hide {
   display: grid;
   place-items: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 8px;
+  width: 26px;
+  height: 26px;
+  border-radius: 9px;
   color: var(--text-dim);
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.05);
   transition: var(--transition);
 }
 
 .music-dock-hide:hover {
   color: var(--text-main);
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.12);
+  transform: rotate(90deg);
 }
 
 .music-dock-hide svg,
 .mp-controls svg,
 .mp-volume svg,
 .mp-row-del svg,
-.mp-list-toggle svg {
+.mp-list-toggle svg,
+.mp-add svg,
+.mp-spotify-go svg {
   width: 15px;
   height: 15px;
   stroke: currentColor;
@@ -16830,43 +16959,135 @@ body.theme-light .badge {
   stroke-linejoin: round;
 }
 
-.music-dock-track {
+/* ---------- Сцена: обложка + эквалайзер ---------- */
+.mp-stage {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+/* Обложка: квадрат со скруглением, внутри — «пластинка» и кандзи.
+   Оттенок считается по названию трека, поэтому у каждого свой цвет. */
+.mp-art {
+  position: relative;
+  flex: 0 0 auto;
+  width: 74px;
+  height: 74px;
+  border-radius: 16px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.32), transparent 55%),
+    linear-gradient(145deg,
+      hsl(var(--art-hue, 220) 42% 46%),
+      hsl(var(--art-hue-2, 260) 38% 22%) 70%,
+      #0c0c10);
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.45),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  isolation: isolate;
+}
+
+.mp-art-marks {
+  position: relative;
+  z-index: 2;
+  font-family: var(--font-head);
+  font-size: 1.75rem;
+  letter-spacing: -1px;
+  color: rgba(255, 255, 255, 0.94);
+  text-shadow: 0 3px 14px rgba(0, 0, 0, 0.6);
+}
+
+/* Кольца вокруг — как у винила */
+.mp-art-ring {
+  position: absolute;
+  inset: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  z-index: 1;
+}
+
+.mp-art-ring-2 {
+  inset: 20px;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Бегущий блик по обложке — только при игре, чистый transform */
+.mp-art-shine {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.28) 50%, transparent 65%);
+  transform: translateX(-130%);
+  opacity: 0;
+}
+
+.music-dock.is-playing .mp-art-shine {
+  opacity: 1;
+  animation: mpArtShine 3.6s ease-in-out infinite;
+}
+
+@keyframes mpArtShine {
+  0% { transform: translateX(-130%); }
+  55%, 100% { transform: translateX(130%); }
+}
+
+/* Обложка с чужим плеером: приглушаем, чтобы не спорила с iframe */
+.mp-art.is-spotify {
+  opacity: 0.5;
+  filter: grayscale(0.4);
+}
+
+/* Живой эквалайзер: 14 полосок, высота из --h */
+.mp-eq {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 3px;
+  height: 58px;
+  padding: 2px 0 6px;
+  border-bottom: 1px solid hsl(var(--accent-hue) var(--accent-sat) 60% / 0.16);
+}
+
+.mp-eq i {
+  flex: 1;
+  height: 100%;
+  border-radius: 2px 2px 1px 1px;
+  background: linear-gradient(180deg,
+    hsl(var(--accent-hue) var(--accent-sat) 80%),
+    hsl(var(--accent-hue) var(--accent-sat) 46%));
+  transform-origin: bottom;
+  transform: scaleY(0.16);
+  opacity: 0.5;
+  animation: mpBar 1.05s ease-in-out infinite alternate;
+  animation-delay: var(--d, 0s);
+  animation-play-state: paused;
+}
+
+.music-dock.is-playing .mp-eq i {
+  animation-play-state: running;
+  opacity: 0.9;
+}
+
+@keyframes mpBar {
+  from { transform: scaleY(0.14); }
+  to { transform: scaleY(calc(var(--h, 60) / 100)); }
+}
+
+/* ---------- Название и подпись ---------- */
+.mp-meta {
+  position: relative;
+  min-width: 0;
   margin-bottom: 10px;
 }
 
-.mp-cover {
-  flex: 0 0 auto;
-  display: grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  font-size: 1.1rem;
-  color: hsl(var(--accent-hue) var(--accent-sat) 6%);
-  background: linear-gradient(140deg,
-    hsl(var(--accent-hue) var(--accent-sat) 72%),
-    hsl(var(--accent-hue) var(--accent-sat) 52%));
-  box-shadow: 0 6px 16px hsl(var(--accent-hue) var(--accent-sat) 55% / 0.35);
-}
-
-.music-dock.is-playing .mp-cover {
-  animation: mpCover 3.2s ease-in-out infinite;
-}
-
-@keyframes mpCover {
-  0%, 100% { transform: rotate(-2deg); }
-  50% { transform: rotate(2deg); }
-}
-
-.mp-meta {
-  min-width: 0;
-}
-
 .mp-name {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
@@ -16874,20 +17095,22 @@ body.theme-light .badge {
 }
 
 .mp-note {
-  font-size: 0.7rem;
+  margin-top: 2px;
+  font-size: 0.68rem;
   color: var(--text-dim);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+/* ---------- Полоса перемотки ---------- */
 .mp-seek {
   position: relative;
   height: 6px;
   border-radius: 100px;
   background: rgba(255, 255, 255, 0.1);
-  overflow: hidden;
   touch-action: none;
+  cursor: pointer;
 }
 
 .mp-seek-fill {
@@ -16896,25 +17119,48 @@ body.theme-light .badge {
   height: 100%;
   border-radius: 100px;
   background: linear-gradient(90deg,
-    hsl(var(--accent-hue) var(--accent-sat) 70%),
-    hsl(var(--accent-hue) var(--accent-sat) 55%));
-  box-shadow: 0 0 10px hsl(var(--accent-hue) var(--accent-sat) 60% / 0.6);
+    hsl(var(--accent-hue) var(--accent-sat) 62%),
+    hsl(var(--accent-hue) var(--accent-sat) 84%));
+  box-shadow: 0 0 10px hsl(var(--accent-hue) var(--accent-sat) 62% / 0.5);
+  transition: width 0.18s linear;
+}
+
+.mp-seek-knob {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px hsl(var(--accent-hue) var(--accent-sat) 62% / 0.25);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.mp-seek:hover .mp-seek-knob,
+.mp-seek:focus-visible .mp-seek-knob {
+  opacity: 1;
 }
 
 .mp-time {
   display: flex;
   justify-content: space-between;
-  margin: 4px 0 8px;
+  margin: 5px 0 8px;
   font-size: 0.63rem;
   color: var(--text-dim);
   font-variant-numeric: tabular-nums;
 }
 
+/* ---------- Кнопки управления ---------- */
 .mp-controls {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
+  justify-content: space-between;
+  gap: 4px;
+  margin-bottom: 10px;
 }
 
 .mp-btn {
@@ -16925,12 +17171,13 @@ body.theme-light .badge {
   border-radius: 50%;
   color: var(--text-gray);
   background: rgba(255, 255, 255, 0.05);
-  transition: var(--transition);
+  transition: transform 0.16s ease, background 0.16s ease, color 0.16s ease;
 }
 
 .mp-btn:hover {
   color: var(--text-main);
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.13);
+  transform: translateY(-1px);
 }
 
 .mp-btn-small {
@@ -16938,21 +17185,57 @@ body.theme-light .badge {
   height: 30px;
 }
 
+/* Повтор и перемешивание: когда включены — подсвечены акцентом */
+.mp-btn-ghost {
+  background: transparent;
+}
+
+.mp-btn-ghost.is-on {
+  color: hsl(var(--accent-hue) var(--accent-sat) 76%);
+  background: hsl(var(--accent-hue) var(--accent-sat) 62% / 0.16);
+}
+
+#mpRepeat {
+  position: relative;
+}
+
+.mp-repeat-one {
+  position: absolute;
+  right: 3px;
+  bottom: 1px;
+  font-size: 0.5rem;
+  font-weight: 800;
+  opacity: 0;
+}
+
+#mpRepeat[data-mode="one"] .mp-repeat-one {
+  opacity: 1;
+}
+
 .mp-btn-play {
-  width: 44px;
-  height: 44px;
-  color: #16161d;
+  width: 46px;
+  height: 46px;
+  color: var(--accent-ink);
   background: linear-gradient(150deg,
-    hsl(var(--accent-hue) var(--accent-sat) 72%),
-    hsl(var(--accent-hue) var(--accent-sat) 55%));
-  box-shadow: 0 8px 20px hsl(var(--accent-hue) var(--accent-sat) 55% / 0.35);
+    hsl(var(--accent-hue) var(--accent-sat) 84%),
+    hsl(var(--accent-hue) var(--accent-sat) 58%));
+  box-shadow: 0 8px 22px hsl(var(--accent-hue) var(--accent-sat) 55% / 0.4);
+}
+
+.mp-btn-play:hover {
+  transform: scale(1.06);
+  box-shadow: 0 10px 26px hsl(var(--accent-hue) var(--accent-sat) 55% / 0.55);
 }
 
 .mp-btn-play svg {
-  width: 18px;
-  height: 18px;
+  width: 19px;
+  height: 19px;
   fill: currentColor;
   stroke: none;
+}
+
+.mp-icon-play {
+  margin-left: 2px;
 }
 
 .mp-btn-play .mp-icon-pause,
@@ -16964,11 +17247,30 @@ body.theme-light .badge {
   display: block;
 }
 
+/* ---------- Spotify внутри окна ---------- */
+.mp-spotify-holder {
+  display: contents;
+}
+
+.mp-spotify-frame {
+  width: 100%;
+  margin-bottom: 10px;
+  border: 0;
+  border-radius: 12px;
+  background: #121212;
+  display: block;
+}
+
+.mp-spotify-frame[hidden] {
+  display: none;
+}
+
+/* ---------- Громкость ---------- */
 .mp-volume {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 10px;
+  margin-bottom: 10px;
   color: var(--text-dim);
 }
 
@@ -16977,18 +17279,20 @@ body.theme-light .badge {
   min-width: 0;
   height: 4px;
   accent-color: var(--accent);
+  cursor: pointer;
 }
 
+/* ---------- Плейлист ---------- */
 .mp-list-toggle {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 6px;
   width: 100%;
-  margin-top: 10px;
-  padding: 7px 10px;
-  border-radius: 10px;
-  font-size: 0.72rem;
+  padding: 8px 11px;
+  border-radius: 11px;
+  font-size: 0.73rem;
+  font-weight: 600;
   color: var(--text-gray);
   background: rgba(255, 255, 255, 0.04);
   transition: var(--transition);
@@ -16996,23 +17300,32 @@ body.theme-light .badge {
 
 .mp-list-toggle:hover {
   color: var(--text-main);
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.mp-list-toggle svg {
+  transition: transform 0.2s ease;
+}
+
+.mp-list-toggle[aria-expanded="true"] svg {
+  transform: rotate(180deg);
 }
 
 .mp-list {
   margin-top: 8px;
-  max-height: 150px;
+  max-height: 168px;
   overflow-y: auto;
-  border-radius: 10px;
+  overscroll-behavior: contain;
+  border-radius: 11px;
   border: 1px solid var(--border);
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(0, 0, 0, 0.28);
 }
 
 .mp-row {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 6px;
+  gap: 7px;
+  padding: 6px 7px;
 }
 
 .mp-row + .mp-row {
@@ -17020,23 +17333,39 @@ body.theme-light .badge {
 }
 
 .mp-row.is-current {
-  background: hsl(var(--accent-hue) var(--accent-sat) 60% / 0.12);
+  background: hsl(var(--accent-hue) var(--accent-sat) 62% / 0.14);
+  box-shadow: inset 2px 0 0 hsl(var(--accent-hue) var(--accent-sat) 72%);
 }
 
 .mp-row-play {
   display: grid;
   place-items: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
+  width: 23px;
+  height: 23px;
+  border-radius: 7px;
   font-size: 0.64rem;
+  font-weight: 700;
   color: var(--text-dim);
   background: rgba(255, 255, 255, 0.05);
+  flex: none;
 }
 
 .mp-row.is-current .mp-row-play {
-  color: #16161d;
+  color: var(--accent-ink);
   background: var(--accent);
+}
+
+.mp-row-spotify {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+}
+
+.mp-row.is-spotify .mp-row-play {
+  color: #1ed760;
 }
 
 .mp-row-name {
@@ -17051,23 +17380,34 @@ body.theme-light .badge {
 .mp-row-del {
   display: grid;
   place-items: center;
-  width: 20px;
-  height: 20px;
+  width: 21px;
+  height: 21px;
   border-radius: 6px;
   color: var(--text-dim);
-  opacity: 0.6;
+  opacity: 0.55;
+  flex: none;
+  transition: var(--transition);
 }
 
 .mp-row-del:hover {
-  color: #ff6b81;
+  color: var(--error);
   opacity: 1;
+  background: rgba(255, 107, 129, 0.12);
 }
 
 .mp-empty {
-  padding: 10px;
+  padding: 11px;
   font-size: 0.7rem;
-  line-height: 1.5;
+  line-height: 1.55;
   color: var(--text-dim);
+}
+
+/* ---------- Кнопки «свой файл» и Spotify ---------- */
+.mp-sources {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
 }
 
 .mp-add {
@@ -17075,29 +17415,137 @@ body.theme-light .badge {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  margin-top: 10px;
-  padding: 8px;
-  border-radius: 10px;
-  border: 1px dashed hsl(var(--accent-hue) var(--accent-sat) 65% / 0.4);
-  font-size: 0.74rem;
-  color: var(--accent);
+  padding: 9px 8px;
+  border-radius: 11px;
+  border: 1px dashed hsl(var(--accent-hue) var(--accent-sat) 66% / 0.4);
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: var(--accent-text, var(--accent));
   cursor: pointer;
   transition: var(--transition);
 }
 
 .mp-add:hover {
-  background: hsl(var(--accent-hue) var(--accent-sat) 60% / 0.1);
+  background: hsl(var(--accent-hue) var(--accent-sat) 62% / 0.12);
+  border-color: hsl(var(--accent-hue) var(--accent-sat) 70% / 0.7);
 }
 
-/* Светлая тема */
+/* Spotify — своя зелёная, чтобы кнопку узнавали сразу */
+.mp-add-spotify {
+  border-style: solid;
+  border-color: rgba(30, 215, 96, 0.45);
+  color: #1ed760;
+}
+
+.mp-add-spotify:hover {
+  background: rgba(30, 215, 96, 0.12);
+  border-color: rgba(30, 215, 96, 0.8);
+}
+
+.mp-spotify-icon {
+  width: 15px;
+  height: 15px;
+}
+
+.mp-add-spotify .mp-spotify-icon {
+  fill: none;
+}
+
+/* ---------- Поле для ссылки Spotify ---------- */
+.mp-spotify-box {
+  margin-top: 9px;
+  padding: 10px;
+  border-radius: 12px;
+  background: rgba(30, 215, 96, 0.07);
+  border: 1px solid rgba(30, 215, 96, 0.28);
+  animation: mpBoxIn 0.2s ease;
+}
+
+@keyframes mpBoxIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.mp-spotify-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.64rem;
+  letter-spacing: 0.4px;
+  color: #7ee2a8;
+}
+
+.mp-spotify-row {
+  display: flex;
+  gap: 6px;
+}
+
+.mp-spotify-input {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 10px;
+  border-radius: 9px;
+  border: 1px solid rgba(30, 215, 96, 0.3);
+  background: rgba(0, 0, 0, 0.4);
+  color: var(--text-main);
+  font-size: 0.72rem;
+}
+
+.mp-spotify-input::placeholder {
+  color: var(--text-dim);
+}
+
+.mp-spotify-input:focus {
+  outline: none;
+  border-color: rgba(30, 215, 96, 0.8);
+  box-shadow: 0 0 0 3px rgba(30, 215, 96, 0.14);
+}
+
+.mp-spotify-go {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: 9px;
+  color: #08130c;
+  background: linear-gradient(150deg, #1ed760, #12a34a);
+  transition: var(--transition);
+}
+
+.mp-spotify-go:hover {
+  transform: translateX(1px) scale(1.04);
+  box-shadow: 0 6px 16px rgba(30, 215, 96, 0.4);
+}
+
+.mp-spotify-hint {
+  margin: 7px 0 0;
+  font-size: 0.6rem;
+  line-height: 1.45;
+  color: var(--text-dim);
+}
+
+/* ---------- Светлая тема ---------- */
 body.theme-light .music-dock-panel {
-  background: linear-gradient(165deg, rgba(255, 255, 255, 0.97), rgba(240, 240, 240, 0.97));
-  box-shadow: 0 22px 46px rgba(45, 45, 45, 0.22);
+  background: linear-gradient(170deg, #ffffff, #f4f4f6);
+  box-shadow: 0 26px 54px rgba(45, 45, 45, 0.22);
 }
 
 body.theme-light .music-dock-toggle {
-  background: linear-gradient(160deg, #fff, rgb(238, 238, 238));
-  box-shadow: 0 12px 26px rgba(45, 45, 45, 0.2);
+  background:
+    radial-gradient(circle at 30% 25%, #ffffff, transparent 45%),
+    linear-gradient(160deg, #f7f7f9, #dedee2);
+  border-color: rgba(20, 20, 25, 0.16);
+  box-shadow: 0 14px 30px rgba(45, 45, 45, 0.2);
+}
+
+body.theme-light .mdt-disc {
+  background:
+    repeating-radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.06) 0 1px, transparent 1px 3px),
+    radial-gradient(circle at 50% 50%, #ffffff 40%, #d8d8dc 100%);
+}
+
+body.theme-light .mdt-eq {
+  background: rgba(255, 255, 255, 0.95);
 }
 
 body.theme-light .mp-seek,
@@ -17111,6 +17559,11 @@ body.theme-light .mp-list {
   background: rgba(20, 20, 30, 0.04);
 }
 
+body.theme-light .mp-art {
+  box-shadow: 0 8px 18px rgba(45, 45, 45, 0.2), inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+}
+
+/* ---------- Телефоны ---------- */
 @media (max-width: 520px) {
   .music-dock {
     right: 12px;
@@ -17118,12 +17571,75 @@ body.theme-light .mp-list {
   }
 
   .music-dock-toggle {
-    width: 50px;
-    height: 50px;
+    width: 54px;
+    height: 54px;
+  }
+
+  .mdt-disc {
+    width: 37px;
+    height: 37px;
   }
 
   .music-dock-panel {
     width: calc(100vw - 24px);
+    max-height: calc(100vh - 96px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 12px;
+  }
+
+  .mp-art {
+    width: 62px;
+    height: 62px;
+  }
+
+  .mp-eq {
+    height: 48px;
+  }
+
+  .mp-controls {
+    gap: 2px;
+  }
+
+  .mp-btn {
+    width: 31px;
+    height: 31px;
+  }
+
+  .mp-btn-play {
+    width: 42px;
+    height: 42px;
+  }
+
+  .mp-sources {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* На телефоне и планшете мелкие анимации гасим: плеер всё равно
+   видно только по факту нажатия, экономия важнее эффекта */
+@media (max-width: 900px) {
+  .mdt-disc,
+  .mp-art-shine,
+  .mdp-wave,
+  .mp-eq i,
+  .mdt-eq i {
+    animation-duration: 0s !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  .mp-eq i {
+    transform: scaleY(calc(var(--h, 60) / 260));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mdt-disc,
+  .mp-art-shine,
+  .mdp-wave,
+  .mp-eq i,
+  .mdt-eq i {
+    animation: none !important;
   }
 }
 
@@ -18307,4 +18823,284 @@ body.theme-light .lesson-card.locked {
 body.theme-light .panel-swatch.is-active {
   border-color: #141417;
   box-shadow: 0 0 0 3px rgba(20, 20, 23, 0.14);
+}
+
+/* ============================================================
+   ЧАСТЬ 20. ВОЛНА 12: РАМКА КАДРА И АНИМЕ-ДЕТАЛИ
+   Всё, что здесь есть, либо статично, либо двигается только
+   через transform и opacity. На телефоне слой отключается
+   классом .perf-lite — см. css/perf.css.
+   ============================================================ */
+
+/* ---------- 20.1 Рамка кадра: уголки, эпизод, штрих-код ---------- */
+/* Высота шапки: рамка и бегущая строка начинаются сразу под ней */
+:root {
+  --af-top: 64px;
+}
+
+@media (max-width: 760px) {
+  :root {
+    --af-top: 58px;
+  }
+}
+
+/* Верх рамки — под шапкой: она sticky и иначе закрывает уголки */
+.anime-frame {
+  position: fixed;
+  top: var(--af-top);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  pointer-events: none;
+  font-family: var(--font-head);
+}
+
+.af-corner {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border: 2px solid hsl(var(--accent-hue) var(--accent-sat) var(--accent-l) / 0.5);
+}
+
+.af-tl { top: 12px; left: 12px; border-right: none; border-bottom: none; }
+.af-tr { top: 12px; right: 12px; border-left: none; border-bottom: none; }
+.af-bl { bottom: 12px; left: 12px; border-right: none; border-top: none; }
+.af-br { bottom: 12px; right: 12px; border-left: none; border-top: none; }
+
+/* Метка эпизода — по центру сверху, как титр в аниме */
+.af-episode {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 3px 12px;
+  font-size: 0.62rem;
+  letter-spacing: 3px;
+  color: hsl(var(--accent-hue) var(--accent-sat) var(--accent-l) / 0.7);
+  border: 1px solid hsl(var(--accent-hue) var(--accent-sat) var(--accent-l) / 0.28);
+  border-radius: 999px;
+  background: rgba(9, 9, 10, 0.55);
+}
+
+/* Штрих-код в левом нижнем углу — справа живёт кнопка плеера */
+.af-code {
+  position: absolute;
+  left: 48px;
+  bottom: 14px;
+  font-size: 0.55rem;
+  letter-spacing: 2px;
+  color: hsl(var(--accent-hue) var(--accent-sat) var(--accent-l) / 0.35);
+  writing-mode: vertical-rl;
+}
+
+/* На светлой теме метки темнее, чтобы не пропадали */
+body.theme-light .af-episode {
+  color: hsl(var(--accent-hue) var(--accent-sat) 34%);
+  border-color: rgba(20, 20, 25, 0.18);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+body.theme-light .af-code {
+  color: rgba(20, 20, 25, 0.28);
+}
+
+body.theme-light .af-corner {
+  border-color: rgba(20, 20, 25, 0.22);
+}
+
+/* ---------- 20.2 Катакана-строка под шапкой ---------- */
+.anime-run {
+  position: fixed;
+  top: var(--af-top, 64px);
+  left: 0;
+  right: 0;
+  z-index: 90;
+  height: 22px;
+  overflow: hidden;
+  pointer-events: none;
+  background: linear-gradient(90deg,
+    hsl(var(--accent-hue) var(--accent-sat) 62% / 0.12),
+    hsl(var(--accent-hue) var(--accent-sat) 62% / 0.04));
+  border-bottom: 1px solid hsl(var(--accent-hue) var(--accent-sat) 62% / 0.18);
+  opacity: 0;
+  animation: animeRunFade 14s ease forwards;
+}
+
+.anime-run span {
+  display: block;
+  width: max-content;
+  padding-left: 100vw;
+  font-family: var(--font-body);
+  font-size: 0.6rem;
+  line-height: 22px;
+  letter-spacing: 6px;
+  white-space: nowrap;
+  color: hsl(var(--accent-hue) var(--accent-sat) var(--accent-l) / 0.55);
+  animation: animeRunSlide 14s linear forwards;
+}
+
+@keyframes animeRunSlide {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
+}
+
+@keyframes animeRunFade {
+  0% { opacity: 0; }
+  6% { opacity: 1; }
+  88% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ---------- 20.3 Всплеск при нажатии ---------- */
+.anime-burst {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 5;
+  animation: animeBurst 0.55s ease-out forwards;
+}
+
+/* Пять искр: каждая летит своим углом через свою тень —
+   один узел вместо пяти */
+.anime-burst,
+.anime-burst::before,
+.anime-burst::after {
+  background: hsl(var(--accent-hue) var(--accent-sat) 86%);
+  box-shadow:
+    0 0 0 0 hsl(var(--accent-hue) var(--accent-sat) 86% / 0.9);
+}
+
+.anime-burst::before,
+.anime-burst::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+
+.anime-burst {
+  box-shadow:
+    -14px -10px 0 -1px hsl(var(--accent-hue) var(--accent-sat) 86% / 0.85),
+    16px -8px 0 -1px hsl(var(--accent-hue) var(--accent-sat) 74% / 0.85),
+    -12px 12px 0 -2px hsl(var(--accent-hue) var(--accent-sat) 92% / 0.8),
+    14px 14px 0 -2px hsl(var(--accent-hue) var(--accent-sat) 66% / 0.8),
+    0 -18px 0 -2px hsl(var(--accent-hue) var(--accent-sat) 88% / 0.75);
+}
+
+.anime-burst::before,
+.anime-burst::after {
+  display: none;
+}
+
+@keyframes animeBurst {
+  from {
+    transform: scale(0.4);
+    opacity: 1;
+  }
+  to {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+/* Кнопки и карточки — позиция для искры */
+.btn-primary,
+.btn-large,
+.lesson-card,
+.anime-card {
+  position: relative;
+}
+
+/* ---------- 20.4 Номера разделов ---------- */
+
+/* Без relative номер улетел бы в начало документа и лёг бы стопкой */
+.section > .container.has-sec-num {
+  position: relative;
+}
+
+.anime-sec-num {
+  position: absolute;
+  top: -26px;
+  right: 4px;
+  font-family: var(--font-head);
+  font-size: 2.6rem;
+  line-height: 1;
+  color: hsl(var(--accent-hue) var(--accent-sat) var(--accent-l) / 0.08);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ---------- 20.5 Подсказка «открыть» на карточке аниме ---------- */
+.anime-card[data-hint]::before {
+  content: attr(data-hint);
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 4;
+  padding: 2px 8px;
+  font-size: 0.6rem;
+  letter-spacing: 1px;
+  color: hsl(var(--accent-hue) var(--accent-sat) 92%);
+  background: rgba(9, 9, 10, 0.7);
+  border: 1px solid hsl(var(--accent-hue) var(--accent-sat) 70% / 0.4);
+  border-radius: 6px;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+  pointer-events: none;
+}
+
+.anime-card:hover[data-hint]::before,
+.anime-card:focus-visible[data-hint]::before {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---------- 20.6 Заголовки: тонкая двойная обводка ---------- */
+.section-head h2 strong,
+.hero h1 .accent {
+  text-shadow:
+    0 0 24px hsl(var(--accent-hue) var(--accent-sat) 62% / 0.35);
+}
+
+/* ---------- 20.7 Мобильный и облегчённый режим ---------- */
+@media (max-width: 900px) {
+  .af-corner {
+    width: 18px;
+    height: 18px;
+  }
+
+  .af-episode,
+  .af-code,
+  .anime-sec-num,
+  .anime-card[data-hint]::before {
+    display: none;
+  }
+
+}
+
+/* Статичный декор (уголки, номера) не стоит браузеру ничего —
+   в облегчённом режиме гасим только движение */
+.perf-lite .anime-run,
+.perf-lite .anime-burst {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anime-run,
+  .anime-burst,
+  .anime-card[data-hint]::before {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .anime-run {
+    display: none;
+  }
 }
