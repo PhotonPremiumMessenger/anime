@@ -15691,15 +15691,22 @@ body.nav-open .nav-backdrop {
 }
 
 /* ---------- 15.13 Декор: полутон, боковые надписи, звёзды ---------- */
+/* Якорь для вертикальной надписи: без него она уезжала в начало документа */
+.has-side-mark {
+  position: relative;
+}
+
 .anime-side-mark {
   position: absolute;
-  top: 42px;
-  left: max(10px, calc(50% - 660px));
+  top: 30px;
+  /* Левее контента ровно на ширину внутреннего отступа контейнера,
+     поэтому на узких экранах надпись не наезжает на заголовок */
+  left: calc((100% - min(100%, 1680px)) / 2 + 2px);
   writing-mode: vertical-rl;
   font-family: 'Noto Sans JP', sans-serif;
-  font-size: 1rem;
+  font-size: 0.8rem;
   font-weight: 700;
-  letter-spacing: 8px;
+  letter-spacing: 4px;
   color: hsl(var(--accent-hue) var(--accent-sat) 64% / 0.5);
   pointer-events: none;
   user-select: none;
@@ -15710,8 +15717,8 @@ body.nav-open .nav-backdrop {
   content: '';
   display: block;
   width: 1px;
-  height: 46px;
-  margin: 0 auto 12px;
+  height: 38px;
+  margin: 0 auto 10px;
   background: linear-gradient(180deg, transparent, hsl(var(--accent-hue) var(--accent-sat) 64% / 0.6));
 }
 
@@ -16733,6 +16740,22 @@ body.theme-light .badge {
 
 .music-dock-toggle:active {
   transform: scale(0.97);
+}
+
+/* Трек из Spotify: наклейка винила становится фирменно-зелёной,
+   а кнопка подсвечивается тем же цветом — видно, что играет чужой плеер */
+.music-dock.is-spotify .mdt-label {
+  color: #07130b;
+  background: linear-gradient(140deg, #1ed760, #14a44b);
+  box-shadow: 0 0 12px rgba(30, 215, 96, 0.55);
+}
+
+.music-dock.is-spotify .music-dock-toggle {
+  border-color: rgba(30, 215, 96, 0.5);
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(30, 215, 96, 0.2) inset,
+    0 0 24px rgba(30, 215, 96, 0.18);
 }
 
 /* Сам диск: чёрный винил с бороздками и цветной наклейкой */
@@ -18940,6 +18963,19 @@ body.theme-light .af-corner {
   animation: animeRunSlide 14s linear forwards;
 }
 
+@media (max-width: 900px) {
+  .anime-run {
+    height: 18px;
+  }
+
+  .anime-run span {
+    font-size: 0.52rem;
+    line-height: 18px;
+    letter-spacing: 4px;
+  }
+}
+
+
 @keyframes animeRunSlide {
   from { transform: translateX(0); }
   to { transform: translateX(-100%); }
@@ -19076,21 +19112,39 @@ body.theme-light .af-corner {
     height: 18px;
   }
 
-  .af-episode,
-  .af-code,
-  .anime-sec-num,
-  .anime-card[data-hint]::before {
+  /* Метка эпизода на телефоне переезжает в левый нижний угол:
+     сверху её закрыла бы шапка, а по центру она мешает заголовку */
+  .af-episode {
+    top: auto;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    left: 12px;
+    transform: none;
+    padding: 2px 9px;
+    font-size: 0.58rem;
+    letter-spacing: 2px;
+    background: rgba(9, 9, 10, 0.72);
+  }
+
+  /* Штрих-код на узком экране уводим, чтобы не лез в контент */
+  .af-code {
     display: none;
   }
 
+  .anime-sec-num {
+    top: -30px;
+    font-size: 1.8rem;
+  }
+
+  /* Наведения на телефоне нет */
+  .anime-card[data-hint]::before {
+    display: none;
+  }
 }
 
-/* Статичный декор (уголки, номера) не стоит браузеру ничего —
-   в облегчённом режиме гасим только движение */
-.perf-lite .anime-run,
-.perf-lite .anime-burst {
-  display: none;
-}
+/* Раньше облегчённый режим гасил строку и искры целиком.
+   Оба эффекта идут через transform и opacity, поэтому теперь
+   работают и на телефоне: строка — один элемент, искра —
+   один узел на 0.6 секунды. */
 
 @media (prefers-reduced-motion: reduce) {
   .anime-run,

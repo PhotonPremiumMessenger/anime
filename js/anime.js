@@ -261,9 +261,25 @@ const ANIME_CATALOG = [
  * Ссылка на файл отдаётся один раз — дальше работают кеш браузера
  * и loading="lazy", поэтому 24 карточки не тянут всё сразу.
  */
+// Тайтлы, у которых есть файл постера. Остальные рисуются
+// градиентом с кандзи — как и раньше, только без двух пустых запросов.
+const ANIME_POSTER_IDS = new Set([
+  'aot', 'bebop', 'bocchi', 'deathnote', 'demonslayer', 'eva', 'fma',
+  'frieren', 'fruitsbasket', 'jjk', 'mha', 'mononoke', 'naruto', 'onepiece',
+  'rezero', 'sao', 'silentvoice', 'spirited', 'spyfamily', 'steinsgate',
+  'tokyoghoul', 'violet', 'yourname'
+]);
+
+/** Есть ли у тайтла файл постера. */
+function animeHasPoster(anime) {
+  return Boolean(anime && ANIME_POSTER_IDS.has(anime.id));
+}
+
 function animePosterPath(anime) {
   // В каталоге — облегчённая копия 320×480 в WebP: втрое легче JPEG
   // и рисуется быстрее, а на карточке всё равно видно только превью.
+  if (!animeHasPoster(anime)) return '';
+
   return 'assets/images/posters/web/' + anime.id + '.webp';
 }
 
@@ -292,6 +308,8 @@ function animePosterFallback(img) {
     img.src = 'assets/images/posters/' + id + '.jpg';
     return;
   }
+
+  // Шаг 2: нет и оригинала → градиент с кандзи
 
   const poster = img.closest('.anime-poster');
   if (poster) poster.classList.add('is-empty');
@@ -401,11 +419,11 @@ function renderAnimeCatalog() {
     grid.innerHTML = list.map(anime => `
       <article class="anime-card" data-id="${anime.id}"
                style="--poster-1:${anime.color1};--poster-2:${anime.color2}">
-        <div class="anime-poster">
-          <img class="anime-img" src="${animePosterPath(anime)}" alt="${anime.title} — постер"
+        <div class="anime-poster${animeHasPoster(anime) ? '' : ' is-empty'}">
+          ${animeHasPoster(anime) ? `<img class="anime-img" src="${animePosterPath(anime)}" alt="${anime.title} — постер"
                data-id="${anime.id}" loading="lazy" decoding="async" fetchpriority="low"
                width="440" height="660"
-               onerror="animePosterFallback(this)">
+               onerror="animePosterFallback(this)">` : ''}
           <span class="anime-poster-jp">${anime.jp}</span>
           <span class="anime-kanji">${anime.kanji}</span>
           <span class="anime-year">${anime.year}</span>
@@ -484,8 +502,8 @@ function openAnimeCard(id) {
 
   body.innerHTML = `
     <div class="anime-modal-head" style="--poster-1:${anime.color1};--poster-2:${anime.color2}">
-      <img class="anime-modal-poster" src="${animePosterPath(anime)}" alt="${anime.title} — постер"
-           onerror="this.remove();">
+      ${animeHasPoster(anime) ? `<img class="anime-modal-poster" src="${animePosterPath(anime)}"
+           alt="${anime.title} — постер" onerror="this.remove();">` : ''}
       <span class="anime-modal-kanji">${anime.kanji}</span>
       <div>
         <h2>${anime.title}</h2>
@@ -497,7 +515,13 @@ function openAnimeCard(id) {
       <b data-ja>${anime.phrase.jp}</b>
       <span class="anime-modal-romaji">${animePhraseRomaji(anime)}</span>
       <span class="anime-modal-ru">«${anime.phrase.ru}»</span>
-      <button class="btn btn-outline btn-small" onclick="speakJapanese('${anime.phrase.jp}')">🔊 Прослушать</button>
+      <button class="btn btn-outline btn-small" onclick="speakJapanese('${anime.phrase.jp}')">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 10v4h3l4 3.5v-11L7 10H4Z"/><path d="M15 9.5a3.5 3.5 0 0 1 0 5"/>
+          <path d="M17.5 7a7 7 0 0 1 0 10"/>
+        </svg>
+        Прослушать
+      </button>
     </div>
 
     <p class="anime-modal-context">${anime.context}</p>
