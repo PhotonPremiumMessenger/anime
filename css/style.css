@@ -4040,8 +4040,14 @@ body.theme-light .logo-en {
   text-shadow: none;
 }
 
+/* На белом светлая плашка теряется — в светлой теме кнопка темнее */
 body.theme-light .btn-primary {
-  color: var(--accent-ink);
+  background: linear-gradient(135deg,
+    hsl(var(--accent-hue) var(--accent-sat) 56%),
+    hsl(var(--accent-hue) var(--accent-sat) 46%) 55%,
+    hsl(var(--accent-hue) var(--accent-sat) 34%));
+  color: #ffffff;
+  box-shadow: 0 8px 22px hsl(var(--accent-hue) var(--accent-sat) 30% / 0.22);
 }
 
 body.theme-light .btn-ghost {
