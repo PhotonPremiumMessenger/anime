@@ -223,30 +223,59 @@ function applyShopStyles() {
   const root = document.documentElement;
 
   if (theme && theme.accent) {
-    // Запоминаем исходный акцент, чтобы вернуть его после снятия темы
-    if (!root.dataset.baseAccent) {
-      const styles = getComputedStyle(root);
-      root.dataset.baseAccent = styles.getPropertyValue('--accent').trim() || '#FFB347';
-      root.dataset.baseAccentDark = styles.getPropertyValue('--accent-dark').trim() || '#B7410E';
-    }
+    // Тема магазина тоже задаёт три числа цвета — тогда перекрашивается всё
+    const tone = hexToHslTone(theme.accent);
 
-    root.style.setProperty('--accent', theme.accent);
-    root.style.setProperty('--accent-dark', theme.accentDark);
-    root.style.setProperty('--accent-soft', hexToRgba(theme.accent, 0.14));
+    root.style.setProperty('--accent-hue', String(tone.hue));
+    root.style.setProperty('--accent-sat', tone.sat + '%');
+    root.style.setProperty('--accent-l', tone.light + '%');
+
     document.body.classList.add('has-shop-theme');
     document.body.dataset.shopTheme = theme.id;
   } else {
-    if (root.dataset.baseAccent) {
-      root.style.setProperty('--accent', root.dataset.baseAccent);
-      root.style.setProperty('--accent-dark', root.dataset.baseAccentDark);
-      root.style.removeProperty('--accent-soft');
-      delete root.dataset.baseAccent;
-      delete root.dataset.baseAccentDark;
+    // Возвращаем цвет из настроек: он хранится отдельно и не теряется
+    if (typeof applyAccentSettings === 'function') {
+      applyAccentSettings();
+    } else {
+      root.style.removeProperty('--accent-hue');
+      root.style.removeProperty('--accent-sat');
+      root.style.removeProperty('--accent-l');
     }
 
     document.body.classList.remove('has-shop-theme');
     delete document.body.dataset.shopTheme;
   }
+}
+
+/** #RRGGBB → три числа цвета сайта: оттенок, насыщенность, светлота. */
+function hexToHslTone(hex) {
+  const clean = String(hex || '').replace('#', '');
+  const full = clean.length === 3 ? clean.split('').map(ch => ch + ch).join('') : clean;
+  const r = parseInt(full.slice(0, 2), 16) || 0;
+  const g = parseInt(full.slice(2, 4), 16) || 0;
+  const b = parseInt(full.slice(4, 6), 16) || 0;
+
+  const rn = r / 255;
+  const gn = g / 255;
+  const bn = b / 255;
+  const max = Math.max(rn, gn, bn);
+  const min = Math.min(rn, gn, bn);
+  const delta = max - min;
+
+  let hue = 0;
+  if (delta) {
+    if (max === rn) hue = ((gn - bn) / delta) % 6;
+    else if (max === gn) hue = (bn - rn) / delta + 2;
+    else hue = (rn - gn) / delta + 4;
+  }
+
+  hue = Math.round(hue * 60);
+  if (hue < 0) hue += 360;
+
+  const light = (max + min) / 2;
+  const sat = delta ? delta / (1 - Math.abs(2 * light - 1)) : 0;
+
+  return { hue: hue, sat: Math.round(sat * 100), light: Math.round(light * 100) };
 }
 
 /** #RRGGBB → rgba(r, g, b, a) для мягких подложек. */

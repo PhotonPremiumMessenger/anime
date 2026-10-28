@@ -6,13 +6,26 @@
 
 'use strict';
 
+/** Акцент для SVG-значков: цвет берётся со всего сайта. */
+function badgeAccent(shift = 0, alpha = 1) {
+  if (typeof getAccentColor === 'function') return getAccentColor(shift, alpha);
+
+  const light = Math.max(0, Math.min(100, 64 + shift));
+  return alpha >= 1 ? `hsl(220 6% ${light}%)` : `hsla(220, 6%, ${light}%, ${alpha})`;
+}
+
 /* ---------- Редкости ---------- */
 
 const BADGE_RARITY = {
   common:    { title: 'обычный',    color1: '#9CA3AF', color2: '#4B5563', glow: 'rgba(156,163,175,0.45)' },
   rare:      { title: 'редкий',     color1: '#60A5FA', color2: '#1D4ED8', glow: 'rgba(96,165,250,0.5)' },
   epic:      { title: 'эпический',  color1: '#C084FC', color2: '#6D28D9', glow: 'rgba(192,132,252,0.5)' },
-  legendary: { title: 'легендарный', color1: '#FFD166', color2: '#B45309', glow: 'rgba(255,209,102,0.55)' }
+  legendary: {
+    title: 'легендарный',
+    get color1() { return badgeAccent(12); },
+    get color2() { return badgeAccent(-22); },
+    get glow() { return badgeAccent(8, 0.55); }
+  }
 };
 
 /* ---------- Каталог значков ---------- */

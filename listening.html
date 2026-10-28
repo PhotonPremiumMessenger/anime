@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#09090a">
   <title>Аудирование — Nihongo</title>
   <meta name="description" content="Аудирование японского на слух: слово озвучивается голосом ja-JP, нужно выбрать перевод или вписать ромадзи.">
 
@@ -142,7 +143,7 @@
       <button class="theme-card active" data-theme="default" onclick="setTheme('default')">
         <div class="theme-preview theme-preview-default"></div>
         <div class="theme-name">Стандарт</div>
-        <div class="theme-desc">Оранжевый акцент</div>
+        <div class="theme-desc">Графитовый акцент</div>
       </button>
       <button class="theme-card" data-theme="sakura" onclick="setTheme('sakura')">
         <div class="theme-preview theme-preview-sakura"></div>
@@ -155,6 +156,20 @@
         <div class="theme-desc">Дневной режим</div>
       </button>
     </div>
+
+    <div class="switch-row panel-color-row">
+      <div>
+        <div class="switch-label">Цвет сайта</div>
+        <div class="switch-hint">Кнопки, рамки и свечения — сразу везде</div>
+      </div>
+      <label class="panel-color" title="Свой цвет">
+        <input type="color" id="panelAccentColor" value="#b9b9c2"
+               oninput="setAccentCustom(this.value)" aria-label="Свой цвет сайта">
+        <span class="panel-color-chip"></span>
+      </label>
+    </div>
+
+    <div class="panel-swatches" id="panelSwatches" role="group" aria-label="Готовые цвета сайта"></div>
 
     <div class="switch-row">
       <div>

@@ -8,6 +8,20 @@
 
 'use strict';
 
+/**
+ * Цвет акцента для графиков. SVG и canvas не видят CSS-переменные,
+ * поэтому берём готовую строку из getAccentColor() — и график
+ * перекрашивается вместе с сайтом.
+ * @param {number} shift — сдвиг светлоты, %
+ * @param {number} alpha — прозрачность
+ */
+function chartAccent(shift = 0, alpha = 1) {
+  if (typeof getAccentColor === 'function') return getAccentColor(shift, alpha);
+
+  const light = Math.max(0, Math.min(100, 64 + shift));
+  return alpha >= 1 ? `hsl(220 6% ${light}%)` : `hsla(220, 6%, ${light}%, ${alpha})`;
+}
+
 /* ---------- Помощники ---------- */
 
 /** Склонение числительных. */
@@ -95,8 +109,8 @@ function renderXPChart(containerId = 'xpChart', days = 14) {
     <svg class="chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="График опыта за ${days} дней">
       <defs>
         <linearGradient id="${uid}bar" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#FFD166"/>
-          <stop offset="100%" stop-color="#B7410E"/>
+        <stop offset="0%" stop-color="${chartAccent(10)}"/>
+        <stop offset="100%" stop-color="${chartAccent(-25)}"/>
         </linearGradient>
       </defs>
 
@@ -125,8 +139,8 @@ function radialProgressMarkup(percent, options = {}) {
   const safe = Math.max(0, Math.min(100, Math.round(percent)));
   const offset = circle * (1 - safe / 100);
 
-  const color = options.color || '#FFB347';
-  const color2 = options.color2 || '#B7410E';
+  const color = options.color || chartAccent(0);
+  const color2 = options.color2 || chartAccent(-25);
 
   return `
     <svg class="radial-svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" role="img"
@@ -167,8 +181,8 @@ function renderAchievementDonut(containerId = 'achDonut') {
     ${radialProgressMarkup(percent, {
       title: 'Достижения',
       caption: unlocked.length + ' из ' + total,
-      color: '#C084FC',
-      color2: '#6D28D9',
+      color: chartAccent(8),
+      color2: chartAccent(-20),
       size: 148
     })}
 
@@ -206,8 +220,8 @@ function renderStudyRings(containerId = 'studyRings') {
       ${radialProgressMarkup(lessonPercent, {
         title: 'Уроки',
         caption: done + ' / ' + total,
-        color: '#FFB347',
-        color2: '#B7410E',
+        color: chartAccent(0),
+        color2: chartAccent(-25),
         size: 122
       })}
       <span>Уроки пройдены</span>
@@ -217,8 +231,8 @@ function renderStudyRings(containerId = 'studyRings') {
       ${radialProgressMarkup(streakPercent, {
         title: 'Серия дней',
         caption: streak.count + ' 🔥',
-        color: '#F87171',
-        color2: '#991B1B',
+        color: chartAccent(-16),
+        color2: chartAccent(-42),
         size: 122
       })}
       <span>Серия ${streak.count} ${chartPlural(streak.count, 'день', 'дня', 'дней')} · рекорд ${streak.best}</span>
@@ -228,8 +242,8 @@ function renderStudyRings(containerId = 'studyRings') {
       ${radialProgressMarkup(Math.min(100, Math.round((words / 100) * 100)), {
         title: 'Слова',
         caption: words + ' слов',
-        color: '#60A5FA',
-        color2: '#1D4ED8',
+        color: chartAccent(14),
+        color2: chartAccent(-10),
         size: 122
       })}
       <span>Копилка слов</span>
@@ -267,8 +281,8 @@ function sparklineMarkup(containerId = 'xpSpark') {
                 stroke-linecap="round" stroke-linejoin="round"/>
       <defs>
         <linearGradient id="sparkG" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stop-color="#B7410E"/>
-          <stop offset="100%" stop-color="#FFD166"/>
+        <stop offset="0%" stop-color="${chartAccent(-25)}"/>
+        <stop offset="100%" stop-color="${chartAccent(10)}"/>
         </linearGradient>
       </defs>
     </svg>

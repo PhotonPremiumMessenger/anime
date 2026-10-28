@@ -53,8 +53,8 @@ body {
 .sheet-mark {
   font-size: 20pt;
   font-weight: 700;
-  color: #b7410e;
-  border: 2px solid #b7410e;
+  color: #2b2b30;
+  border: 2px solid #2b2b30;
   border-radius: 8px;
   padding: 4px 10px;
   white-space: nowrap;
@@ -69,7 +69,7 @@ body {
 .sheet h2 {
   margin: 18px 0 8px;
   font-size: 14pt;
-  border-left: 4px solid #b7410e;
+  border-left: 4px solid #2b2b30;
   padding-left: 8px;
 }
 

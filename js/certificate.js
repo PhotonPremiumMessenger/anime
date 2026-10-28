@@ -6,6 +6,14 @@
 
 'use strict';
 
+/** Акцент для canvas: тот же цвет, что у всего сайта. */
+function certificateAccent(shift = 0, alpha = 1) {
+  if (typeof getAccentColor === 'function') return getAccentColor(shift, alpha);
+
+  const light = Math.max(0, Math.min(100, 64 + shift));
+  return alpha >= 1 ? `hsl(220 6% ${light}%)` : `hsla(220, 6%, ${light}%, ${alpha})`;
+}
+
 /** Имя для сертификата. */
 function certificateName() {
   const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
@@ -30,20 +38,20 @@ function drawCertificate(canvas) {
   // Фон
   const bg = ctx.createLinearGradient(0, 0, width, height);
   bg.addColorStop(0, '#101018');
-  bg.addColorStop(0.55, '#16121d');
+  bg.addColorStop(0.55, '#151517');
   bg.addColorStop(1, '#0c0c12');
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, width, height);
 
   // Тёплое свечение сверху
   const glow = ctx.createRadialGradient(width / 2, 80, 40, width / 2, 80, 620);
-  glow.addColorStop(0, 'rgba(255, 149, 0, 0.35)');
-  glow.addColorStop(1, 'rgba(255, 149, 0, 0)');
+  glow.addColorStop(0, certificateAccent(0, 0.3));
+  glow.addColorStop(1, certificateAccent(0, 0));
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, width, height);
 
   // Рамка
-  ctx.strokeStyle = 'rgba(255, 181, 71, 0.75)';
+  ctx.strokeStyle = certificateAccent(6, 0.75);
   ctx.lineWidth = 4;
   ctx.strokeRect(38, 38, width - 76, height - 76);
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.14)';
@@ -51,7 +59,7 @@ function drawCertificate(canvas) {
   ctx.strokeRect(56, 56, width - 112, height - 112);
 
   // Уголки
-  ctx.strokeStyle = 'rgba(255, 181, 71, 0.9)';
+  ctx.strokeStyle = certificateAccent(6, 0.9);
   ctx.lineWidth = 5;
   [[38, 38, 1, 1], [width - 38, 38, -1, 1], [38, height - 38, 1, -1], [width - 38, height - 38, -1, -1]]
     .forEach(([x, y, dx, dy]) => {
@@ -64,7 +72,7 @@ function drawCertificate(canvas) {
 
   // Заголовок
   ctx.textAlign = 'center';
-  ctx.fillStyle = '#ffb547';
+  ctx.fillStyle = certificateAccent(6);
   ctx.font = '600 30px "Russo One", "Noto Sans JP", sans-serif';
   ctx.fillText('NIHONGO · 日本語', width / 2, 150);
 
@@ -89,7 +97,7 @@ function drawCertificate(canvas) {
   ctx.fillText('дошёл(ла) до уровня', width / 2, 392);
 
   // Уровень
-  ctx.fillStyle = '#ffb547';
+  ctx.fillStyle = certificateAccent(6);
   ctx.font = '700 96px "Russo One", "Noto Sans JP", sans-serif';
   ctx.fillText(String(level.level), width / 2, 500);
 
@@ -107,10 +115,10 @@ function drawCertificate(canvas) {
   // Печать
   ctx.beginPath();
   ctx.arc(width - 190, height - 190, 62, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(255, 181, 71, 0.55)';
+  ctx.strokeStyle = certificateAccent(6, 0.55);
   ctx.lineWidth = 3;
   ctx.stroke();
-  ctx.fillStyle = 'rgba(255, 181, 71, 0.8)';
+  ctx.fillStyle = certificateAccent(6, 0.8);
   ctx.font = '700 34px "Noto Sans JP", sans-serif';
   ctx.fillText('語', width - 190, height - 178);
 
