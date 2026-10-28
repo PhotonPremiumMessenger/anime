@@ -453,7 +453,7 @@ const SETTINGS_CONTENT = {
 
           <div class="accent-extra">
             <label class="accent-pick" title="Свой цвет">
-              <input class="accent-color-input" type="color" id="accentColorInput" value="#ffb347"
+              <input class="accent-color-input" type="color" id="accentColorInput" value="#b9b9c2"
                      oninput="setAccentCustom(this.value)" aria-label="Свой цвет акцента">
               <span>Свой</span>
             </label>
@@ -963,8 +963,8 @@ function renderAccentGrid() {
 
   grid.innerHTML = presets.map(item => `
     <button class="accent-swatch" type="button" data-accent-id="${item.id}"
-            data-accent-hue="${item.hue}" style="--swatch-hue:${item.hue}"
-            onclick="setAccentPreset('${item.id}', ${item.hue})"
+            style="--swatch-color:hsl(${item.hue} ${item.sat}% ${item.light}%)"
+            onclick="setAccentPreset('${item.id}')"
             title="${item.name}" aria-label="Цвет: ${item.name}">
       <span class="accent-check" aria-hidden="true">✓</span>
     </button>

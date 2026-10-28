@@ -13,6 +13,7 @@ const BIO_LIMIT = 200;
 /* ---------- Пресеты ---------- */
 
 const CUSTOM_GRADIENTS = [
+  { id: 'graphite', name: 'Графит', css: 'linear-gradient(135deg, #d8d8de, #8a8a94 55%, #3a3a42)' },
   { id: 'sunset',  name: 'Закат',   css: 'linear-gradient(135deg, #FF8A3D, #B7410E 55%, #4A1D0B)' },
   { id: 'sakura',  name: 'Сакура',  css: 'linear-gradient(135deg, #FF9EC0, #C2477B 60%, #4C1D3A)' },
   { id: 'midnight', name: 'Полночь', css: 'linear-gradient(135deg, #3B82F6, #1E3A8A 60%, #0B1220)' },
@@ -21,12 +22,13 @@ const CUSTOM_GRADIENTS = [
   { id: 'gold',    name: 'Золото',  css: 'linear-gradient(135deg, #FFD166, #B45309 60%, #3B1E05)' }
 ];
 
+/* Акцент профиля — те же три числа, что и цвет сайта целиком */
 const CUSTOM_ACCENTS = [
-  { id: 'orange', name: 'Оранжевый', color: '#FFB347', dark: '#B7410E' },
-  { id: 'rose',   name: 'Розовый',   color: '#FF9EC0', dark: '#C2477B' },
-  { id: 'blue',   name: 'Синий',     color: '#7DB7FF', dark: '#2F5DA8' },
-  { id: 'mint',   name: 'Мятный',    color: '#5EEAD4', dark: '#0E7C6B' },
-  { id: 'violet', name: 'Аметист',   color: '#C084FC', dark: '#6D28D9' }
+  { id: 'graphite', name: 'Графит',   hue: 220, sat: 6,  light: 64 },
+  { id: 'rose',     name: 'Розовый',  hue: 340, sat: 88, light: 76 },
+  { id: 'blue',     name: 'Синий',    hue: 212, sat: 90, light: 68 },
+  { id: 'mint',     name: 'Мятный',   hue: 168, sat: 70, light: 62 },
+  { id: 'violet',   name: 'Аметист',  hue: 268, sat: 78, light: 68 }
 ];
 
 const CUSTOM_NAME_EFFECTS = [
@@ -43,8 +45,8 @@ function getCustomState() {
   const saved = readJSON(CUSTOM_KEY, null);
 
   return {
-    gradient: (saved && saved.gradient) || 'sunset',
-    accent: (saved && saved.accent) || 'orange',
+    gradient: (saved && saved.gradient) || 'graphite',
+    accent: (saved && saved.accent) || 'graphite',
     nameEffect: (saved && saved.nameEffect) || 'glow',
     glow: saved ? Boolean(saved.glow) : true,
     glass: saved ? Boolean(saved.glass) : true,
@@ -61,7 +63,7 @@ function saveCustomState(state) {
  * Применяет оформление ко всей странице.
  * Вызывается при загрузке и после каждого изменения.
  */
-function applyCustomization() {
+function applyProfileCustomization() {
   const state = getCustomState();
   const gradient = CUSTOM_GRADIENTS.find(item => item.id === state.gradient) || CUSTOM_GRADIENTS[0];
   const accent = CUSTOM_ACCENTS.find(item => item.id === state.accent) || CUSTOM_ACCENTS[0];
@@ -77,13 +79,15 @@ function applyCustomization() {
   const shopTheme = shopState && shopState.equipped ? shopState.equipped.theme : '';
 
   if (!shopTheme) {
-    if (state.accent === 'orange') {
-      root.style.removeProperty('--accent');
-      root.style.removeProperty('--accent-dark');
+    if (state.accent === 'graphite') {
+      // Графит — это и есть цвет по умолчанию, просто снимаем свои значения
+      root.style.removeProperty('--accent-hue');
+      root.style.removeProperty('--accent-sat');
+      root.style.removeProperty('--accent-l');
     } else {
-      root.style.setProperty('--accent', accent.color);
-      root.style.setProperty('--accent-dark', accent.dark);
-      root.style.setProperty('--accent-soft', hexToRgbaSafe(accent.color, 0.14));
+      root.style.setProperty('--accent-hue', String(accent.hue));
+      root.style.setProperty('--accent-sat', accent.sat + '%');
+      root.style.setProperty('--accent-l', accent.light + '%');
     }
   }
 
@@ -135,7 +139,7 @@ function setCustom(key, value) {
   else state[key] = value;
 
   saveCustomState(state);
-  applyCustomization();
+  applyProfileCustomization();
   renderCustomPanel();
 
   if (key === 'gradient' || key === 'accent') {
@@ -169,7 +173,8 @@ function renderCustomPanel() {
       <div class="custom-accents">
         ${CUSTOM_ACCENTS.map(item => `
           <button class="custom-accent ${state.accent === item.id ? 'is-active' : ''}"
-                  style="--swatch:${item.color}" onclick="setCustom('accent', '${item.id}')"
+                  style="--swatch:hsl(${item.hue} ${item.sat}% ${item.light}%)"
+                  onclick="setCustom('accent', '${item.id}')"
                   title="${item.name}">
             <i></i><span>${item.name}</span>
           </button>
@@ -221,20 +226,21 @@ function renderCustomPanel() {
 /** Сбрасывает оформление к стандартному. */
 function resetCustom() {
   saveCustomState({
-    gradient: 'sunset',
-    accent: 'orange',
+    gradient: 'graphite',
+    accent: 'graphite',
     nameEffect: 'glow',
     glow: true,
     glass: true,
     compact: false
   });
 
-  // Убираем инлайновый акцент, чтобы вернулась тема по умолчанию
-  document.documentElement.style.removeProperty('--accent');
-  document.documentElement.style.removeProperty('--accent-dark');
-  document.documentElement.style.removeProperty('--accent-soft');
+  // Убираем свой акцент, чтобы вернулся цвет сайта из настроек
+  document.documentElement.style.removeProperty('--accent-hue');
+  document.documentElement.style.removeProperty('--accent-sat');
+  document.documentElement.style.removeProperty('--accent-l');
 
-  applyCustomization();
+  if (typeof applyAccentSettings === 'function') applyAccentSettings();
+  applyProfileCustomization();
   renderCustomPanel();
 
   if (typeof showToast === 'function') showToast('Оформление сброшено', 'Вернулись к стандартному виду', 'info');
@@ -396,7 +402,7 @@ function submitBio() {
 /* ---------- Инициализация ---------- */
 
 document.addEventListener('DOMContentLoaded', () => {
-  applyCustomization();
+  applyProfileCustomization();
   renderBio();
 
   const textarea = document.getElementById('bioText');
@@ -427,7 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
 window.CUSTOM_GRADIENTS = CUSTOM_GRADIENTS;
 window.CUSTOM_ACCENTS = CUSTOM_ACCENTS;
 window.getCustomState = getCustomState;
-window.applyCustomization = applyCustomization;
+window.applyProfileCustomization = applyProfileCustomization;
 window.openCustomPanel = openCustomPanel;
 window.closeCustomPanel = closeCustomPanel;
 window.setCustom = setCustom;

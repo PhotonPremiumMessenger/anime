@@ -14,6 +14,7 @@ const CUSTOM_BG_KEY = 'nihongo_custom_bg';        // data URL картинки
 const CUSTOM_BG_DIM = 'nihongo_bg_dim';           // затемнение, 0–90
 const CUSTOM_BG_BLUR = 'nihongo_bg_blur';         // размытие, 0–20 px
 const CUSTOM_ACCENT_KEY = 'nihongo_accent';       // свой цвет, #rrggbb
+const CUSTOM_PRESET_KEY = 'nihongo_accent_preset'; // id готовой палитры
 const CUSTOM_RAINBOW_KEY = 'nihongo_accent_rainbow'; // радужный режим
 const CUSTOM_CURSOR_KEY = 'nihongo_cursor';       // id курсора
 
@@ -23,15 +24,20 @@ const BG_QUALITY = 0.82;
 
 /* ---------- Готовые палитры ---------- */
 
+/*
+ * Готовые палитры. Три числа — оттенок, насыщенность и светлота —
+ * и есть весь цвет сайта: из них считается каждый акцентный элемент.
+ * Без них сайт графитовый: серый на чёрном, без жёлтого оттенка.
+ */
 const ACCENT_PRESETS = [
-  { id: 'orange', name: 'Оранжевый', hue: 38 },
-  { id: 'sakura', name: 'Сакура', hue: 340 },
-  { id: 'sky', name: 'Небо', hue: 205 },
-  { id: 'mint', name: 'Мята', hue: 158 },
-  { id: 'violet', name: 'Фиалка', hue: 268 },
-  { id: 'crimson', name: 'Алый', hue: 352 },
-  { id: 'gold', name: 'Золото', hue: 48 },
-  { id: 'ice', name: 'Лёд', hue: 186 }
+  { id: 'graphite', name: 'Графит', hue: 220, sat: 6,  light: 64 },
+  { id: 'steel',    name: 'Сталь',  hue: 212, sat: 14, light: 60 },
+  { id: 'sky',      name: 'Небо',   hue: 205, sat: 88, light: 62 },
+  { id: 'mint',     name: 'Мята',   hue: 158, sat: 68, light: 56 },
+  { id: 'violet',   name: 'Фиалка', hue: 268, sat: 78, light: 68 },
+  { id: 'crimson',  name: 'Алый',   hue: 352, sat: 78, light: 64 },
+  { id: 'sakura',   name: 'Сакура', hue: 340, sat: 88, light: 76 },
+  { id: 'ice',      name: 'Лёд',    hue: 186, sat: 78, light: 66 }
 ];
 
 /* ---------- Аниме-курсоры ---------- */
@@ -318,43 +324,86 @@ function hexToHsl(hex) {
   return { h, s: Math.round(s * 100), l: Math.round(l * 100) };
 }
 
-/** Применяет цвет акцента (по оттенку HSL). */
-function applyAccent(hue, custom) {
+/**
+ * Применяет цвет сайта: оттенок, насыщенность, светлота.
+ * Больше ничего менять не нужно — весь CSS считает цвета из этих трёх чисел.
+ */
+function applyAccentTone(hue, sat, light) {
   const root = document.documentElement;
 
   if (hue === null || hue === undefined) {
     root.style.removeProperty('--accent-hue');
+    root.style.removeProperty('--accent-sat');
+    root.style.removeProperty('--accent-l');
     document.body.classList.remove('accent-custom');
     return;
   }
 
-  root.style.setProperty('--accent-hue', String(hue));
+  root.style.setProperty('--accent-hue', String(Math.round(hue)));
+  root.style.setProperty('--accent-sat', Math.round(sat) + '%');
+  root.style.setProperty('--accent-l', Math.round(light) + '%');
   document.body.classList.add('accent-custom');
+}
+
+/** Совместимость: раньше сюда приходил только оттенок. */
+function applyAccent(hue, custom) {
+  applyAccentTone(hue, hue === null ? 0 : 82, 64);
 
   if (custom) customSet(CUSTOM_ACCENT_KEY, custom);
 }
 
+/**
+ * Цвет акцента строкой — для canvas и SVG, где CSS-переменные не работают.
+ * @param {number} shift — сдвиг светлоты, %
+ * @param {number} alpha — прозрачность 0…1
+ */
+function getAccentColor(shift = 0, alpha = 1) {
+  // Сначала инлайновые значения на <html>, потом посчитанные браузером
+  const inline = document.documentElement.style;
+  const computed = getComputedStyle(document.body);
+  const read = prop => (inline.getPropertyValue(prop) || computed.getPropertyValue(prop) || '').trim();
+
+  const hue = read('--accent-hue') || '220';
+  const sat = read('--accent-sat') || '6%';
+  const base = parseFloat(read('--accent-l')) || 64;
+  const light = Math.max(0, Math.min(100, base + shift));
+
+  return alpha >= 1
+    ? 'hsl(' + hue + ' ' + sat + ' ' + light + '%)'
+    : 'hsla(' + hue + ', ' + sat + ', ' + light + '%, ' + alpha + ')';
+}
+
 /** Выбирает готовый цвет из палитры. */
 function setAccentPreset(id, hue) {
+  const preset = ACCENT_PRESETS.find(item => item.id === id);
+
   customSet(CUSTOM_RAINBOW_KEY, 'false');
   document.body.classList.remove('accent-rainbow');
-  applyAccent(hue, null);
+  customSet(CUSTOM_ACCENT_KEY, '');
+  customSet(CUSTOM_PRESET_KEY, id);
 
-  // Синхронизируем настройку темы: свой цвет меняет только акцент
+  applyAccentTone(
+    preset ? preset.hue : hue,
+    preset ? preset.sat : 82,
+    preset ? preset.light : 64
+  );
+
   renderCustomizationState();
 
   if (typeof showToast === 'function') {
-    const preset = ACCENT_PRESETS.find(item => item.id === id);
-    showToast('Цвет сайта', 'Акцент: ' + (preset ? preset.name : id), 'success', { duration: 1800 });
+    showToast('Цвет сайта', 'Палитра: ' + (preset ? preset.name : id), 'success', { duration: 1800 });
   }
 }
 
 /** Свой цвет через палитру браузера. */
 function setAccentCustom(value) {
   const hsl = hexToHsl(value);
+
   customSet(CUSTOM_RAINBOW_KEY, 'false');
   document.body.classList.remove('accent-rainbow');
-  applyAccent(hsl.h, value);
+  customSet(CUSTOM_ACCENT_KEY, value);
+  customSet(CUSTOM_PRESET_KEY, '');
+  applyAccentTone(hsl.h, hsl.s, hsl.l);
 
   document.documentElement.style.setProperty('--accent-preview', value);
   renderCustomizationState();
@@ -369,9 +418,14 @@ function toggleRainbowAccent(input) {
 
   if (on) {
     document.body.classList.add('accent-custom');
-    if (!document.documentElement.style.getPropertyValue('--accent-hue')) {
-      document.documentElement.style.setProperty('--accent-hue', '340');
-    }
+
+    // Радуге нужна насыщенность: на графите переливание не видно
+    const rootStyle = document.documentElement.style;
+    if (!rootStyle.getPropertyValue('--accent-hue')) rootStyle.setProperty('--accent-hue', '340');
+    rootStyle.setProperty('--accent-sat', '85%');
+    rootStyle.setProperty('--accent-l', '66%');
+  } else {
+    applyAccentSettings();
   }
 
   if (typeof showToast === 'function') {
@@ -381,20 +435,34 @@ function toggleRainbowAccent(input) {
   }
 }
 
-/** Применяет сохранённый цвет сайта. */
+/** Применяет сохранённый цвет сайта на каждой странице. */
 function applyAccentSettings() {
+  // Тема из магазина важнее: она уже выставила свои три числа
+  const shop = typeof getShopState === 'function' ? getShopState() : null;
+  if (shop && shop.equipped && shop.equipped.theme) return;
+
   const rainbow = customGet(CUSTOM_RAINBOW_KEY, 'false') === 'true';
   const saved = customGet(CUSTOM_ACCENT_KEY, '');
+  const presetId = customGet(CUSTOM_PRESET_KEY, '');
 
   document.body.classList.toggle('accent-rainbow', rainbow);
 
+  // Свой цвет важнее готовой палитры
   if (saved) {
     const hsl = hexToHsl(saved);
-    applyAccent(hsl.h, null);
+    applyAccentTone(hsl.h, hsl.s, hsl.l);
     return;
   }
 
-  if (rainbow) applyAccent(340, null);
+  if (presetId) {
+    const preset = ACCENT_PRESETS.find(item => item.id === presetId);
+    if (preset) {
+      applyAccentTone(preset.hue, preset.sat, preset.light);
+      return;
+    }
+  }
+
+  if (rainbow) applyAccentTone(340, 88, 64);
 }
 
 /* ---------- Курсоры ---------- */
@@ -474,12 +542,11 @@ function renderCustomizationState() {
   });
 
   const currentAccent = customGet(CUSTOM_ACCENT_KEY, '');
+  const currentPreset = customGet(CUSTOM_PRESET_KEY, '') || (currentAccent ? '' : 'graphite');
   const rainbow = customGet(CUSTOM_RAINBOW_KEY, 'false') === 'true';
 
   document.querySelectorAll('[data-accent-id]').forEach(btn => {
-    const hue = Number(btn.dataset.accentHue);
-    const hsl = currentAccent ? hexToHsl(currentAccent) : null;
-    btn.classList.toggle('is-active', !rainbow && hsl !== null && Math.abs(hsl.h - hue) < 6);
+    btn.classList.toggle('is-active', !rainbow && btn.dataset.accentId === currentPreset);
   });
 
   const rainbowSwitch = document.getElementById('rainbowSwitch');
@@ -495,16 +562,42 @@ function renderCustomizationState() {
       : 'Сейчас стандартный фон сайта';
   }
 
+  // Кружки панели дизайна тоже должны знать, что цвет сменился
+  renderPanelAccent();
   updateCustomLabels();
 }
 
 /* ---------- Старт ---------- */
+
+/**
+ * Кружки палитры в панели дизайна. Панель есть на каждой странице,
+ * поэтому цвет сайта можно поменять где угодно, не уходя в настройки.
+ */
+function renderPanelAccent() {
+  const box = document.getElementById('panelSwatches');
+  if (!box) return;
+
+  const saved = customGet(CUSTOM_ACCENT_KEY, '');
+  const current = saved ? '' : (customGet(CUSTOM_PRESET_KEY, '') || 'graphite');
+
+  box.innerHTML = ACCENT_PRESETS.map(item => `
+    <button class="panel-swatch${item.id === current ? ' is-active' : ''}" type="button"
+            data-panel-accent="${item.id}"
+            style="--swatch-color:hsl(${item.hue} ${item.sat}% ${item.light}%)"
+            title="${item.name}" aria-label="Цвет сайта: ${item.name}"
+            onclick="setAccentPreset('${item.id}')"></button>
+  `).join('');
+
+  const input = document.getElementById('panelAccentColor');
+  if (input && saved) input.value = saved;
+}
 
 /** Применяет всё, что сохранено в браузере. */
 function applyCustomization() {
   applyCustomBackground();
   applyAccentSettings();
   applyCursorSettings();
+  renderPanelAccent();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -524,6 +617,9 @@ document.addEventListener('DOMContentLoaded', () => {
 /* Экспорт */
 window.ANIME_CURSORS = ANIME_CURSORS;
 window.ACCENT_PRESETS = ACCENT_PRESETS;
+window.applyAccentTone = applyAccentTone;
+window.renderPanelAccent = renderPanelAccent;
+window.getAccentColor = getAccentColor;
 window.applyCustomization = applyCustomization;
 window.applyCustomBackground = applyCustomBackground;
 window.applyAccentSettings = applyAccentSettings;
