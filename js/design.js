@@ -127,7 +127,10 @@ function startSakura() {
   // На слабых устройствах и телефонах оставляем меньше лепестков:
   // 40 анимированных слоёв с 3D-поворотом — заметная нагрузка на GPU
   const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (reduced) count = 8;
+  const lite = document.documentElement.classList.contains('perf-lite');
+
+  if (reduced) count = 6;
+  else if (lite) count = Math.max(5, Math.round(count * 0.4));
   else if (window.innerWidth <= 760) count = Math.max(6, Math.round(count * 0.5));
   else if ((navigator.hardwareConcurrency || 8) <= 4) count = Math.max(6, Math.round(count * 0.6));
 

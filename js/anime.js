@@ -262,21 +262,34 @@ const ANIME_CATALOG = [
  * и loading="lazy", поэтому 24 карточки не тянут всё сразу.
  */
 function animePosterPath(anime) {
-  // В каталоге используем облегчённые копии (440 px) — грузятся заметно быстрее
-  return 'assets/images/posters/web/' + anime.id + '.jpg';
+  // В каталоге — облегчённая копия 320×480 в WebP: втрое легче JPEG
+  // и рисуется быстрее, а на карточке всё равно видно только превью.
+  return 'assets/images/posters/web/' + anime.id + '.webp';
 }
 
 /**
- * Постер не нашёлся: сначала пробуем полный оригинал,
- * потом показываем градиентную заглушку.
+ * Постер не нашёлся. Порядок: WebP → JPEG-превью → полный оригинал →
+ * градиентная заглушка. Так каталог не остаётся с дырками в старых
+ * браузерах, которые не знают WebP.
  * @param {HTMLImageElement} img
  */
 function animePosterFallback(img) {
   if (!img) return;
 
-  if (!img.dataset.fullTry && img.dataset.id) {
-    img.dataset.fullTry = '1';
-    img.src = 'assets/images/posters/' + img.dataset.id + '.jpg';
+  const id = img.dataset.id || '';
+  const step = Number(img.dataset.step || 0);
+
+  // Шаг 0: битый WebP → JPEG-превью
+  if (step === 0) {
+    img.dataset.step = '1';
+    img.src = 'assets/images/posters/web/' + id + '.jpg';
+    return;
+  }
+
+  // Шаг 1: нет превью → полный оригинал
+  if (step === 1) {
+    img.dataset.step = '2';
+    img.src = 'assets/images/posters/' + id + '.jpg';
     return;
   }
 

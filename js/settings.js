@@ -385,7 +385,7 @@ const SETTINGS_CONTENT = {
         <div class="setting-row">
           <div class="setting-info">
             <div class="setting-name">Тема оформления</div>
-            <div class="setting-desc">Стандарт — оранжевая, Сакура — розовая, Светлая — дневная</div>
+            <div class="setting-desc">Стандарт — графит, Сакура — розовая, Светлая — дневная</div>
           </div>
           <div class="setting-control">
             <select class="select" data-setting="interface.theme" onchange="applyInterfaceSetting('theme', this.value)">
@@ -406,6 +406,27 @@ const SETTINGS_CONTENT = {
               <option value="torii">Тории</option>
               <option value="plain">Без изображения</option>
             </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <h4>Плавность</h4>
+        <p class="settings-note">
+          На телефоне сайт сам включает облегчённый режим: гасятся бесконечные
+          анимации и размытие стекла. Здесь это можно включить и на компьютере.
+        </p>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Лёгкая графика</div>
+            <div class="setting-desc">Больше плавности, меньше эффектов. Отключает блики, размытие и часть анимаций</div>
+          </div>
+          <div class="setting-control">
+            <label class="switch">
+              <input type="checkbox" id="lightGraphicsSwitch" onchange="toggleLightGraphics(this)">
+              <span class="track"></span>
+            </label>
           </div>
         </div>
       </div>
@@ -915,6 +936,7 @@ function showSettingsTab(tabId, buttonElement) {
   if (typeof renderVoicePicker === 'function') renderVoicePicker();
   if (typeof renderJLPTSwitchers === 'function') renderJLPTSwitchers();
   if (typeof renderAutoThemeSwitch === 'function') renderAutoThemeSwitch();
+  if (tabId === 'interface') syncLightGraphicsSwitch();
   if (typeof renderJLPTProgress === 'function') renderJLPTProgress();
 
   const romajiSwitch = container.querySelector('input[onchange="setRomajiOn(this.checked)"]');
@@ -1796,6 +1818,41 @@ async function changeEmailConfirm() {
   showToast('Почта изменена', 'Новый адрес: ' + email, 'success');
 }
 
+/**
+ * Ручной режим «лёгкая графика»: ставит класс light-graphics на <html>
+ * и запоминает выбор. Перезагрузка не нужна — стили пересчитываются сразу.
+ */
+function toggleLightGraphics(input) {
+  const on = Boolean(input && input.checked);
+
+  document.documentElement.classList.toggle('light-graphics', on);
+
+  try {
+    localStorage.setItem('nihongo_light_graphics', on ? 'off' : 'on');
+  } catch (error) {
+    // приватный режим — просто не запоминаем
+  }
+
+  // Тот же облегчённый набор правил, что и на телефоне
+  document.documentElement.classList.toggle('perf-lite', on || document.documentElement.dataset.perf === 'lite');
+
+  if (typeof showToast === 'function') {
+    showToast(on ? 'Лёгкая графика включена' : 'Лёгкая графика выключена',
+      on ? 'Эффектов меньше, страницы плавнее' : 'Вернули все эффекты', 'info', { duration: 2400 });
+  }
+}
+
+/** Ставит переключатель в сохранённое положение. */
+function syncLightGraphicsSwitch() {
+  const box = document.getElementById('lightGraphicsSwitch');
+  if (!box) return;
+
+  let saved = 'on';
+  try { saved = localStorage.getItem('nihongo_light_graphics') || 'on'; } catch (error) { /* пусто */ }
+
+  box.checked = saved === 'off' || document.documentElement.classList.contains('perf-lite');
+}
+
 /* ---------- Инициализация ---------- */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1853,3 +1910,5 @@ window.stubAction = stubAction;
 window.stubToggle = stubToggle;
 window.downloadMyData = downloadMyData;
 window.nicknameCooldownDays = nicknameCooldownDays;
+window.toggleLightGraphics = toggleLightGraphics;
+window.syncLightGraphicsSwitch = syncLightGraphicsSwitch;
