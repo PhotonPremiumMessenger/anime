@@ -18833,9 +18833,24 @@ body.theme-light .panel-swatch.is-active {
    ============================================================ */
 
 /* ---------- 20.1 Рамка кадра: уголки, эпизод, штрих-код ---------- */
+/* Высота шапки: рамка и бегущая строка начинаются сразу под ней */
+:root {
+  --af-top: 64px;
+}
+
+@media (max-width: 760px) {
+  :root {
+    --af-top: 58px;
+  }
+}
+
+/* Верх рамки — под шапкой: она sticky и иначе закрывает уголки */
 .anime-frame {
   position: fixed;
-  inset: 0;
+  top: var(--af-top);
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 3;
   pointer-events: none;
   font-family: var(--font-head);
@@ -18868,11 +18883,11 @@ body.theme-light .panel-swatch.is-active {
   background: rgba(9, 9, 10, 0.55);
 }
 
-/* Штрих-код в правом нижнем углу */
+/* Штрих-код в левом нижнем углу — справа живёт кнопка плеера */
 .af-code {
   position: absolute;
-  right: 48px;
-  bottom: 16px;
+  left: 48px;
+  bottom: 14px;
   font-size: 0.55rem;
   letter-spacing: 2px;
   color: hsl(var(--accent-hue) var(--accent-sat) var(--accent-l) / 0.35);
@@ -18897,10 +18912,10 @@ body.theme-light .af-corner {
 /* ---------- 20.2 Катакана-строка под шапкой ---------- */
 .anime-run {
   position: fixed;
-  top: 0;
+  top: var(--af-top, 64px);
   left: 0;
   right: 0;
-  z-index: 1100;
+  z-index: 90;
   height: 22px;
   overflow: hidden;
   pointer-events: none;
@@ -19003,6 +19018,12 @@ body.theme-light .af-corner {
 }
 
 /* ---------- 20.4 Номера разделов ---------- */
+
+/* Без relative номер улетел бы в начало документа и лёг бы стопкой */
+.section > .container.has-sec-num {
+  position: relative;
+}
+
 .anime-sec-num {
   position: absolute;
   top: -26px;
@@ -19019,8 +19040,8 @@ body.theme-light .af-corner {
 .anime-card[data-hint]::before {
   content: attr(data-hint);
   position: absolute;
-  top: 10px;
-  left: 10px;
+  right: 10px;
+  bottom: 10px;
   z-index: 4;
   padding: 2px 8px;
   font-size: 0.6rem;
@@ -19030,12 +19051,13 @@ body.theme-light .af-corner {
   border: 1px solid hsl(var(--accent-hue) var(--accent-sat) 70% / 0.4);
   border-radius: 6px;
   opacity: 0;
-  transform: translateY(-4px);
+  transform: translateY(6px);
   transition: opacity 0.22s ease, transform 0.22s ease;
   pointer-events: none;
 }
 
-.anime-card:hover[data-hint]::before {
+.anime-card:hover[data-hint]::before,
+.anime-card:focus-visible[data-hint]::before {
   opacity: 1;
   transform: translateY(0);
 }
@@ -19056,21 +19078,16 @@ body.theme-light .af-corner {
 
   .af-episode,
   .af-code,
-  .anime-sec-num {
+  .anime-sec-num,
+  .anime-card[data-hint]::before {
     display: none;
   }
 
-  .anime-sec-num {
-    font-size: 2rem;
-  }
 }
 
-.perf-lite .anime-frame,
+/* Статичный декор (уголки, номера) не стоит браузеру ничего —
+   в облегчённом режиме гасим только движение */
 .perf-lite .anime-run,
-.perf-lite .anime-sec-num {
-  display: none;
-}
-
 .perf-lite .anime-burst {
   display: none;
 }

@@ -266,6 +266,9 @@ function mountSectionNumbers() {
   sections.forEach((container, index) => {
     if (container.querySelector('.anime-sec-num')) return;
 
+    // Контейнеру нужен relative — иначе номер уедет в начало документа
+    container.classList.add('has-sec-num');
+
     const num = document.createElement('span');
     num.className = 'anime-sec-num';
     num.setAttribute('aria-hidden', 'true');

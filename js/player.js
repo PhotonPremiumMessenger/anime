@@ -411,7 +411,7 @@ function mpPlayTrack(trackId, at) {
     if (typeof showToast === 'function') {
       showToast('Плейлист пуст', 'Добавь файл или вставь ссылку Spotify', 'info', { duration: 4000, icon: 'music' });
     }
-    mpOpenDock(true);
+    toggleMusicDock(true);
     return;
   }
 
