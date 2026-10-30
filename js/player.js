@@ -643,7 +643,7 @@ function mpUpdateMediaSession() {
   try {
     navigator.mediaSession.metadata = new MediaMetadata({
       title: track.name,
-      artist: 'Nihongo',
+      artist: 'AniLingo',
       album: 'Своя музыка'
     });
 
@@ -663,7 +663,7 @@ function mpUpdateMediaSession() {
  * Обложка получается своя у каждого файла, без картинок и сети.
  */
 function mpArtFor(track) {
-  const name = (track && track.name) || 'Nihongo';
+  const name = (track && track.name) || 'AniLingo';
   let hash = 0;
 
   for (let i = 0; i < name.length; i += 1) {
@@ -906,7 +906,7 @@ function mpBuildDock() {
           <svg viewBox="0 0 24 24" aria-hidden="true" class="mdp-wave">
             <path d="M4 14v-4M8 18V6M12 20V4M16 17V7M20 14v-4"></path>
           </svg>
-          Nihongo Radio
+          AniLingo Radio
         </span>
         <button class="music-dock-hide" type="button" onclick="toggleMusicDock(false)"
                 title="Свернуть" aria-label="Свернуть плеер">

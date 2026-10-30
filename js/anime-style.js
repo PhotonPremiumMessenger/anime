@@ -229,7 +229,7 @@ function mountFrame() {
     '<span class="af-corner af-bl"></span>' +
     '<span class="af-corner af-br"></span>' +
     '<span class="af-episode">' + episode + '</span>' +
-    '<span class="af-code">日本 · NIHONGO · 語</span>';
+    '<span class="af-code">日本 · ANILINGO · 語</span>';
 
   document.body.appendChild(frame);
 }

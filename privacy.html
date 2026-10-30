@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Политика конфиденциальности — Nihongo</title>
-  <meta name="description" content="Политика конфиденциальности Nihongo: какие данные хранятся в браузере, что уходит наружу, как удалить свои данные.">
+  <title>Политика конфиденциальности — AniLingo</title>
+  <meta name="description" content="Политика конфиденциальности AniLingo: какие данные хранятся в браузере, что уходит наружу, как удалить свои данные.">
   <meta name="theme-color" content="#09090a">
 
   <link rel="manifest" href="manifest.json">
@@ -25,7 +25,7 @@
   <!-- ============ ШАПКА ============ -->
   <header class="header">
     <div class="container">
-      <a class="logo" href="index.html" aria-label="Nihongo — на главную">
+      <a class="logo" href="index.html" aria-label="AniLingo — на главную">
         <span class="logo-badge">
           <svg viewBox="0 0 48 48" aria-hidden="true">
             <rect x="6" y="10" width="36" height="4.5" rx="2.2" fill="currentColor"></rect>
@@ -37,7 +37,7 @@
         </span>
         <span class="logo-text">
           <span class="logo-jp">日本語</span>
-          <span class="logo-en">NIHONGO</span>
+          <span class="logo-en">ANILINGO</span>
         </span>
       </a>
 
@@ -135,7 +135,7 @@
         </span>
 
         <h1 class="mt-16">Политика <span class="accent">конфиденциальности</span></h1>
-        <p>Коротко: у Nihongo нет сервера. Аккаунт, опыт, слова и настройки лежат
+        <p>Коротко: у AniLingo нет сервера. Аккаунт, опыт, слова и настройки лежат
            в localStorage твоего браузера, а не на чьём-то диске.</p>
 
         <div class="privacy-nav">
@@ -167,7 +167,7 @@
 
           <article class="privacy-block" id="storage">
             <h2>2. Где всё хранится</h2>
-            <p>Nihongo — статический сайт на GitHub Pages. У него нет базы данных и нет
+            <p>AniLingo — статический сайт на GitHub Pages. У него нет базы данных и нет
                серверной части, поэтому данные не покидают твой браузер.</p>
             <ul>
               <li>Основное хранилище — <b>localStorage</b>: ключи с префиксом <code>nihongo_</code>, а также <code>theme</code>, <code>settings</code>, <code>avatar</code>.</li>
@@ -235,7 +235,7 @@
     <div class="container">
       <div class="footer-top">
         <div class="footer-brand">
-          <a class="logo" href="index.html" aria-label="Nihongo — на главную">
+          <a class="logo" href="index.html" aria-label="AniLingo — на главную">
             <span class="logo-badge">
               <svg viewBox="0 0 48 48" aria-hidden="true">
                 <rect x="6" y="10" width="36" height="4.5" rx="2.2" fill="currentColor"></rect>
@@ -247,7 +247,7 @@
             </span>
             <span class="logo-text">
               <span class="logo-jp">日本語</span>
-              <span class="logo-en">NIHONGO</span>
+              <span class="logo-en">ANILINGO</span>
             </span>
           </a>
 
@@ -321,7 +321,7 @@
       </div>
 
       <div class="footer-bottom">
-        <span>© 2026 Nihongo. Все права защищены.</span>
+        <span>© 2026 AniLingo. Все права защищены.</span>
         <span class="footer-links">
           <a href="privacy.html">Политика конфиденциальности</a>
           <a href="updates.html">Обновления</a>
@@ -333,7 +333,10 @@
   </footer>
 
   <!-- ============ СКРИПТЫ ============ -->
+  <script src="js/config.js"></script>
+  <script src="js/api-local.js"></script>
   <script src="js/api.js"></script>
+  <script src="js/sync.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/icons.js"></script>
   <script src="js/i18n.js"></script>

@@ -33,7 +33,7 @@ function buildLessonSheet(lesson) {
       <header class="sheet-head">
         <div>
           <h1>${lesson.title}</h1>
-          <p class="sheet-sub">Nihongo · урок ${lesson.id} · ${lesson.level || ''}</p>
+          <p class="sheet-sub">AniLingo · урок ${lesson.id} · ${lesson.level || ''}</p>
         </div>
         <div class="sheet-mark">日本語</div>
       </header>
@@ -91,7 +91,7 @@ function downloadLessonSheet() {
   if (!lesson) return;
 
   const html = `<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8">
-    <title>${lesson.title} — конспект Nihongo</title>
+    <title>${lesson.title} — конспект AniLingo</title>
     <link rel="stylesheet" href="css/print.css"></head>
     <body>${buildLessonSheet(lesson)}</body></html>`;
 

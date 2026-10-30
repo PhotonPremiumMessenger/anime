@@ -10,7 +10,7 @@
 
 // type совпадает с типом действия в notifyAction()
 const DAILY_POOL = [
-  { id: 'visit',     title: 'Зайди на сайт',              desc: 'Открыть Nihongo сегодня',       type: 'visit',        target: 1,  xp: 10, icon: 'sun' },
+  { id: 'visit',     title: 'Зайди на сайт',              desc: 'Открыть AniLingo сегодня',       type: 'visit',        target: 1,  xp: 10, icon: 'sun' },
   { id: 'lesson_1',  title: 'Пройди урок',                desc: 'Завершить один урок',           type: 'lesson',       target: 1,  xp: 30, icon: 'book' },
   { id: 'words_5',   title: 'Выучи 5 слов',               desc: 'Добавить 5 новых слов',         type: 'word',         target: 5,  xp: 25, icon: 'leaf' },
   { id: 'words_10',  title: 'Выучи 10 слов',              desc: 'Добавить 10 новых слов',        type: 'word',         target: 10, xp: 40, icon: 'gem' },

@@ -17,7 +17,7 @@ function certificateAccent(shift = 0, alpha = 1) {
 /** Имя для сертификата. */
 function certificateName() {
   const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
-  return user && user.username ? user.username : 'Гость Nihongo';
+  return user && user.username ? user.username : 'Гость AniLingo';
 }
 
 /**
@@ -74,7 +74,7 @@ function drawCertificate(canvas) {
   ctx.textAlign = 'center';
   ctx.fillStyle = certificateAccent(6);
   ctx.font = '600 30px "Russo One", "Noto Sans JP", sans-serif';
-  ctx.fillText('NIHONGO · 日本語', width / 2, 150);
+  ctx.fillText('ANILINGO · 日本語', width / 2, 150);
 
   ctx.fillStyle = '#f4f4f7';
   ctx.font = '600 22px "Noto Sans JP", sans-serif';

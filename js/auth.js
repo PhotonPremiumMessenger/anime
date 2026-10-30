@@ -288,7 +288,8 @@ async function sendCode() {
     btn.textContent = 'Отправляем...';
   }
 
-  const result = await apiSendCode(email);
+  // purpose: сервер должен знать, что это регистрация, а не удаление
+  const result = await apiSendCode(email, 'register');
 
   if (btn) btn.disabled = false;
 
@@ -436,7 +437,7 @@ async function resendCode() {
   const resendBtn = document.getElementById('resendCodeBtn');
   if (resendBtn) resendBtn.disabled = true;
 
-  const result = await apiSendCode(email);
+  const result = await apiSendCode(email, 'register');
 
   if (result.ok) {
     showToast('Код отправлен повторно', 'Проверьте почту ' + email, 'success');

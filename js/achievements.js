@@ -192,7 +192,7 @@ const ACHIEVEMENTS = [
   ach('grammar_5', 'Пять правил', 'Прочитай 5 правил', 'scrollText', s => s.grammarRead >= 5),
   ach('grammar_10', 'Десять правил', 'Прочитай 10 правил', 'book', s => s.grammarRead >= 10),
 
-  /* --- Время в Nihongo (5) --- */
+  /* --- Время в AniLingo (5) --- */
   ach('days_7', 'Неделя с нами', 'Аккаунту больше недели', 'sun', s => s.joinedDays >= 7),
   ach('days_30', 'Месяц с нами', 'Аккаунту больше месяца', 'moonStar', s => s.joinedDays >= 30),
   ach('visit_50', 'Пятьдесят визитов', 'Зайди на сайт 50 раз', 'compass', s => s.visits >= 50),

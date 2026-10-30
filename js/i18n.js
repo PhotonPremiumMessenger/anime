@@ -101,7 +101,7 @@ function translateString(text, lang) {
   const trimmed = text.trim();
   if (!trimmed) return text;
 
-  // «© 2026 Nihongo. Все права защищены.» — переводим только хвост
+  // «© 2026 AniLingo. Все права защищены.» — переводим только хвост
   const entry = I18N_DICT[trimmed];
   if (entry) {
     const translated = lang === 'en' ? entry[0] : entry[1];

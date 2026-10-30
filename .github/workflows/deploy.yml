@@ -79,8 +79,15 @@ jobs:
             # Забираем свежий код из GitHub
             git pull origin main
 
-            # Если на сервере Node.js и сайт живёт через pm2 —
-            # раскомментируй следующую строку
-            # pm2 restart all
+            # Бэкенд: ставим зависимости, если папка server существует.
+            # --omit=dev — без инструментов разработки, они на сервере не нужны.
+            if [ -d server ]; then
+              cd server
+              npm install --omit=dev --no-audit --no-fund
+              cd ..
+            fi
+
+            # Перезапуск API (раскомментируй, если используешь pm2)
+            # pm2 restart anilingo-api
 
             echo "Готово: $(git log -1 --pretty='%h %s')"

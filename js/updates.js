@@ -6,7 +6,7 @@
 
 'use strict';
 
-const NIHONGO_UPDATES = [
+const ANILINGO_UPDATES = [
   {
     version: 'Волна 12',
     date: '2026-10-28',
@@ -215,7 +215,7 @@ function renderUpdates(containerId = 'updatesList') {
   const box = document.getElementById(containerId);
   if (!box) return;
 
-  box.innerHTML = NIHONGO_UPDATES.map(release => `
+  box.innerHTML = ANILINGO_UPDATES.map(release => `
     <article class="update-card">
       <div class="update-head">
         <span class="update-version">${release.version}</span>
@@ -232,5 +232,5 @@ function renderUpdates(containerId = 'updatesList') {
 document.addEventListener('DOMContentLoaded', () => renderUpdates());
 
 /* Экспорт в глобальную область */
-window.NIHONGO_UPDATES = NIHONGO_UPDATES;
+window.ANILINGO_UPDATES = ANILINGO_UPDATES;
 window.renderUpdates = renderUpdates;

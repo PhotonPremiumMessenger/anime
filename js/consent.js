@@ -86,7 +86,7 @@ function mountConsentBanner() {
 
       <p class="cookie-text">
         Cookies — маленькие записи, которые сайт оставляет в браузере, чтобы
-        помнить тебя. У Nihongo нет сервера: всё (уровень, опыт, слова, тема)
+        помнить тебя. У AniLingo нет сервера: всё (уровень, опыт, слова, тема)
         лежит в <b>localStorage</b> прямо на твоём устройстве.
       </p>
 
@@ -175,7 +175,7 @@ function mountCookieSettings() {
       <button class="modal-close" onclick="closeCookiesSettings()" aria-label="Закрыть">✕</button>
 
       <h3>Настройки cookies</h3>
-      <p class="muted small">Nihongo не использует рекламные трекеры. Ниже — только то,
+      <p class="muted small">AniLingo не использует рекламные трекеры. Ниже — только то,
         что действительно влияет на работу сайта.</p>
 
       <div class="cookie-row">
