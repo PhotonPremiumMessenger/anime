@@ -1,4 +1,4 @@
-name: Deploy to VPS
+name: Deploy to Server
 
 on:
   push:
@@ -11,22 +11,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Deploy Site and API via SSH
+      - name: Deploy via SSH
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # 1. Обновляем файлы самого САЙТА (фронтенда)
+            echo "Обновляем сайт..."
             cd /var/www/nihongo
             git pull origin main
             
-            # 2. Обновляем файлы БЭКЕНДА (сервера)
+            echo "Обновляем бэкенд..."
             cd /var/www/anilingo-server
-            # Если папка сервера - это отдельный git-репозиторий (как мы делали), то:
             git pull origin main
-            # Если сервер лежит в той же папке /var/www/nihongo/server, то эта строка не нужна.
             
-            # 3. Если бэкенд обновился, перезапускаем его через PM2
-            pm2 restart anilingo-api
+            echo "Перезапускаем сервер..."
+            pm2 restart anilingo-api || echo "Сервер еще не настроен"
+            
+            echo "Готово!"
