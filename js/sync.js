@@ -16,10 +16,28 @@
       локальный кэш пользователя очищается — настройки вернутся
       при следующем входе, в том числе с другого устройства.
 
+   Чего здесь больше нет: перезагрузки страницы после загрузки
+   настроек. Раньше она применяла пришедшую тему и цвет, но
+   выглядела как «страница открылась обычной, потом перекрасилась».
+   Теперь значения применяются на месте, а до первой отрисовки
+   всё нужное ставит boot.js.
+
+   Что синхронизируется:
+     • настройки интерфейса и контента (ключ settings);
+     • цвет сайта: свой цвет, палитра, радуга (appearance.*);
+     • профиль: XP, аватар, JLPT, оформление профиля;
+     • прогресс уроков, достижения, серия дней, ошибки, флешкарты,
+       магазин, избранное и остальные данные аккаунта (data.*).
+
    Что НЕ синхронизируется (остаётся на устройстве):
-     • фон сайта, загруженный пользователем (может быть локальным);
+     • фон сайта, загруженный пользователем;
      • флаги «показано окно приветствия», тур, cookie-баннер;
-     • плейлист и своя музыка (данные на много мегабайт).
+     • плейлист и своя музыка (данные на много мегабайт);
+     • состояние интерфейса: свёрнутые блоки, фокус, помодоро.
+
+   У каждой настройки на сервере есть отметка времени. По ней
+   видно, чьё значение свежее, поэтому телефон и компьютер не
+   затирают прогресс друг друга, когда оба что-то меняли.
    ============================================================ */
 
 'use strict';
@@ -34,44 +52,111 @@ const SYNC_DELAY = 600;
 
 let syncPushTimer = 0;
 let syncPendingSettings = {};
+
+// Сколько раз подряд пытаемся дослать изменения
+let syncRetries = 0;
+const SYNC_RETRIES = 5;
 let syncPendingProfile = null;
 
 // Пока идёт загрузка с сервера, встречные отправки не нужны
 let syncApplying = false;
 
+// Пользователь уже что-то нажимал: перезагружать страницу нельзя
+let syncUserBusy = false;
+
+// До первой сверки с сервером прогресс никуда не отправляем: модули
+// при загрузке заново записывают его в localStorage, и если отправить
+// это сразу, пустой прогресс затрёт серверный
+let syncDataArmed = false;
+
+// Каким было значение в прошлый раз — чтобы не считать перезапись
+// тем же самым изменением
+const syncDataSnapshot = {};
+
+// Страница только открылась — время для одной перезагрузки
+const syncPageStart = Date.now();
+
 /**
- * Ключи, которые принадлежат аккаунту и чистятся при выходе.
- * Всё, что не в списке, считается настройкой устройства.
+ * Оформление лежит отдельными ключами, а на сервере — в общих
+ * настройках с префиксом appearance. Сопоставление в одну сторону:
+ * ключ браузера → ключ настройки.
  */
-const SYNC_USER_KEYS = [
-  'settings',
-  'nihongo_progress',
+const SYNC_APPEARANCE_KEYS = {
+  nihongo_accent: 'appearance.accent',
+  nihongo_accent_preset: 'appearance.accentPreset',
+  nihongo_accent_rainbow: 'appearance.accentRainbow'
+};
+
+/**
+ * Данные аккаунта, которые лежат отдельными ключами браузера.
+ * На сервере у них префикс data. Список намеренно короткий:
+ * только то, что имеет смысл открыть на другом устройстве.
+ *
+ * Здесь нет музыки, своего фона и курсоров — это файлы на
+ * много мегабайт, они остаются на устройстве.
+ */
+const SYNC_DATA_KEYS = [
+  'nihongo_progress',          // пройденные уроки и слова
+  'nihongo_completed_lessons',
+  'nihongo_lessons',
   'nihongo_achievements',
-  'nihongo_streak',
-  'nihongo_counters',
+  'nihongo_streak',            // серия дней
+  'nihongo_best_streak',
+  'nihongo_counters',          // счётчики для достижений
   'nihongo_daily',
   'nihongo_weekly',
   'nihongo_quiz',
   'nihongo_speed',
-  'nihongo_shop',
-  'nihongo_completed_lessons',
+  'nihongo_shop',              // покупки за XP
   'nihongo_favorites',
-  'nihongo_mistakes',
+  'nihongo_mistakes',          // дневник ошибок
+  'nihongo_weak',
+  'nihongo_weakspots',
   'nihongo_activity',
   'nihongo_goals',
   'nihongo_xp_days',
-  'nihongo_weakspots',
   'nihongo_review',
   'nihongo_exam',
   'nihongo_jlpt',
   'nihongo_friends',
-  'nihongo_music',
-  'nihongo_playlist',
-  'nihongo_player'
+  'nihongo_tests',
+  'nihongo_listening',
+  'nihongo_lesson_steps',
+  'nihongo_grammar_read',
+  'nihongo_game_best',
+  'nihongo_match',
+  'nihongo_srs',               // коробки повторения флешкарт
+  'nihongo_words_log',
+  'nihongo_easter',
+  'nihongo_autotheme',
+  'nihongo_voice',
+  'nihongo_voice_tuning'
 ];
 
-// Флаг «страницу уже перезагружали после входа»
-const SYNC_RELOAD_KEY = 'anilingo_sync_reloaded';
+// Префикс этих ключей на сервере: data.nihongo_progress
+const SYNC_DATA_PREFIX = 'data.';
+
+// Крупные значения на сервер не отправляем: место на диске не резиновое
+const SYNC_VALUE_LIMIT = 32 * 1024;
+
+/**
+ * Ключи, которые принадлежат аккаунту и чистятся при выходе.
+ * Всё, что не в списке, считается настройкой устройства и
+ * переживает выход: музыка, свой фон, флаги, состояние интерфейса.
+ */
+const SYNC_USER_KEYS = ['settings']
+  .concat(SYNC_DATA_KEYS)
+  .concat(Object.keys(SYNC_APPEARANCE_KEYS));
+
+// Отметки времени, которые сервер выдал в прошлый раз:
+// по ним видно, менял ли кто-то данные с другого устройства
+const SYNC_META_KEY = 'anilingo_sync_meta';
+
+// Что изменилось здесь, но ещё не улетело на сервер
+const SYNC_DIRTY_KEY = 'anilingo_sync_dirty';
+
+// Перезагрузить страницу из-за приехавшего прогресса можно только раз
+const SYNC_DATA_RELOAD_KEY = 'anilingo_data_reloaded';
 
 /* ---------- Помощники ---------- */
 
@@ -90,6 +175,90 @@ function syncWriteSettings(settings) {
     localStorage.setItem(SYNC_SETTINGS_KEY, JSON.stringify(settings));
   } catch (error) {
     // переполнение или приватный режим — не критично
+  }
+}
+
+// Запоминаем, с чем страница стартовала
+SYNC_DATA_KEYS.forEach(key => {
+  try {
+    syncDataSnapshot[key] = localStorage.getItem(key);
+  } catch (error) {
+    syncDataSnapshot[key] = null;
+  }
+});
+
+/** Отметки времени с сервера: { 'data.nihongo_progress': '2026-10-30T...' }. */
+function syncReadMeta() {
+  try {
+    const value = JSON.parse(localStorage.getItem(SYNC_META_KEY) || '{}');
+    return value && typeof value === 'object' ? value : {};
+  } catch (error) {
+    return {};
+  }
+}
+
+/** Список ключей, которые изменились здесь и ещё не ушли на сервер. */
+function syncReadDirty() {
+  try {
+    const value = JSON.parse(localStorage.getItem(SYNC_DIRTY_KEY) || '[]');
+    return Array.isArray(value) ? value : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+let syncMeta = syncReadMeta();
+const syncDirty = new Set(syncReadDirty());
+
+/** Сохраняет список неотправленного, чтобы он не потерялся при закрытии. */
+function syncSaveDirty() {
+  try {
+    localStorage.setItem(SYNC_DIRTY_KEY, JSON.stringify(Array.from(syncDirty)));
+  } catch (error) {
+    // приватный режим — обойдёмся памятью
+  }
+}
+
+/** Сохраняет отметки времени. */
+function syncSaveMeta() {
+  try {
+    localStorage.setItem(SYNC_META_KEY, JSON.stringify(syncMeta));
+  } catch (error) {
+    // приватный режим — обойдёмся памятью
+  }
+}
+
+/**
+ * Локальное изменение прогресса: запоминаем, что не отправлено,
+ * и ставим значение в очередь. Вызывается из перехвата записи.
+ */
+function syncTouchData(key, rawValue, force) {
+  const previous = syncDataSnapshot[key];
+  syncDataSnapshot[key] = rawValue;
+
+  // Слишком большое значение останется только на этом устройстве
+  if (rawValue.length > SYNC_VALUE_LIMIT) return;
+
+  // Записали то же самое — значит, ничего не изменилось
+  if (!force && previous === rawValue) return;
+
+  // Сервер ещё не ответил, чьи данные главнее
+  if (!force && !syncDataArmed) return;
+
+  if (!syncDirty.has(key)) {
+    syncDirty.add(key);
+    syncSaveDirty();
+  }
+
+  syncPushSetting(SYNC_DATA_PREFIX + key, syncParseValue(rawValue));
+}
+
+/** Значение из localStorage как есть: JSON или строка. */
+function syncParseValue(raw) {
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    return raw;
   }
 }
 
@@ -118,7 +287,22 @@ const syncNativeSetItem = localStorage.setItem.bind(localStorage);
 localStorage.setItem = function (key, value) {
   syncNativeSetItem(key, value);
 
-  if (key !== SYNC_SETTINGS_KEY || syncApplying) return;
+  if (syncApplying) return;
+
+  // Цвет сайта: свой цвет, палитра и радуга лежат отдельными ключами.
+  // Пустая строка означает «сброшено» — на сервер уходит null.
+  if (SYNC_APPEARANCE_KEYS[key]) {
+    syncPushSetting(SYNC_APPEARANCE_KEYS[key], value === '' ? null : value);
+    return;
+  }
+
+  // Прогресс, достижения, ошибки и остальные данные аккаунта
+  if (SYNC_DATA_KEYS.indexOf(key) !== -1) {
+    syncTouchData(key, String(value));
+    return;
+  }
+
+  if (key !== SYNC_SETTINGS_KEY) return;
 
   let next = {};
   try {
@@ -160,8 +344,11 @@ function syncPushSetting(key, value) {
   syncPushTimer = window.setTimeout(syncFlushSettings, SYNC_DELAY);
 }
 
-/** Отправляет накопленные настройки одним запросом. */
-async function syncFlushSettings() {
+/**
+ * Отправляет накопленные настройки одним запросом.
+ * @param {boolean} keepalive — не обрывать запрос при уходе со страницы
+ */
+async function syncFlushSettings(keepalive) {
   syncPushTimer = 0;
 
   const patch = syncPendingSettings;
@@ -170,9 +357,70 @@ async function syncFlushSettings() {
   if (!Object.keys(patch).length) return;
   if (!(await syncReady())) return;
 
-  // Ответ сервера не применяем: локально уже стоит новое значение,
-  // а гонять лишнюю перерисовку ни к чему
-  await apiRequest('/api/user/settings', { method: 'PUT', body: { patch: patch } });
+  // Само значение локально уже стоит — перерисовывать нечего.
+  // А вот отметки времени с сервера нужны: по ним видно,
+  // не изменил ли то же самое другое устройство
+  const response = await apiRequest('/api/user/settings', {
+    method: 'PUT',
+    body: { patch: patch },
+    keepalive: Boolean(keepalive)
+  });
+
+  // Не дошло — вернём в очередь и попробуем ещё раз, но не бесконечно
+  if (!response.ok) {
+    if (syncRetries < SYNC_RETRIES) {
+      syncRetries++;
+
+      Object.keys(patch).forEach(key => {
+        if (!Object.prototype.hasOwnProperty.call(syncPendingSettings, key)) {
+          syncPendingSettings[key] = patch[key];
+        }
+      });
+
+      syncPushTimer = window.setTimeout(syncFlushSettings, SYNC_DELAY * 2);
+    }
+
+    return;
+  }
+
+  syncRetries = 0;
+
+  const updated = (response.data && response.data.updated) || {};
+
+  Object.keys(patch).forEach(key => {
+    if (updated[key]) syncMeta[key] = updated[key];
+
+    if (key.indexOf(SYNC_DATA_PREFIX) === 0) {
+      syncDirty.delete(key.slice(SYNC_DATA_PREFIX.length));
+    }
+  });
+
+  syncSaveDirty();
+  syncSaveMeta();
+}
+
+/** Ставит в очередь всё, что не успело уйти в прошлый раз. */
+function syncResendDirty() {
+  if (!syncDirty.size) return;
+
+  Array.from(syncDirty).forEach(key => {
+    let raw = null;
+
+    try {
+      raw = localStorage.getItem(key);
+    } catch (error) {
+      return;
+    }
+
+    if (raw === null) {
+      syncDirty.delete(key);
+      return;
+    }
+
+    syncTouchData(key, raw, true);
+  });
+
+  syncSaveDirty();
 }
 
 /**
@@ -206,7 +454,7 @@ function syncPushUserPatch(patch) {
 }
 
 /** Отправляет XP и накопленные настройки профиля. */
-async function syncFlushProfile() {
+async function syncFlushProfile(keepalive) {
   syncPushTimer = 0;
 
   const profile = syncPendingProfile;
@@ -218,15 +466,61 @@ async function syncFlushProfile() {
   if (!(await syncReady())) return;
 
   if (profile) {
-    await apiRequest('/api/user/profile', { method: 'PUT', body: profile });
+    await apiRequest('/api/user/profile', {
+      method: 'PUT',
+      body: profile,
+      keepalive: Boolean(keepalive)
+    });
   }
 
   if (Object.keys(settings).length) {
-    await apiRequest('/api/user/settings', { method: 'PUT', body: { patch: settings } });
+    await apiRequest('/api/user/settings', {
+      method: 'PUT',
+      body: { patch: settings },
+      keepalive: Boolean(keepalive)
+    });
   }
 }
 
 /* ---------- Загрузка с сервера ---------- */
+
+/**
+ * Применяет пришедшее оформление прямо на открытой странице.
+ * Раньше здесь была перезагрузка — из-за неё и было видно,
+ * как сайт сначала обычный, а потом перекрашивается.
+ */
+function syncApplyDesign() {
+  try {
+    if (typeof applyStoredSettings === 'function') applyStoredSettings();
+  } catch (error) {
+    // страница без design.js — не критично
+  }
+
+  try {
+    if (typeof applyCustomization === 'function') applyCustomization();
+  } catch (error) {
+    // страница без customize.js — не критично
+  }
+}
+
+/**
+ * Приехали данные, которые страница уже прочитала при отрисовке
+ * (прогресс уроков, достижения, ошибки). Чтобы их увидеть, нужна
+ * перезагрузка — но только одна за сессию и только пока человек
+ * ещё ничего не делает на странице.
+ */
+function syncReloadForData() {
+  if (syncUserBusy || Date.now() - syncPageStart > 8000) return;
+
+  try {
+    if (sessionStorage.getItem(SYNC_DATA_RELOAD_KEY) === '1') return;
+    sessionStorage.setItem(SYNC_DATA_RELOAD_KEY, '1');
+  } catch (error) {
+    return;
+  }
+
+  window.location.reload();
+}
 
 /**
  * Забирает настройки и профиль с сервера при входе на страницу.
@@ -236,6 +530,10 @@ async function syncFlushProfile() {
  * выбранную тему после регистрации.
  */
 async function syncPullAll() {
+  // Сначала досылаем своё: иначе сервер вернёт старое значение
+  // и затрёт только что выбранное на этой странице
+  if (syncPushTimer) await syncFlushSettings();
+
   if (!(await syncReady())) return false;
 
   const [settingsResponse, profileResponse] = await Promise.all([
@@ -247,24 +545,88 @@ async function syncPullAll() {
 
   syncApplying = true;
 
+  let redraw = false;
+
+  // Что на сервере пусто, но есть здесь — отправим после синхронизации
+  const uplift = {};
+
+  // Прогресс, который приехал с сервера: страницу придётся перечитать
+  const dataTaken = [];
+
   try {
     const serverSettings = settingsResponse.data.settings || {};
     const localSettings = syncReadSettings();
+
+    // appearance.* — это цвет сайта, он живёт отдельными ключами браузера
+    const serverPrefs = {};
+
+    Object.keys(serverSettings).forEach(key => {
+      if (key.indexOf('appearance.') === 0) return;
+      serverPrefs[key] = serverSettings[key];
+    });
 
     // На сервере пусто — забираем локальные настройки туда
     if (!Object.keys(serverSettings).length && Object.keys(localSettings).length) {
       await apiRequest('/api/user/settings', { method: 'PUT', body: { patch: localSettings } });
     } else {
-      const merged = Object.assign({}, localSettings, serverSettings);
-
-      // Применять новые значения будем после перезагрузки:
-      // так тема, шрифт и сакура точно встанут на место
+      const merged = Object.assign({}, localSettings, serverPrefs);
       const changed = JSON.stringify(merged) !== JSON.stringify(localSettings);
+
       syncLastSettings = merged;
       syncWriteSettings(merged);
-
-      if (changed) syncReloadOnce();
+      if (changed) redraw = true;
     }
+
+    // Цвет сайта: чего нет на сервере — досылаем, что есть — забираем
+    Object.keys(SYNC_APPEARANCE_KEYS).forEach(localKey => {
+      const serverKey = SYNC_APPEARANCE_KEYS[localKey];
+      const serverValue = serverSettings[serverKey];
+      const localValue = localStorage.getItem(localKey);
+
+      if (serverValue === undefined || serverValue === null || serverValue === '') {
+        if (localValue) uplift[serverKey] = localValue;
+        return;
+      }
+
+      if (String(serverValue) !== localValue) {
+        // syncApplying уже включён, поэтому эхо на сервер не уйдёт
+        localStorage.setItem(localKey, String(serverValue));
+        redraw = true;
+      }
+    });
+
+    // Прогресс, достижения, ошибки: у каждого ключа своя отметка времени,
+    // поэтому видно, чьё значение свежее — здешнее или с другого устройства
+    const serverUpdated = settingsResponse.data.updated || {};
+
+    SYNC_DATA_KEYS.forEach(localKey => {
+      const fullKey = SYNC_DATA_PREFIX + localKey;
+      const serverValue = serverSettings[fullKey];
+      const serverTime = serverUpdated[fullKey] || '';
+      const localValue = localStorage.getItem(localKey);
+      const isDirty = syncDirty.has(localKey);
+
+      // На сервере пусто — отправляем то, что накопилось здесь
+      if (serverValue === undefined) {
+        if (localValue && !isDirty) uplift[fullKey] = syncParseValue(localValue);
+        return;
+      }
+
+      // Здесь есть неотправленное изменение — оно важнее
+      if (isDirty) return;
+
+      // Эту версию уже видели в прошлый раз
+      if (serverTime && syncMeta[fullKey] === serverTime) return;
+
+      const nextValue = JSON.stringify(serverValue);
+      if (serverTime) syncMeta[fullKey] = serverTime;
+
+      if (nextValue === localValue) return;
+
+      localStorage.setItem(localKey, nextValue);
+      syncDataSnapshot[localKey] = nextValue;
+      dataTaken.push(localKey);
+    });
 
     // Профиль: XP и уровень с сервера важнее локального кэша
     if (profileResponse.ok) {
@@ -283,33 +645,26 @@ async function syncPullAll() {
     syncApplying = false;
   }
 
+  Object.keys(uplift).forEach(key => syncPushSetting(key, uplift[key]));
+
+  syncSaveMeta();
+
+  if (redraw) syncApplyDesign();
+  if (dataTaken.length) syncReloadForData();
+
   return true;
-}
-
-/** Перезагружает страницу один раз, чтобы применить пришедшие настройки. */
-function syncReloadOnce() {
-  try {
-    if (sessionStorage.getItem(SYNC_RELOAD_KEY) === '1') return;
-    sessionStorage.setItem(SYNC_RELOAD_KEY, '1');
-  } catch (error) {
-    return;
-  }
-
-  window.location.reload();
 }
 
 /* ---------- События входа и выхода ---------- */
 
 /** После входа и регистрации: подтянуть данные аккаунта. */
 function syncAfterLogin() {
-  // Свежая сессия — разрешаем одну перезагрузку для применения настроек
-  try {
-    sessionStorage.removeItem(SYNC_RELOAD_KEY);
-  } catch (error) {
-    // приватный режим
-  }
-
-  syncPullAll().catch(() => {});
+  syncPullAll()
+    .catch(() => {})
+    .finally(() => {
+      syncDataArmed = true;
+      syncResendDirty();
+    });
 }
 
 /**
@@ -333,10 +688,16 @@ function syncAfterLogout() {
   }
 
   syncLastSettings = {};
+  syncDirty.clear();
+  syncSaveDirty();
 
-  // Флаг «страницу перезагружали» тоже сбрасываем
+  // Отметки времени тоже забываем: при следующем входе сервер снова
+  // будет источником правды, а не «уже видели, ничего не менялось»
+  syncMeta = {};
+  syncSaveMeta();
+
   try {
-    sessionStorage.removeItem(SYNC_RELOAD_KEY);
+    sessionStorage.removeItem(SYNC_DATA_RELOAD_KEY);
   } catch (error) {
     // ничего не поделать
   }
@@ -376,15 +737,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Не блокируем отрисовку: сеть подтянется в фоне
   window.setTimeout(() => {
-    syncPullAll().catch(() => {});
+    syncPullAll()
+      .catch(() => {})
+      .finally(() => {
+        // Только теперь понятно, чьи данные главнее — можно отправлять своё
+        syncDataArmed = true;
+        syncResendDirty();
+      });
   }, 120);
 });
 
-// Уходя со страницы, досылаем то, что не успело уйти
-window.addEventListener('pagehide', () => {
-  if (syncPushTimer) {
-    syncFlushSettings().catch(() => {});
-  }
+// Первое же действие человека отменяет перезагрузку ради прогресса:
+// выдёргивать страницу из-под него нельзя
+['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(type => {
+  window.addEventListener(type, () => { syncUserBusy = true; }, { passive: true, once: true });
+});
+
+/**
+ * Уходя со страницы, досылаем то, что не успело уйти.
+ * keepalive: без него браузер обрывает запрос вместе со страницей,
+ * и выбранный за секунду до перехода цвет терялся.
+ */
+function syncFlushBeforeLeave() {
+  if (syncPushTimer) syncFlushSettings(true).catch(() => {});
+  if (syncPendingProfile) syncFlushProfile(true).catch(() => {});
+}
+
+window.addEventListener('pagehide', syncFlushBeforeLeave);
+
+// Свернули вкладку или переключились на другую — тоже досылаем
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') syncFlushBeforeLeave();
 });
 
 /* ---------- Экспорт ---------- */
@@ -396,3 +779,4 @@ window.syncAfterLogin = syncAfterLogin;
 window.syncAfterLogout = syncAfterLogout;
 window.syncExportAccount = syncExportAccount;
 window.syncFlushSettings = syncFlushSettings;
+window.syncApplyDesign = syncApplyDesign;

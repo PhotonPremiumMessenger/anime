@@ -25,9 +25,17 @@ router.use(requireAuth);
 
 /* ---------- Настройки ---------- */
 
-/** GET /api/user/settings — объект вида { 'interface.theme': 'sakura' }. */
+/**
+ * GET /api/user/settings — объект вида { 'interface.theme': 'sakura' }
+ * и отметки времени по каждому ключу: { 'interface.theme': '2026-10-30T...' }.
+ * По ним клиент решает, чьё значение свежее — своё или чужого устройства.
+ */
 router.get('/settings', (req, res) => {
-  res.json({ ok: true, settings: db.getSettings(req.user.id) });
+  res.json({
+    ok: true,
+    settings: db.getSettings(req.user.id),
+    updated: db.getSettingsUpdated(req.user.id)
+  });
 });
 
 /**
@@ -53,7 +61,12 @@ router.put('/settings', (req, res) => {
 
   // Значения храним как JSON — числа, строки, массивы, объекты
   const settings = db.saveSettings(req.user.id, patch);
-  return res.json({ ok: true, settings: settings });
+
+  return res.json({
+    ok: true,
+    settings: settings,
+    updated: db.getSettingsUpdated(req.user.id)
+  });
 });
 
 /* ---------- Профиль ---------- */

@@ -109,7 +109,9 @@ async function apiRequest(path, options = {}) {
     const response = await apiFetch(apiUrl(path), {
       method: method,
       headers: headers,
-      body: options.body === undefined ? undefined : JSON.stringify(options.body)
+      body: options.body === undefined ? undefined : JSON.stringify(options.body),
+      // keepalive: запрос доходит, даже если страницу уже закрывают
+      keepalive: Boolean(options.keepalive)
     });
 
     let data = null;

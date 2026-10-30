@@ -260,6 +260,7 @@ function countCodesLastHour(email) {
 
 const settingsQueries = {
   all: db.prepare('SELECT key, value FROM user_settings WHERE user_id = ?'),
+  times: db.prepare('SELECT key, updated_at FROM user_settings WHERE user_id = ?'),
   upsert: db.prepare(`
     INSERT INTO user_settings (user_id, key, value, updated_at)
     VALUES (?, ?, ?, ?)
@@ -279,6 +280,23 @@ function getSettings(userId) {
     } catch (error) {
       result[row.key] = row.value;
     }
+  });
+
+  return result;
+}
+
+/**
+ * Когда каждая настройка менялась в последний раз.
+ * Нужно не для красоты: по этим отметкам телефон и компьютер
+ * понимают, чьё значение свежее, и не затирают чужой прогресс.
+ * @returns {Object} { 'data.nihongo_progress': '2026-10-30T...' }
+ */
+function getSettingsUpdated(userId) {
+  const rows = settingsQueries.times.all(Number(userId));
+  const result = {};
+
+  rows.forEach(row => {
+    result[row.key] = row.updated_at;
   });
 
   return result;
@@ -369,6 +387,7 @@ module.exports = {
   markCodeUsed,
   countCodesLastHour,
   getSettings,
+  getSettingsUpdated,
   saveSettings,
   getProfile,
   saveProfile,
