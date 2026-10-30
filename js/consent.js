@@ -86,14 +86,14 @@ function mountConsentBanner() {
 
       <p class="cookie-text">
         Cookies — маленькие записи, которые сайт оставляет в браузере, чтобы
-        помнить тебя. У AniLingo нет сервера: всё (уровень, опыт, слова, тема)
-        лежит в <b>localStorage</b> прямо на твоём устройстве.
+        помнить тебя. Прогресс и настройки AniLingo хранит на своём сервере,
+        а в браузере держит только копию — в <b>localStorage</b>.
       </p>
 
       <ul class="cookie-list">
-        <li><span class="ck ck-yes">${icon('check')}</span><span><b>Сохраняем:</b> прогресс, аккаунт, настройки, выбранную тему.</span></li>
+        <li><span class="ck ck-yes">${icon('check')}</span><span><b>Сохраняем:</b> прогресс, аккаунт, настройки, выбранную тему — на сервере и в копии на устройстве.</span></li>
         <li><span class="ck ck-no">${icon('close')}</span><span><b>Не сохраняем:</b> рекламу, трекеры, историю по сайтам.</span></li>
-        <li><span class="ck ck-no">${icon('close')}</span><span><b>Не передаём:</b> данные третьим лицам — их просто нет.</span></li>
+        <li><span class="ck ck-no">${icon('close')}</span><span><b>Не передаём:</b> данные рекламным сетям и трекерам — их на сайте нет.</span></li>
       </ul>
 
       <div class="cookie-actions">
