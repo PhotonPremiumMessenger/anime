@@ -1,93 +1,32 @@
-# ============================================================
-# deploy.yml — выкладка сайта на свой сервер (VPS) по SSH
-#
-# Что происходит: как только в ветку main попадает новый коммит
-# (например, после слияния пул-реквеста), GitHub поднимает
-# виртуальную машину, заходит по SSH на твой сервер и выполняет
-# команды из блока script.
-#
-# Что нужно один раз настроить в репозитории:
-#   Settings → Secrets and variables → Actions → New repository secret
-#
-#   SSH_HOST         — IP сервера или домен, например 185.12.34.56
-#   SSH_USER         — пользователь для входа, например root или deploy
-#   SSH_PRIVATE_KEY  — приватный ключ целиком, от строки
-#                      -----BEGIN OPENSSH PRIVATE KEY----- до конца
-#
-# Пока секреты не заданы, деплой пропускается без красного крестика:
-# второй шаг просто не запускается.
-# ============================================================
-
-name: Deploy to Server
+name: Deploy to VPS
 
 on:
   push:
     branches: [ main ]
 
-  # Кнопка «Run workflow» во вкладке Actions — чтобы проверить
-  # выкладку руками, не делая коммит
-  workflow_dispatch:
-
-# Если запушить два раза подряд, второй запуск дождётся первого
-# и не будет с ним драться за один и тот же каталог на сервере
-concurrency:
-  group: deploy-production
-  cancel-in-progress: false
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
-      # Проверяем, заданы ли секреты. Секреты нельзя использовать
-      # в условии if напрямую, поэтому сначала кладём их в переменные
-      # окружения, а потом смотрим на результат.
-      - name: Проверка секретов SSH
-        id: check
-        env:
-          HOST: ${{ secrets.SSH_HOST }}
-          USER: ${{ secrets.SSH_USER }}
-          KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        run: |
-          if [ -z "$HOST" ] || [ -z "$USER" ] || [ -z "$KEY" ]; then
-            echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Секреты SSH_HOST / SSH_USER / SSH_PRIVATE_KEY не заданы — выкладка на сервер пропущена"
-          else
-            echo "ready=true" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Deploy to VPS via SSH
-        if: steps.check.outputs.ready == 'true'
+      - name: Deploy Site and API via SSH
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          # Сколько секунд ждать ответа сервера
-          timeout: 60s
           script: |
-            # Переходим в папку с сайтом
-            # ЗАМЕНИ ПУТЬ НА СВОЙ, например /var/www/nihongo
-            cd /var/www/nihongo || {
-              echo "Папка /var/www/nihongo не найдена — поправь путь в .github/workflows/deploy.yml";
-              exit 1;
-            }
-
-            # Забираем свежий код из GitHub
+            # 1. Обновляем файлы самого САЙТА (фронтенда)
+            cd /var/www/nihongo
             git pull origin main
-
-            # Бэкенд: ставим зависимости, если папка server существует.
-            # --omit=dev — без инструментов разработки, они на сервере не нужны.
-            if [ -d server ]; then
-              cd server
-              npm install --omit=dev --no-audit --no-fund
-              cd ..
-            fi
-
-            # Перезапуск API (раскомментируй, если используешь pm2)
-            # pm2 restart anilingo-api
-
-            echo "Готово: $(git log -1 --pretty='%h %s')"
+            
+            # 2. Обновляем файлы БЭКЕНДА (сервера)
+            cd /var/www/anilingo-server
+            # Если папка сервера - это отдельный git-репозиторий (как мы делали), то:
+            git pull origin main
+            # Если сервер лежит в той же папке /var/www/nihongo/server, то эта строка не нужна.
+            
+            # 3. Если бэкенд обновился, перезапускаем его через PM2
+            pm2 restart anilingo-api
