@@ -47,7 +47,7 @@ function createPageLoader() {
       </div>
 
       <div class="page-loader-jp">日本語</div>
-      <div class="page-loader-name">NIHONGO</div>
+      <div class="page-loader-name">ANILINGO</div>
 
       <div class="page-loader-spinner" role="status" aria-label="Загрузка">
         <span></span>

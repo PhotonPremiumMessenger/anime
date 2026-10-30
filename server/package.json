@@ -1,0 +1,25 @@
+{
+  "name": "anilingo-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Бэкенд AniLingo: аккаунты, коды на почту, настройки и прогресс",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "start": "node --no-warnings index.js",
+    "dev": "node --no-warnings --watch index.js",
+    "init-db": "node db.js --init"
+  },
+  "engines": {
+    "node": ">=22.5"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "express-rate-limit": "^7.4.1",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^6.9.15"
+  }
+}

@@ -67,7 +67,7 @@ function mountInstallHint() {
 }
 
 /** Запускает установку (если браузер разрешает). */
-function installNihongo() {
+function installAniLingo() {
   const prompt = window.nihongoInstallPrompt;
   if (!prompt) {
     if (typeof showToast === 'function') {
@@ -91,5 +91,5 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* Экспорт в глобальную область */
-window.installNihongo = installNihongo;
+window.installAniLingo = installAniLingo;
 window.registerServiceWorker = registerServiceWorker;

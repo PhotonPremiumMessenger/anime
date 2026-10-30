@@ -46,7 +46,7 @@ function renderLesson() {
     return;
   }
 
-  document.title = currentLesson.title + ' — Nihongo';
+  document.title = currentLesson.title + ' — AniLingo';
 
   const lessons = window.nihongo_lessons || [];
   const index = lessons.findIndex(item => item.id === currentLesson.id);

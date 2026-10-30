@@ -74,7 +74,7 @@ function getPublicProfile(name) {
     xp: bot.xp,
     level: info.level,
     levelInfo: info,
-    bio: 'Демо-профиль из рейтинга Nihongo.',
+    bio: 'Демо-профиль из рейтинга AniLingo.',
     city: '',
     favorite: '',
     createdAt: '',
@@ -135,7 +135,7 @@ function renderPublicProfile() {
         </div>
       </div>
     `;
-    document.title = 'Профиль закрыт — Nihongo';
+    document.title = 'Профиль закрыт — AniLingo';
     return;
   }
 
@@ -152,11 +152,11 @@ function renderPublicProfile() {
         </div>
       </div>
     `;
-    document.title = 'Профиль не найден — Nihongo';
+    document.title = 'Профиль не найден — AniLingo';
     return;
   }
 
-  document.title = profile.name + ' — профиль Nihongo';
+  document.title = profile.name + ' — профиль AniLingo';
 
   const joined = profile.createdAt
     ? new Date(profile.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -194,7 +194,7 @@ function renderPublicProfile() {
         <hr class="divider">
 
         <div class="player-meta">
-          ${joined ? `<div>В Nihongo с <b>${joined}</b></div>` : ''}
+          ${joined ? `<div>В AniLingo с <b>${joined}</b></div>` : ''}
           <div>Серия <b>${profile.streak || 0} 🔥</b></div>
         </div>
 

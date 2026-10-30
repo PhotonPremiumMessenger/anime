@@ -37,7 +37,7 @@ const BADGES = [
   { id: 'sensei',      name: 'Сэнсэй',      kanji: '師', rarity: 'rare',      desc: 'За знание грамматики' },
   { id: 'neon',        name: 'Неон',        kanji: '雷', rarity: 'epic',      desc: 'Скорость на максимуме' },
   { id: 'master',      name: 'Мастер',      kanji: '達', rarity: 'epic',      desc: 'Половина пути пройдена' },
-  { id: 'legend',      name: 'Легенда',     kanji: '龍', rarity: 'legendary', desc: 'Высший уровень Nihongo' },
+  { id: 'legend',      name: 'Легенда',     kanji: '龍', rarity: 'legendary', desc: 'Высший уровень AniLingo' },
   { id: 'weekly',      name: 'Челленджер',  kanji: '週', rarity: 'legendary', desc: 'Только за челлендж недели' }
 ];
 

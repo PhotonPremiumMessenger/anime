@@ -78,7 +78,7 @@ function importProgressText(text, silent = false) {
     parsed = JSON.parse(text);
   } catch (error) {
     if (!silent && typeof showToast === 'function') {
-      showToast('Файл не читается', 'Это не JSON из Nihongo', 'error');
+      showToast('Файл не читается', 'Это не JSON из AniLingo', 'error');
     }
     return false;
   }
@@ -96,7 +96,7 @@ function importProgressText(text, silent = false) {
 
   if (!keys.length) {
     if (!silent && typeof showToast === 'function') {
-      showToast('Пусто', 'В файле нет данных Nihongo', 'warning');
+      showToast('Пусто', 'В файле нет данных AniLingo', 'warning');
     }
     return false;
   }

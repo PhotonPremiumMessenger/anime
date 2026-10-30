@@ -85,7 +85,7 @@ const LEVEL_REWARDS = {
   50: { kind: 'theme', itemId: 'theme-gold', text: 'Тема «Золото»' },
   60: { kind: 'frame', itemId: 'frame-dragon', text: 'Рамка «Дракон»' },
   75: { kind: 'badge', itemId: 'badge-legend', text: 'Значок «Легенда»' },
-  100: { kind: 'title', title: 'Легенда Nihongo', text: 'Титул «Легенда Nihongo»' }
+  100: { kind: 'title', title: 'Легенда AniLingo', text: 'Титул «Легенда AniLingo»' }
 };
 
 /** Подробности уровня по количеству XP. */
@@ -185,7 +185,7 @@ function addXP(amount, reason = '') {
     }
   }
 
-  if (typeof refreshNihongoUI === 'function') refreshNihongoUI();
+  if (typeof refreshAniLingoUI === 'function') refreshAniLingoUI();
   return { xp: total, level: after.level, leveledUp: after.level > before.level };
 }
 
@@ -195,7 +195,7 @@ function spendXP(amount) {
   if (getXP() < price) return false;
   setXP(getXP() - price);
   bumpCounter('xpSpent', price);
-  if (typeof refreshNihongoUI === 'function') refreshNihongoUI();
+  if (typeof refreshAniLingoUI === 'function') refreshAniLingoUI();
   return true;
 }
 
@@ -471,14 +471,14 @@ function notifyAction(type, amount = 1, extra = {}) {
     }
   });
 
-  if (typeof refreshNihongoUI === 'function') refreshNihongoUI();
+  if (typeof refreshAniLingoUI === 'function') refreshAniLingoUI();
 }
 
 /* ---------- Обновление интерфейса ---------- */
 
 /**
  * Перерисовывает все динамические блоки, которые есть на странице.
- * Каждая страница подменяет window.refreshNihongoUI своей версией.
+ * Каждая страница подменяет window.refreshAniLingoUI своей версией.
  */
 /**
  * Плашка уровня и опыта в hero на главной странице.
@@ -529,7 +529,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 0);
 });
 
-function refreshNihongoUI() {
+function refreshAniLingoUI() {
   if (typeof window.renderHeroLevel === 'function') window.renderHeroLevel();
   if (typeof window.renderStreakBlocks === 'function') window.renderStreakBlocks();
   if (typeof window.renderDailyBlock === 'function') window.renderDailyBlock();
@@ -588,4 +588,4 @@ window.recordXPDay = recordXPDay;
 window.syncLevelRewards = syncLevelRewards;
 window.registerActionHook = registerActionHook;
 window.notifyAction = notifyAction;
-window.refreshNihongoUI = refreshNihongoUI;
+window.refreshAniLingoUI = refreshAniLingoUI;

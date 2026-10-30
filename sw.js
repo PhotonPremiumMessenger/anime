@@ -7,7 +7,7 @@
 
 'use strict';
 
-const VERSION = 'nihongo-v13';
+const VERSION = 'nihongo-v14';
 const STATIC_CACHE = VERSION + '-static';
 const IMAGE_CACHE = VERSION + '-images';
 
@@ -30,6 +30,11 @@ const CORE = [
   // Волна 12: плавность и аниме-слой
   'js/perf.js',
   'js/anime-style.js',
+  // Волна 13: слой данных и синхронизация с сервером
+  'js/config.js',
+  'js/api-local.js',
+  'js/api.js',
+  'js/sync.js',
   // Скрипты волны 10: учёба, подсказки, фокус, дневник ошибок
   'js/search-data.js',
   'js/suggest.js',

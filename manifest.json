@@ -1,6 +1,6 @@
 {
-  "name": "Nihongo — японский по аниме",
-  "short_name": "Nihongo",
+  "name": "AniLingo — японский по аниме",
+  "short_name": "AniLingo",
   "description": "Уроки японского, аниме, грамматика, словарь и JLPT — всё в одном месте.",
   "lang": "ru",
   "start_url": "./index.html",

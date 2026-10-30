@@ -22,7 +22,13 @@ function getSettings() {
   }
 }
 
-/** Сохраняет одну настройку по ключу вида 'sound.volume'. */
+/**
+ * Сохраняет одну настройку по ключу вида 'sound.volume'.
+ *
+ * Пишем только в localStorage: это мгновенный кэш. Если
+ * пользователь вошёл и сервер доступен, изменение само уйдёт
+ * на сервер — запись в ключ settings перехватывает js/sync.js.
+ */
 function setSettingValue(key, value) {
   const settings = getSettings();
   settings[key] = value;
@@ -136,7 +142,7 @@ const SETTINGS_CONTENT = {
           <div class="link-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.3 5.6A16 16 0 0 0 15.2 4.3l-.3.6a12 12 0 0 1 3.4 1.4 11.6 11.6 0 0 0-9.9-.3l.3-.5c-.6.1-2.8.7-4.3 1.7C2.5 9.9 2 13.4 2.2 16.6a16 16 0 0 0 4.6 2.3l.6-1a13 13 0 0 1-2-1l.5-.4a11.5 11.5 0 0 0 10.2 0l.5.4a13 13 0 0 1-2 1l.6 1a16 16 0 0 0 4.6-2.3c.3-3.6-.5-7-1.5-10.4ZM9 14.4c-.9 0-1.6-.8-1.6-1.8S8.1 10.8 9 10.8s1.7.8 1.6 1.8c0 1-.7 1.8-1.6 1.8Zm6 0c-.9 0-1.6-.8-1.6-1.8s.7-1.8 1.6-1.8 1.7.8 1.6 1.8c0 1-.7 1.8-1.6 1.8Z"/></svg></div>
           <div class="link-info">
             <b>Discord</b>
-            <span>Синхронизация ролей и статуса на сервере Nihongo</span>
+            <span>Синхронизация ролей и статуса на сервере AniLingo</span>
           </div>
           <span class="status-pill" id="linkDiscordPill">не привязан</span>
           <button class="btn btn-outline btn-small" id="linkDiscordBtn" onclick="connectSocial('discord')">Привязать</button>
@@ -790,7 +796,7 @@ const SETTINGS_CONTENT = {
         <div class="setting-row">
           <div class="setting-info">
             <div class="setting-name">Проверка соединения</div>
-            <div class="setting-desc">Пинг до сервера Nihongo</div>
+            <div class="setting-desc">Пинг до сервера AniLingo</div>
           </div>
           <div class="setting-control">
             <button class="btn btn-ghost btn-small" onclick="checkConnection()">Проверить</button>
@@ -1617,7 +1623,8 @@ async function deleteAccountSendCode() {
     btn.textContent = 'Отправляем...';
   }
 
-  const result = await apiSendCode(deleteCodeEmail);
+  // purpose: код именно на удаление аккаунта
+  const result = await apiSendCode(deleteCodeEmail, 'delete');
 
   if (btn) {
     btn.disabled = false;

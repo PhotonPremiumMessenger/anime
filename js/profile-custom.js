@@ -326,7 +326,7 @@ function renderBio() {
         </div>
         <div class="bio-head">
           <b class="bio-name" data-username>${user ? user.username : 'Игрок'}</b>
-          <span class="bio-sub">${bio.city ? '📍 ' + escapeBio(bio.city) : 'Nihongo'}</span>
+          <span class="bio-sub">${bio.city ? '📍 ' + escapeBio(bio.city) : 'AniLingo'}</span>
           ${bio.favorite ? '<span class="bio-fav">🎌 ' + escapeBio(bio.favorite) + '</span>' : ''}
         </div>
         ${isOwn ? '<button class="btn btn-ghost btn-small" onclick="openBioEditor()">Изменить</button>' : ''}
