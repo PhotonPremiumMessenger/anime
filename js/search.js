@@ -30,7 +30,7 @@ function buildSearchIndex() {
       title: lesson.title,
       jp: '',
       text: (lesson.description || '') + ' ' + (lesson.words || []).map(word => word.jp + ' ' + word.ru).join(' '),
-      url: 'lesson.html?id=' + lesson.id,
+      url: 'lesson?id=' + lesson.id,
       meta: lesson.level || ''
     });
   });
@@ -42,7 +42,7 @@ function buildSearchIndex() {
       title: word.jp + ' — ' + word.ru,
       jp: word.jp,
       text: (word.romaji || '') + ' ' + (word.tag || ''),
-      url: 'dictionary.html?q=' + encodeURIComponent(word.jp),
+      url: 'dictionary?q=' + encodeURIComponent(word.jp),
       meta: word.level || ''
     });
   });
@@ -54,7 +54,7 @@ function buildSearchIndex() {
       title: rule.title,
       jp: rule.jp,
       text: (rule.short || '') + ' ' + (rule.explanation || []).join(' '),
-      url: 'grammar.html?rule=' + rule.id,
+      url: 'grammar?rule=' + rule.id,
       meta: rule.level || ''
     });
   });
@@ -66,7 +66,7 @@ function buildSearchIndex() {
       title: anime.title,
       jp: anime.jp,
       text: (anime.genres || []).join(' ') + ' ' + anime.phrase.jp + ' ' + anime.phrase.ru,
-      url: 'anime.html?title=' + anime.id,
+      url: 'anime?title=' + anime.id,
       meta: anime.level || ''
     });
   });
@@ -78,7 +78,7 @@ function buildSearchIndex() {
       title: test.title,
       jp: '',
       text: test.subtitle || '',
-      url: 'tests.html?test=' + test.id,
+      url: 'tests?test=' + test.id,
       meta: test.level || ''
     });
   });
@@ -90,7 +90,7 @@ function buildSearchIndex() {
       title: video.title,
       jp: '',
       text: video.description || '',
-      url: 'video.html',
+      url: 'video',
       meta: ''
     });
   });

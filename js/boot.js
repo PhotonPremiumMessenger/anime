@@ -28,6 +28,57 @@
 
   if (!body) return;
 
+  /* ---------- Адрес без .html ---------- */
+
+  // Страницы сайта. Нужны, чтобы отличить «сервер не знает адрес
+  // без .html» от обычной несуществующей ссылки.
+  const KNOWN_PAGES = [
+    'index', 'lessons', 'lesson', 'anime', 'tests', 'grammar', 'dictionary',
+    'video', 'profile', 'rating', 'shop', 'settings', 'about', 'exam',
+    'flashcards', 'match', 'listening', 'speed', 'game', 'weakspots',
+    'favorites', 'search', 'updates', 'register', 'offline', 'privacy'
+  ];
+
+  /**
+   * Приводит адрес к виду без .html.
+   *
+   * Если сервер (nginx или Express) умеет отдавать /lessons вместо
+   * /lessons.html — просто убираем расширение из строки адреса.
+   * Если не умеет и вернул главную страницу (частый фолбэк nginx),
+   * честно уходим на настоящий файл, чтобы человек не остался
+   * на главной вместо нужной страницы.
+   */
+  (function cleanAddress() {
+    const meta = document.querySelector('meta[name="anilingo-page"]');
+    const expected = meta ? String(meta.getAttribute('content') || '') : '';
+    if (!expected) return;
+
+    const path = window.location.pathname;
+    const file = path.slice(path.lastIndexOf('/') + 1);
+    const name = file.replace(/\.html$/i, '');
+    const current = !name ? 'index' : name;
+
+    const isKnown = KNOWN_PAGES.indexOf(name) !== -1;
+
+    // Сервер отдал не ту страницу: адрес без .html он не понял
+    if (isKnown && name !== expected && !/\.html$/i.test(file)) {
+      window.location.replace(path + '.html' + window.location.search + window.location.hash);
+      return;
+    }
+
+    if (!/\.html$/i.test(file)) return;
+
+    const clean = name === 'index'
+      ? path.slice(0, path.lastIndexOf('/') + 1)
+      : path.slice(0, path.lastIndexOf('/') + 1) + name;
+
+    try {
+      window.history.replaceState(null, '', clean + window.location.search + window.location.hash);
+    } catch (error) {
+      // самый старый Safari — адрес просто останется как был
+    }
+  })();
+
   /* ---------- Переезд со старого названия ---------- */
 
   // Раньше ключи начинались со старого названия сайта, теперь — с anilingo_.
@@ -196,8 +247,5 @@
   root.style.fontSize = Math.round(fontSize) + 'px';
   root.dataset.fontSize = String(Math.round(fontSize));
 
-  // Форма аватаров
-  const avatarStyle = settings['features.avatarStyle'];
-  const avatar = ['circle', 'rounded', 'square'].includes(avatarStyle) ? avatarStyle : 'circle';
-  body.classList.add('avatar-' + avatar);
+  // Аватар всегда круглый: форму больше не выбирают
 })();

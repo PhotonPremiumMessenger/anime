@@ -190,7 +190,7 @@ function finishMatchGame() {
         <p>${moves} ходов · ${formatMatchTime(seconds)}${result.better ? ' · новый рекорд!' : ''}</p>
         <div class="btn-row">
           <button class="btn btn-primary" onclick="startMatchGame()">Ещё партия</button>
-          <a class="btn btn-outline" href="dictionary.html">В словарь</a>
+          <a class="btn btn-outline" href="dictionary">В словарь</a>
         </div>
       </div>
     `;

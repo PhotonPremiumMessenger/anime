@@ -275,7 +275,7 @@ function startTest(id) {
   renderTestQuestion();
 
   if (window.history && window.history.replaceState) {
-    window.history.replaceState(null, '', 'tests.html?test=' + id);
+    window.history.replaceState(null, '', 'tests?test=' + id);
   }
 }
 
@@ -430,7 +430,7 @@ function closeTest() {
   if (result) result.classList.add('hidden');
 
   if (window.history && window.history.replaceState) {
-    window.history.replaceState(null, '', 'tests.html');
+    window.history.replaceState(null, '', 'tests');
   }
 
   renderTestsList();

@@ -273,7 +273,7 @@ function renderDictionary() {
     // Звёздочка избранного (пункт 43)
     if (typeof favoriteButtonMarkup === 'function') {
       card.insertAdjacentHTML('beforeend',
-        favoriteButtonMarkup('word', word.jp, word.jp + ' — ' + word.ru, 'dictionary.html?q=' + encodeURIComponent(word.jp)));
+        favoriteButtonMarkup('word', word.jp, word.jp + ' — ' + word.ru, 'dictionary?q=' + encodeURIComponent(word.jp)));
     }
 
     card.querySelector('.speak-btn').addEventListener('click', event => {

@@ -304,12 +304,12 @@ function renderStudyLaunch() {
 
   // Кнопка «Продолжить» — только если урок начат и не закончен
   const continueHtml = active && activeLesson
-    ? `<a class="btn btn-primary btn-large study-continue" href="lesson.html?id=${active.lessonId}&resume=true">
+    ? `<a class="btn btn-primary btn-large study-continue" href="lesson?id=${active.lessonId}&resume=true">
          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l11 7-11 7V5z"></path></svg>
          Продолжить: ${studyEscape(activeLesson.title)}
        </a>
        <span class="study-launch-note">Остановился на шаге ${Math.min(active.currentStep + 1, active.totalSteps)} из ${active.totalSteps}</span>`
-    : `<a class="btn btn-outline btn-large study-start" href="lesson.html?id=${nextLesson ? nextLesson.id : 1}">
+    : `<a class="btn btn-outline btn-large study-start" href="lesson?id=${nextLesson ? nextLesson.id : 1}">
          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h7v14H4zM13 5h7v14h-7z"></path></svg>
          ${nextLesson ? 'Начать: ' + studyEscape(nextLesson.title) : 'Начать урок'}
        </a>`;
@@ -381,7 +381,7 @@ function openRandomLesson() {
     showToast('Случайный урок', lesson.title + ' — поехали', 'info');
   }
 
-  window.location.href = 'lesson.html?id=' + lesson.id;
+  window.location.href = 'lesson?id=' + lesson.id;
 }
 
 /* ---------- Напоминание о перерыве ---------- */

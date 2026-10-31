@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#09090a">
+  <title>Страница не найдена — AniLingo</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛩</text></svg>">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* Эта страница показывается только когда файла нет.
+       Своих таблиц стилей у неё нет, поэтому всё локально и коротко. */
+    .not-found {
+      min-height: 70vh;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .not-found-code {
+      font-family: var(--font-head, inherit);
+      font-size: clamp(3rem, 12vw, 7rem);
+      line-height: 1;
+      color: hsl(var(--accent-hue, 24) var(--accent-sat, 92%) 60%);
+    }
+    .not-found h1 { margin: 10px 0 8px; font-size: 1.4rem; }
+    .not-found p { margin: 0 auto 22px; max-width: 460px; color: var(--text-gray, #9a9aa4); line-height: 1.6; }
+    .not-found-links { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <main class="not-found">
+    <div>
+      <div class="not-found-code">404</div>
+      <h1>Такой страницы нет</h1>
+      <p>Возможно, ссылка устарела. Ниже — куда можно пойти дальше.</p>
+      <div class="not-found-links">
+        <a class="btn btn-primary" href="./">На главную</a>
+        <a class="btn btn-outline" href="lessons">Уроки</a>
+        <a class="btn btn-ghost" href="search">Поиск</a>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    /*
+      GitHub Pages не умеет отдавать /lessons вместо /lessons.html,
+      поэтому адрес без .html здесь попадает на эту страницу.
+      Если спрашивали существующую страницу — молча уходим на файл,
+      а boot.js затем убирает .html из адресной строки обратно.
+      На своём сервере (nginx, Express) эта ветка не срабатывает.
+    */
+    (function () {
+      var PAGES = ['lessons', 'lesson', 'anime', 'tests', 'grammar', 'dictionary',
+        'video', 'profile', 'rating', 'shop', 'settings', 'about', 'exam',
+        'flashcards', 'match', 'listening', 'speed', 'game', 'weakspots',
+        'favorites', 'search', 'updates', 'register', 'offline', 'privacy'];
+
+      var path = window.location.pathname;
+      var name = path.slice(path.lastIndexOf('/') + 1).replace(/\.html$/, '');
+
+      if (PAGES.indexOf(name) !== -1) {
+        window.location.replace(name + '.html' + window.location.search + window.location.hash);
+      }
+    })();
+  </script>
+</body>
+</html>

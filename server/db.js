@@ -186,6 +186,16 @@ function createUser({ username, email, passwordHash, avatar }) {
   return findUserById(result.lastInsertRowid);
 }
 
+/**
+ * Сохраняет фото аватара. Пустая строка или null убирают фото —
+ * тогда на сайте показывается первая буква ника.
+ */
+function setUserAvatar(id, avatar) {
+  const value = String(avatar || '').trim();
+  userQueries.updateAvatar.run(value || null, nowIso(), Number(id));
+  return findUserById(id);
+}
+
 /** Удаляет аккаунт вместе с настройками и профилем (каскад). */
 function deleteUser(id) {
   userQueries.remove.run(Number(id));
@@ -419,6 +429,7 @@ module.exports = {
   findUserByUsername,
   findUserByEmail,
   createUser,
+  setUserAvatar,
   deleteUser,
   issueCode,
   getLatestCode,

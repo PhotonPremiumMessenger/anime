@@ -99,7 +99,7 @@ function mountConsentBanner() {
       <div class="cookie-actions">
         <button class="btn btn-primary" onclick="acceptCookies()">Понятно, продолжить</button>
         <button class="btn btn-outline" onclick="openCookiesSettings()">Настроить</button>
-        <a class="cookie-link" href="privacy.html">Политика конфиденциальности</a>
+        <a class="cookie-link" href="privacy">Политика конфиденциальности</a>
       </div>
     </div>
   `;

@@ -299,10 +299,7 @@ function applyStoredSettings() {
   // поэтому меняем базу у html — текст растёт по всему сайту
   applyBaseFontSize(Number(settings['interface.fontSize'] || 15));
 
-  // Форма аватара
-  const avatarStyle = settings['features.avatarStyle'] || 'circle';
-  document.body.classList.remove('avatar-circle', 'avatar-rounded', 'avatar-square');
-  document.body.classList.add('avatar-' + avatarStyle);
+  // Аватар всегда круглый: выбор формы из настроек убран
 
   // Сакура
   const sakuraLevel = Number(settings['features.sakuraLevel'] ?? 40);

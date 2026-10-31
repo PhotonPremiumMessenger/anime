@@ -322,7 +322,9 @@ function renderBio() {
     <div class="bio-card">
       <div class="bio-top">
         <div class="bio-avatar-frame">
-          <img src="${(user && user.avatar) || 'assets/images/avatars/avatar1.png'}" alt="Аватар" data-avatar-img>
+          ${typeof avatarMarkup === 'function'
+            ? avatarMarkup(user ? user.username : 'Гость', { size: 54, photo: user ? user.avatar : '' })
+            : ''}
         </div>
         <div class="bio-head">
           <b class="bio-name" data-username>${user ? user.username : 'Игрок'}</b>

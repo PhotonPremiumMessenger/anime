@@ -99,6 +99,35 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/user', apiLimiter, userRoutes);
 
+/**
+ * GET /api/public/user/:username — чужая визитка без входа.
+ *
+ * Зачем: аватар хранится в аккаунте, и по ссылке profile?user=ник
+ * человек должен видеть то же фото, что и владелец, а не заглушку.
+ * Отдаём только то, что и так видно в рейтинге: ник, аватар,
+ * уровень, опыт и дату регистрации. Почту и настройки — никогда.
+ */
+app.get('/api/public/user/:username', apiLimiter, (req, res) => {
+  const user = db.findUserByUsername(String(req.params.username || '').trim());
+
+  if (!user) {
+    return res.status(404).json({ message: 'Профиль не найден' });
+  }
+
+  const profile = db.getProfile(user.id) || {};
+
+  return res.json({
+    ok: true,
+    user: {
+      username: user.username,
+      avatar: user.avatar || '',
+      xp: Number(profile.xp) || 0,
+      level: Number(profile.level) || 1,
+      createdAt: user.created_at
+    }
+  });
+});
+
 // Неизвестный /api-адрес — понятный JSON, а не HTML
 app.use('/api', (req, res) => {
   res.status(404).json({ message: 'Такого метода API нет' });
@@ -120,9 +149,33 @@ if (process.env.SERVE_STATIC !== '0') {
     }
   }));
 
-  // Любой другой путь — на главную страницу сайта
+  // Адрес без .html, которого статика не нашла: /settings → settings.html.
+  // Проверяем существование файла и отдаём его, чтобы работали прямые ссылки
+  // и перезагрузка страницы на любом адресе сайта.
+  const fs = require('fs');
+
   app.get('*', (req, res) => {
-    res.sendFile(path.join(siteRoot, 'index.html'));
+    const clean = String(req.path || '/').replace(/^\/+|\/+$/g, '');
+
+    if (clean) {
+      const candidates = [
+        path.join(siteRoot, clean + '.html'),
+        path.join(siteRoot, clean, 'index.html')
+      ];
+
+      const found = candidates.find(file => {
+        try {
+          return fs.statSync(file).isFile();
+        } catch (error) {
+          return false;
+        }
+      });
+
+      if (found) return res.sendFile(found);
+    }
+
+    // Совсем нет такой страницы — 404, а не молчаливая главная
+    return res.status(404).sendFile(path.join(siteRoot, '404.html'));
   });
 }
 
@@ -135,6 +188,11 @@ app.use((error, req, res, next) => {
   // Битый JSON в теле запроса
   if (error && error.type === 'entity.parse.failed') {
     return res.status(400).json({ message: 'Некорректный JSON в запросе' });
+  }
+
+  // Тело больше лимита: чаще всего это слишком большая картинка аватара
+  if (error && error.type === 'entity.too.large') {
+    return res.status(413).json({ message: 'Файл слишком большой — выберите фото поменьше' });
   }
 
   return res.status(500).json({ message: 'Внутренняя ошибка сервера' });

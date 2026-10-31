@@ -177,7 +177,7 @@ function openVideo(id) {
   updateVideoControls();
 
   if (window.history && window.history.replaceState) {
-    window.history.replaceState(null, '', 'video.html?v=' + lesson.id);
+    window.history.replaceState(null, '', 'video?v=' + lesson.id);
   }
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -501,7 +501,7 @@ function closeVideo() {
   if (list) list.classList.remove('hidden');
 
   if (window.history && window.history.replaceState) {
-    window.history.replaceState(null, '', 'video.html');
+    window.history.replaceState(null, '', 'video');
   }
 }
 

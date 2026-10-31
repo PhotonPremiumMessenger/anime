@@ -39,7 +39,7 @@ function getPublicProfile(name) {
 
     return {
       name: account.username,
-      avatar: account.avatar || 'assets/images/avatars/avatar1.png',
+      avatar: typeof isAvatarPicture === 'function' && isAvatarPicture(account.avatar) ? account.avatar : '',
       xp: xp,
       level: info.level,
       levelInfo: info,
@@ -70,7 +70,7 @@ function getPublicProfile(name) {
 
   return {
     name: bot.username,
-    avatar: 'assets/images/avatars/avatar' + bot.avatar + '.png',
+    avatar: '',
     xp: bot.xp,
     level: info.level,
     levelInfo: info,
@@ -108,12 +108,53 @@ function countPublicWords() {
   return Array.isArray(progress.words) ? progress.words.length : 0;
 }
 
+/* ---------- Данные с сервера ---------- */
+
+// Сюда попадает ответ /api/public/user/:ник. Нужен, чтобы чужие
+// профили и их аватары были видны на любом устройстве, а не только
+// в том браузере, где аккаунт создавали.
+let publicRemote = { name: '', data: null };
+
+/** Профиль из ответа сервера — тем же набором полей, что у локального. */
+function publicProfileFromServer(name, data) {
+  const xp = Math.max(0, Number(data.xp) || 0);
+  const info = typeof getLevelInfo === 'function'
+    ? getLevelInfo(xp)
+    : { level: 1, percent: 0, need: 100 };
+
+  return {
+    name: data.username || name,
+    avatar: data.avatar || '',
+    xp: xp,
+    level: Number(data.level) || info.level,
+    levelInfo: info,
+    bio: '',
+    city: '',
+    favorite: '',
+    createdAt: data.createdAt || '',
+    isMe: false,
+    isDemo: false,
+    remote: true,
+    achievements: 0,
+    lessons: 0,
+    words: 0,
+    streak: 0,
+    friends: 0,
+    place: null
+  };
+}
+
 /* ---------- Отрисовка ---------- */
 
 /** Рисует публичный профиль вместо личного. */
 function renderPublicProfile() {
   const nickname = getPublicNickname();
-  const profile = getPublicProfile(nickname);
+  let profile = getPublicProfile(nickname);
+
+  // В этом браузере аккаунта нет, но он есть на сервере — показываем его
+  if (!profile && publicRemote.data && publicRemote.name === nickname.toLowerCase()) {
+    profile = publicProfileFromServer(nickname, publicRemote.data);
+  }
 
   document.body.classList.add('public-profile');
 
@@ -130,8 +171,8 @@ function renderPublicProfile() {
         <p>Показ профиля по ссылке выключен в настройках → «Лаунчер».
            Включи «Публичный профиль», и ссылка снова начнёт работать.</p>
         <div class="btn-row" style="justify-content:center">
-          <a class="btn btn-primary" href="settings.html#launcher">Открыть настройки</a>
-          <a class="btn btn-outline" href="profile.html">Мой профиль</a>
+          <a class="btn btn-primary" href="settings#launcher">Открыть настройки</a>
+          <a class="btn btn-outline" href="profile">Мой профиль</a>
         </div>
       </div>
     `;
@@ -144,11 +185,11 @@ function renderPublicProfile() {
       <div class="public-missing">
         <div class="public-missing-icon">🔍</div>
         <h1>Профиль не найден</h1>
-        <p>Игрока с ником «${escapeBio(nickname)}» нет в этом браузере.
-           Сайт работает на localStorage, поэтому видны только аккаунты, созданные здесь.</p>
+        <p>Игрока с ником «${escapeBio(nickname)}» не нашлось. Проверьте ник —
+           он должен совпадать точно, включая регистр букв.</p>
         <div class="btn-row" style="justify-content:center">
-          <a class="btn btn-primary" href="rating.html">К рейтингу</a>
-          <a class="btn btn-outline" href="profile.html">Мой профиль</a>
+          <a class="btn btn-primary" href="rating">К рейтингу</a>
+          <a class="btn btn-outline" href="profile">Мой профиль</a>
         </div>
       </div>
     `;
@@ -170,8 +211,15 @@ function renderPublicProfile() {
       <aside class="player-card public-card">
         <div class="public-cover"></div>
 
-        <div class="avatar-frame public-avatar">
-          <img src="${profile.avatar}" alt="${escapeBio(profile.name)}">
+        <div class="public-avatar">
+          ${typeof avatarMarkup === 'function'
+            ? avatarMarkup(profile.name, {
+              size: 180,
+              photo: publicRemote.name === profile.name.toLowerCase() && publicRemote.data
+                ? (publicRemote.data.avatar || profile.avatar)
+                : profile.avatar
+            })
+            : ''}
         </div>
 
         <h1 class="player-nick">
@@ -200,7 +248,7 @@ function renderPublicProfile() {
 
         <div class="public-actions">
           ${profile.isMe
-            ? '<a class="btn btn-primary btn-small" href="profile.html">Редактировать профиль</a>'
+            ? '<a class="btn btn-primary btn-small" href="profile">Редактировать профиль</a>'
             : `<button class="btn btn-primary btn-small" onclick="addFriend('${escapeBio(profile.name)}'); renderFriendsBlock()">Добавить в друзья</button>`}
           <button class="btn btn-outline btn-small" onclick="copyProfileLink('${escapeBio(profile.name)}')">Скопировать ссылку</button>
         </div>
@@ -265,8 +313,8 @@ function renderPublicProfile() {
         </section>
 
         <div class="profile-actions">
-          <a class="btn btn-primary" href="rating.html">Рейтинг игроков</a>
-          <a class="btn btn-outline" href="profile.html">Мой профиль</a>
+          <a class="btn btn-primary" href="rating">Рейтинг игроков</a>
+          <a class="btn btn-outline" href="profile">Мой профиль</a>
         </div>
       </div>
     </div>
@@ -295,6 +343,25 @@ async function copyProfileLink(name) {
 
 /* ---------- Инициализация ---------- */
 
+/**
+ * Подтягивает профиль с сервера и перерисовывает страницу.
+ * Если сервер недоступен — остаётся локальная версия, ошибок не показываем.
+ */
+async function hydratePublicProfile() {
+  const nickname = getPublicNickname();
+  if (!nickname || typeof apiPublicProfile !== 'function') return;
+
+  try {
+    const data = await apiPublicProfile(nickname);
+    if (!data) return;
+
+    publicRemote = { name: String(data.username || nickname).toLowerCase(), data: data };
+    renderPublicProfile();
+  } catch (error) {
+    // офлайн: локальный профиль уже на экране
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   if (!isPublicView()) return;
 
@@ -302,6 +369,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.owner-only').forEach(el => el.classList.add('hidden'));
 
   renderPublicProfile();
+  hydratePublicProfile();
 
   // Блоки создаются после initReveal — иначе они остаются прозрачными
   if (typeof observeReveals === 'function') observeReveals(document);
@@ -313,4 +381,5 @@ window.getPublicNickname = getPublicNickname;
 window.isPublicView = isPublicView;
 window.getPublicProfile = getPublicProfile;
 window.renderPublicProfile = renderPublicProfile;
+window.hydratePublicProfile = hydratePublicProfile;
 window.copyProfileLink = copyProfileLink;

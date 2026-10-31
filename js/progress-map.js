@@ -37,7 +37,7 @@ function renderProgressMap() {
     const statusText = status === 'completed' ? 'Пройден' : (status === 'current' ? 'Сейчас' : 'Впереди');
 
     return `
-      <a class="lesson-card pm-card ${status}" href="lesson.html?id=${lesson.id}"
+      <a class="lesson-card pm-card ${status}" href="lesson?id=${lesson.id}"
          title="${statusText}: ${lesson.title}">
         <span class="pm-index">${String(index + 1).padStart(2, '0')}</span>
         <span class="pm-body">

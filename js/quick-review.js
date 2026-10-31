@@ -87,7 +87,7 @@ function renderQuickReview() {
     box.innerHTML = `
       <div class="quick-review-empty">
         <p>Пока нечего повторять. Пройди первый урок — и здесь появятся слова.</p>
-        <a class="btn btn-outline btn-small" href="lesson.html?id=1">Открыть урок</a>
+        <a class="btn btn-outline btn-small" href="lesson?id=1">Открыть урок</a>
       </div>
     `;
     return;

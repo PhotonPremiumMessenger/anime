@@ -450,7 +450,7 @@ function renderGrammarList() {
     // Звёздочка избранного (пункт 43)
     if (typeof favoriteButtonMarkup === 'function') {
       card.insertAdjacentHTML('beforeend',
-        favoriteButtonMarkup('grammar', rule.id, rule.title, 'grammar.html?rule=' + rule.id));
+        favoriteButtonMarkup('grammar', rule.id, rule.title, 'grammar?rule=' + rule.id));
     }
 
     card.addEventListener('click', () => openGrammarRule(rule.id));
@@ -521,7 +521,7 @@ function openGrammarRule(id) {
       <button class="btn btn-primary" style="flex:1" id="grammarReadBtn" onclick="markGrammarRead('${rule.id}')">
         ${read ? 'Уже изучено ✓' : 'Отметить как изученное · +15 XP'}
       </button>
-      <a class="btn btn-outline" href="tests.html?type=grammar">Проверить себя</a>
+      <a class="btn btn-outline" href="tests?type=grammar">Проверить себя</a>
     </div>
   `;
 
@@ -540,7 +540,7 @@ function openGrammarRule(id) {
 
   // Сохраняем открытое правило в адресе, чтобы ссылкой можно было поделиться
   if (window.history && window.history.replaceState) {
-    window.history.replaceState(null, '', 'grammar.html?rule=' + rule.id);
+    window.history.replaceState(null, '', 'grammar?rule=' + rule.id);
   }
 }
 
@@ -553,7 +553,7 @@ function closeGrammarRule() {
   if (list) list.classList.remove('hidden');
 
   if (window.history && window.history.replaceState) {
-    window.history.replaceState(null, '', 'grammar.html');
+    window.history.replaceState(null, '', 'grammar');
   }
 
   window.scrollTo({ top: 0, behavior: 'smooth' });

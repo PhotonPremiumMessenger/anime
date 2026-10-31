@@ -219,7 +219,10 @@ router.post('/login', async (req, res, next) => {
       : db.findUserByUsername(login);
 
     if (!user) {
-      return fail(res, 404, 'Пользователь с таким ником не найден');
+      // Вход по почте — так основной путь; ник поддерживаем для старых клиентов
+      return fail(res, 404, login.includes('@')
+        ? 'Аккаунт с такой почтой не найден'
+        : 'Пользователь с таким ником не найден');
     }
 
     const matches = await bcrypt.compare(password, user.password_hash);
@@ -382,6 +385,39 @@ router.put('/nickname', requireAuth, (req, res) => {
 
   const updated = db.findUserById(req.user.id);
   return res.json({ ok: true, user: publicUser(updated), token: signToken(updated) });
+});
+
+/* ---------- Аватар ---------- */
+
+// Фото приходит из браузера уже сжатым до 256×256 (data URL, ~20–60 КБ).
+// Больше 200 КБ не принимаем: это защита базы от случайных гигантских файлов.
+const AVATAR_MAX_LENGTH = 200 * 1024;
+const AVATAR_DATA_RE = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/;
+
+/**
+ * PUT /api/auth/avatar { avatar }
+ *
+ * Пустая строка убирает фото: на сайте тогда показывается первая
+ * буква ника. Возвращаем свежий профиль и токен — ник в токене
+ * не менялся, но клиенту удобно обновить кэш одним ответом.
+ */
+router.put('/avatar', requireAuth, (req, res) => {
+  const raw = req.body ? req.body.avatar : '';
+  const avatar = String(raw == null ? '' : raw).trim();
+
+  if (avatar) {
+    if (avatar.length > AVATAR_MAX_LENGTH) {
+      return fail(res, 413, 'Фото слишком большое — попробуйте другое');
+    }
+
+    if (!AVATAR_DATA_RE.test(avatar)) {
+      return fail(res, 400, 'Ожидается картинка JPEG, PNG или WebP');
+    }
+  }
+
+  const updated = db.setUserAvatar(req.user.id, avatar);
+
+  return res.json({ ok: true, user: publicUser(updated) });
 });
 
 /** POST /api/auth/email/request { email } — код на новую почту. */

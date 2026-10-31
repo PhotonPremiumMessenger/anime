@@ -277,7 +277,7 @@ const SETTINGS_CONTENT = {
 
       <div class="settings-group">
         <h4>Своя музыка</h4>
-        <p class="settings-note">Плейлист до 8 треков по 1,8 МБ. Файлы живут только в этом браузере, а плеер в правом нижнем углу играет их на всех страницах.</p>
+        <p class="settings-note">Плейлист до 24 треков по 2,5 МБ. Файлы хранятся в IndexedDB этого браузера, а плеер в правом нижнем углу играет их на всех страницах.</p>
 
         <div class="setting-row">
           <div class="setting-info">
@@ -870,19 +870,6 @@ const SETTINGS_CONTENT = {
             </div>
           </div>
         </div>
-        <div class="setting-row">
-          <div class="setting-info">
-            <div class="setting-name">Стиль аватара</div>
-            <div class="setting-desc">Форма рамки в профиле</div>
-          </div>
-          <div class="setting-control">
-            <select class="select" data-setting="features.avatarStyle" onchange="applyInterfaceSetting('avatarStyle', this.value)">
-              <option value="circle">Круглый</option>
-              <option value="rounded">Скруглённый</option>
-              <option value="square">Квадратный</option>
-            </select>
-          </div>
-        </div>
       </div>
     `,
     saveLabel: 'Сохранить фишки'
@@ -1343,7 +1330,7 @@ function saveSetting(tabId) {
 
 /**
  * Применяет настройку, не дожидаясь кнопки «Сохранить».
- * @param {string} kind — theme | background | cursor | fontSize | animations | compact | sakura | avatarStyle
+ * @param {string} kind — theme | background | cursor | fontSize | animations | compact | sakura
  * @param {*} value
  */
 function applyInterfaceSetting(kind, value) {
@@ -1354,8 +1341,7 @@ function applyInterfaceSetting(kind, value) {
     fontSize: 'interface.fontSize',
     animations: 'interface.animations',
     compact: 'interface.compact',
-    sakura: 'features.sakuraLevel',
-    avatarStyle: 'features.avatarStyle'
+    sakura: 'features.sakuraLevel'
   };
 
   const key = map[kind];
@@ -1708,7 +1694,7 @@ async function deleteAccountConfirm() {
   showToast('Аккаунт удалён', 'Спасибо, что был с нами. Возвращайся!', 'info', { icon: 'heart' });
 
   setTimeout(() => {
-    window.location.href = 'index.html';
+    window.location.href = './';
   }, 1400);
 }
 
@@ -2033,7 +2019,7 @@ function syncLightGraphicsSwitch() {
 document.addEventListener('DOMContentLoaded', () => {
   // settings.html — защищённая страница: без сессии уводим на регистрацию
   if (typeof isAuthorized === 'function' && !isAuthorized()) {
-    window.location.href = 'register.html';
+    window.location.href = 'register';
     return;
   }
 

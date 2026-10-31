@@ -188,7 +188,7 @@ function renderDailyBlock() {
       </div>
       <div class="empty-state">
         Войди в аккаунт, чтобы получать ежедневные задания и XP.
-        <a class="btn btn-primary btn-small" href="register.html" style="margin-left:12px">Войти</a>
+        <a class="btn btn-primary btn-small" href="register" style="margin-left:12px">Войти</a>
       </div>
     `;
     return;
@@ -252,7 +252,7 @@ function renderStreakBlocks() {
         <b>Серия дней</b>
         <span>Войди, чтобы считать дни подряд</span>
       </div>
-      <a class="btn btn-outline btn-small" href="register.html">Начать</a>
+      <a class="btn btn-outline btn-small" href="register">Начать</a>
     `;
     return;
   }

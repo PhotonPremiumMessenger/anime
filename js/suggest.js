@@ -212,7 +212,7 @@ function attachSuggestions(input) {
       const query = input.value.trim();
       if (query) {
         event.preventDefault();
-        window.location.href = 'search.html?q=' + encodeURIComponent(query);
+        window.location.href = 'search?q=' + encodeURIComponent(query);
       }
     }
   });

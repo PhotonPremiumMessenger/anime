@@ -216,7 +216,7 @@ function finishFlashcards() {
         <p>Повторено ${done} из ${total} карточек${bonus ? ' · +' + bonus + ' XP за серию' : ''}</p>
         <div class="btn-row">
           <button class="btn btn-primary" onclick="startFlashcards()">Ещё сессия</button>
-          <a class="btn btn-outline" href="dictionary.html">В словарь</a>
+          <a class="btn btn-outline" href="dictionary">В словарь</a>
         </div>
       </div>
     `;

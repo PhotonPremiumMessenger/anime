@@ -145,7 +145,7 @@ function resetProgress() {
   if (!ok) return;
 
   backupKeys().forEach(key => localStorage.removeItem(key));
-  window.location.href = 'index.html';
+  window.location.href = './';
 }
 
 /** Сколько ключей и когда последний экспорт. */

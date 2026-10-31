@@ -9,28 +9,34 @@
 /* ---------- Товары ---------- */
 
 const SHOP_ITEMS = [
-  /* --- Аватары (премиальные образы) --- */
-  { id: 'avatar-9',  category: 'avatar', name: 'Серебряный журавль', desc: 'Аватар с золотой заколкой', price: 300, preview: 'assets/images/avatars/avatar9.png', value: 'assets/images/avatars/avatar9.png' },
-  { id: 'avatar-10', category: 'avatar', name: 'Алый клинок',       desc: 'Аватар с повязкой и углями', price: 300, preview: 'assets/images/avatars/avatar10.png', value: 'assets/images/avatars/avatar10.png' },
-  { id: 'avatar-11', category: 'avatar', name: 'Лисья жрица',       desc: 'Аватар с духом кицунэ', price: 350, preview: 'assets/images/avatars/avatar11.png', value: 'assets/images/avatars/avatar11.png' },
-  { id: 'avatar-12', category: 'avatar', name: 'Они-воин',          desc: 'Аватар с золотой маской', price: 350, preview: 'assets/images/avatars/avatar12.png', value: 'assets/images/avatars/avatar12.png' },
-  { id: 'avatar-13', category: 'avatar', name: 'Звёздный час',       desc: 'Аватар с розовыми заколками', price: 400, preview: 'assets/images/avatars/avatar13.png', value: 'assets/images/avatars/avatar13.png' },
-  { id: 'avatar-14', category: 'avatar', name: 'Ледяной клинок',     desc: 'Аватар со серебряными волосами', price: 400, preview: 'assets/images/avatars/avatar14.png', value: 'assets/images/avatars/avatar14.png' },
-  { id: 'avatar-15', category: 'avatar', name: 'Мико',               desc: 'Аватар жрицы в храме', price: 450, preview: 'assets/images/avatars/avatar15.png', value: 'assets/images/avatars/avatar15.png' },
-  { id: 'avatar-16', category: 'avatar', name: 'Странник в капюшоне', desc: 'Аватар с янтарными глазами', price: 500, preview: 'assets/images/avatars/avatar16.png', value: 'assets/images/avatars/avatar16.png' },
+  /* --- Рамки аватара ---
+     Одна бесплатная — награда за первый пройденный урок.
+     Остальные дорогие: это долгая цель, а не покупка на вечер. */
+  { id: 'frame-first', category: 'frame', name: 'Первый шаг', desc: 'Скромное серебряное кольцо за первый урок', price: 0, frame: 'frame-first', icon: 'star', quest: 'Первый урок' },
+
+  { id: 'frame-bamboo',  category: 'frame', name: 'Бамбук',        desc: 'Зелёное кольцо с пунктиром',        price: 700,  frame: 'frame-bamboo',  icon: 'leaf' },
+  { id: 'frame-lantern', category: 'frame', name: 'Фонарь',        desc: 'Тёплый янтарный свет и свечение',   price: 800,  frame: 'frame-lantern', icon: 'lantern' },
+  { id: 'frame-torii',   category: 'frame', name: 'Тории',         desc: 'Алые врата с золотой искрой',       price: 950,  frame: 'frame-torii',   icon: 'torii' },
+  { id: 'frame-sakura',  category: 'frame', name: 'Сакура',        desc: 'Лепестки и розовое сияние',         price: 1200, frame: 'frame-sakura',  icon: 'sakura' },
+  { id: 'frame-dragon',  category: 'frame', name: 'Дракон',        desc: 'Золотая чешуя, медленное вращение', price: 1400, frame: 'frame-dragon',  icon: 'fire' },
+  { id: 'frame-frost',   category: 'frame', name: 'Иней',          desc: 'Ледяное кольцо с белой искрой',     price: 1600, frame: 'frame-frost',   icon: 'gem' },
+  { id: 'frame-ember',   category: 'frame', name: 'Угли',          desc: 'Раскалённое кольцо, живое свечение', price: 1800, frame: 'frame-ember',  icon: 'fire' },
+  { id: 'frame-aurora',  category: 'frame', name: 'Северное сияние', desc: 'Бирюза и фиолет, две орбиты',   price: 2000, frame: 'frame-aurora',  icon: 'star' },
+  { id: 'frame-void',    category: 'frame', name: 'Пустота',       desc: 'Чёрный бархат с фиолетовым светом', price: 2200, frame: 'frame-void',    icon: 'moon' },
+  { id: 'frame-gold',    category: 'frame', name: 'Золото',        desc: 'Полированное золото и двойное кольцо', price: 2400, frame: 'frame-gold',  icon: 'crown' },
+  { id: 'frame-neon',    category: 'frame', name: 'Неон',          desc: 'Бирюза, пурпур и пульс света',      price: 2600, frame: 'frame-neon',    icon: 'bolt' },
+  { id: 'frame-ocean',   category: 'frame', name: 'Океан',         desc: 'Глубокая вода и бегущая волна',     price: 2800, frame: 'frame-ocean',   icon: 'wave' },
+  { id: 'frame-moon',    category: 'frame', name: 'Луна',          desc: 'Холодное серебро и тонкий серп',    price: 3000, frame: 'frame-moon',    icon: 'moon' },
+  { id: 'frame-storm',   category: 'frame', name: 'Гроза',         desc: 'Индиго и вспышки молний',           price: 3500, frame: 'frame-storm',   icon: 'bolt' },
+  { id: 'frame-royal',   category: 'frame', name: 'Император',   desc: 'Золото на императорском пурпуре',   price: 4000, frame: 'frame-royal',   icon: 'crown' },
+  { id: 'frame-legend',  category: 'frame', name: 'Легенда',       desc: 'Радужная орбита, вращается сама',   price: 5000, frame: 'frame-legend',  icon: 'trophy' },
+  { id: 'frame-eternal', category: 'frame', name: 'Вечность',      desc: 'Платина с призматическим блеском',  price: 6500, frame: 'frame-eternal', icon: 'star' },
 
   /* --- Темы (акцентные цвета) --- */
   { id: 'theme-sakura-plus', category: 'theme', name: 'Сакура+',   desc: 'Розовый акцент и мягкое свечение', price: 450, accent: '#FF9EC0', accentDark: '#C2477B', icon: 'sakura' },
   { id: 'theme-midnight',    category: 'theme', name: 'Полночь',   desc: 'Холодный синий акцент',            price: 450, accent: '#7DB7FF', accentDark: '#2F5DA8', icon: 'moon' },
   { id: 'theme-neon',        category: 'theme', name: 'Неон',      desc: 'Яркий бирюзовый акцент',           price: 500, accent: '#5EEAD4', accentDark: '#0E7C6B', icon: 'bolt' },
   { id: 'theme-gold',        category: 'theme', name: 'Золото',    desc: 'Роскошный золотой акцент',         price: 600, accent: '#FFD166', accentDark: '#A67C00', icon: 'crown' },
-
-  /* --- Рамки аватара --- */
-  { id: 'frame-bamboo',  category: 'frame', name: 'Бамбук',  desc: 'Зелёная рамка вокруг аватара',   price: 200, frame: 'frame-bamboo',  icon: 'leaf' },
-  { id: 'frame-lantern', category: 'frame', name: 'Фонарь',  desc: 'Тёплая оранжевая окантовка',     price: 250, frame: 'frame-lantern', icon: 'lantern' },
-  { id: 'frame-torii',   category: 'frame', name: 'Тории',   desc: 'Красная рамка в стиле врат',     price: 400, frame: 'frame-torii',   icon: 'torii' },
-  { id: 'frame-sakura',  category: 'frame', name: 'Сакура',  desc: 'Розовые лепестки по кругу',      price: 550, frame: 'frame-sakura',  icon: 'sakura' },
-  { id: 'frame-dragon',  category: 'frame', name: 'Дракон',  desc: 'Золотая чешуя, свечение',        price: 800, frame: 'frame-dragon',  icon: 'fire' },
 
   /* --- Значки у ника --- */
   { id: 'badge-first-steps', category: 'badge', name: 'Первые шаги', desc: 'Значок новичка',        price: 150, badge: '👣', badgeId: 'first_steps', icon: 'star',   rarity: 'common' },
@@ -47,9 +53,8 @@ const SHOP_ITEMS = [
 
 const SHOP_CATEGORIES = [
   { id: 'all',    name: 'Все' },
-  { id: 'avatar', name: 'Аватары' },
-  { id: 'theme',  name: 'Темы' },
   { id: 'frame',  name: 'Рамки' },
+  { id: 'theme',  name: 'Темы' },
   { id: 'badge',  name: 'Значки' }
 ];
 
@@ -150,12 +155,8 @@ function buyShopItem(id) {
 
   showToast('Куплено', item.name + ' за ' + item.price + ' XP', 'success');
 
-  // Аватар сразу надеваем, остальное — экипируем на себя
-  if (item.category === 'avatar') {
-    if (typeof setAvatar === 'function') setAvatar(item.value);
-  } else {
-    equipShopItem(id, true);
-  }
+  // Купленную рамку сразу надеваем — её видно тут же
+  equipShopItem(id, true);
   if (typeof renderShop === 'function') renderShop();
   if (typeof renderProfileLevel === 'function') renderProfileLevel();
 }
@@ -200,12 +201,18 @@ function equipShopItem(id, silent = false) {
 function applyShopStyles() {
   const state = getShopState();
 
-  // Рамка аватара
-  const frame = state.equipped.frame ? getShopItem(state.equipped.frame) : null;
-  document.querySelectorAll('.avatar-frame').forEach(el => {
-    el.classList.remove('frame-bamboo', 'frame-lantern', 'frame-torii', 'frame-sakura', 'frame-dragon');
-    if (frame && frame.frame) el.classList.add(frame.frame);
-  });
+  // Рамка аватара: класс вешает avatar.js на все слоты сразу
+  if (typeof paintAvatarSlots === 'function') {
+    paintAvatarSlots();
+  } else {
+    const frame = state.equipped.frame ? getShopItem(state.equipped.frame) : null;
+    document.querySelectorAll('[data-avatar-slot]').forEach(el => {
+      SHOP_ITEMS.forEach(item => {
+        if (item.frame) el.classList.remove(item.frame);
+      });
+      if (frame && frame.frame) el.classList.add(frame.frame);
+    });
+  }
 
   // Значок у ника: рисуем SVG, если модуль значков подключён
   if (typeof renderEquippedBadge === 'function') {
@@ -337,15 +344,19 @@ function renderShop() {
     card.className = 'shop-card' + (owned ? ' is-owned' : '') + (equipped ? ' is-equipped' : '') +
       (item.rarity ? ' rarity-' + item.rarity : '');
 
-    // Превью: картинка для аватаров, иконка для остального
-    const preview = item.preview
-      ? '<img src="' + item.preview + '" alt="' + item.name + '">'
+    // Превью: рамку показываем на своём аватаре — видно, как она смотрится
+    const preview = item.category === 'frame' && typeof avatarMarkup === 'function'
+      ? avatarMarkup(avatarCurrentName(), {
+        size: 92,
+        frame: item.frame,
+        photo: typeof getCurrentAvatar === 'function' ? getCurrentAvatar() : ''
+      })
       : (item.badgeId && typeof badgeMarkup === 'function'
           ? badgeMarkup(item.badgeId, 68, true)
           : achievementIconMarkup({ icon: item.icon || 'star' }, true));
 
     card.innerHTML = `
-      <div class="shop-preview ${item.preview ? 'is-image' : ''} ${item.category === 'theme' ? 'is-theme' : ''}">
+      <div class="shop-preview ${item.category === 'frame' ? 'is-avatar' : ''} ${item.category === 'theme' ? 'is-theme' : ''}">
         ${item.category === 'theme'
           ? '<span class="shop-swatch" style="background:linear-gradient(135deg,' + item.accent + ',' + item.accentDark + ')"></span>'
           : preview}
@@ -365,7 +376,13 @@ function renderShop() {
 
     const actions = card.querySelector('.shop-actions');
 
-    if (item.exclusive) {
+    if (item.quest) {
+      // Награда за дело, а не за XP: купить нельзя, выдаётся автоматически
+      const note = document.createElement('span');
+      note.className = 'shop-note' + (owned ? ' is-ok' : '');
+      note.textContent = owned ? 'Получено ✓' : 'Награда: ' + item.quest;
+      actions.appendChild(note);
+    } else if (item.exclusive) {
       const note = document.createElement('span');
       note.className = 'shop-note';
       note.textContent = owned ? 'Заработано' : 'Только за челлендж недели';
@@ -377,16 +394,6 @@ function renderShop() {
       buy.disabled = !affordable;
       buy.addEventListener('click', () => buyShopItem(item.id));
       actions.appendChild(buy);
-    } else if (item.category === 'avatar') {
-      const isCurrent = typeof getCurrentAvatar === 'function' && getCurrentAvatar() === item.value;
-      const wear = document.createElement('button');
-      wear.className = isCurrent ? 'btn btn-ghost btn-small' : 'btn btn-outline btn-small';
-      wear.textContent = isCurrent ? 'На аватаре ✓' : 'Надеть';
-      wear.addEventListener('click', () => {
-        if (typeof setAvatar === 'function') setAvatar(item.value);
-        renderShop();
-      });
-      actions.appendChild(wear);
     } else if (['frame', 'badge', 'theme'].includes(item.category)) {
       const equip = document.createElement('button');
       equip.className = equipped ? 'btn btn-ghost btn-small' : 'btn btn-outline btn-small';
@@ -402,6 +409,36 @@ function renderShop() {
 
     grid.appendChild(card);
   });
+}
+
+/* ---------- Награда за первый урок ---------- */
+
+/**
+ * Выдаёт простую рамку «Первый шаг» за первый пройденный урок.
+ * Купить её нельзя: price 0 и quest. Повторный вызов ничего не делает.
+ */
+function lockFirstFrame() {
+  const item = getShopItem('frame-first');
+  if (!item) return false;
+
+  const state = getShopState();
+  if (state.owned.includes(item.id)) return false;
+
+  state.owned.push(item.id);
+  saveShopState(state);
+
+  // Если рамки ещё нет — сразу надеваем, чтобы награда была видна
+  if (!getShopState().equipped.frame) {
+    equipShopItem(item.id, true);
+  }
+
+  if (typeof showToast === 'function') {
+    showToast('Рамка «Первый шаг»', 'Открылась за первый пройденный урок', 'success');
+  }
+
+  applyShopStyles();
+  if (typeof renderShop === 'function' && document.getElementById('shopGrid')) renderShop();
+  return true;
 }
 
 /* ---------- Инициализация ---------- */
@@ -423,6 +460,7 @@ window.unlockShopItem = unlockShopItem;
 window.buyShopItem = buyShopItem;
 window.equipShopItem = equipShopItem;
 window.applyShopStyles = applyShopStyles;
+window.lockFirstFrame = lockFirstFrame;
 window.hexToRgba = hexToRgba;
 window.filterShop = filterShop;
 window.renderShop = renderShop;

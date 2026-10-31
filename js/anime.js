@@ -440,7 +440,7 @@ function renderAnimeCatalog() {
           </div>
         </div>
         ${typeof favoriteButtonMarkup === 'function'
-          ? favoriteButtonMarkup('anime', anime.id, anime.title, 'anime.html?title=' + anime.id)
+          ? favoriteButtonMarkup('anime', anime.id, anime.title, 'anime?title=' + anime.id)
           : ''}
       </article>
     `).join('');
@@ -542,7 +542,7 @@ function openAnimeCard(id) {
 
     <div class="btn-row">
       <button class="btn btn-primary" style="flex:1" onclick="shareAnimePhrase('${anime.id}')">Поделиться фразой · +15 XP</button>
-      <a class="btn btn-outline" href="lessons.html">К урокам</a>
+      <a class="btn btn-outline" href="lessons">К урокам</a>
     </div>
   `;
 
