@@ -58,7 +58,7 @@ function findPlayer(name) {
   if (account) {
     return {
       name: account.username,
-      avatar: account.avatar || 'assets/images/avatars/avatar1.png',
+      avatar: typeof isAvatarPicture === 'function' && isAvatarPicture(account.avatar) ? account.avatar : '',
       xp: Math.max(0, Number(account.xp) || 0),
       demo: false
     };
@@ -70,7 +70,7 @@ function findPlayer(name) {
   if (bot) {
     return {
       name: bot.username,
-      avatar: 'assets/images/avatars/avatar' + bot.avatar + '.png',
+      avatar: '',
       xp: bot.xp,
       demo: true
     };
@@ -205,7 +205,7 @@ function renderFriendsBlock() {
 
     row.innerHTML = `
       <div class="friend-avatar">
-        <img src="${friend.avatar}" alt="${friend.name}">
+        ${typeof avatarMarkup === 'function' ? avatarMarkup(friend.name, { size: 46, photo: friend.avatar }) : ''}
         <i class="friend-dot"></i>
       </div>
       <div class="friend-info">
@@ -272,7 +272,7 @@ function getFriendsLeaderboard() {
   if (me) {
     rows.push({
       name: me.username,
-      avatar: me.avatar || 'assets/images/avatars/avatar1.png',
+      avatar: typeof isAvatarPicture === 'function' && isAvatarPicture(me.avatar) ? me.avatar : '',
       xp: myXP,
       isMe: true
     });
@@ -315,7 +315,9 @@ function renderFriendsLeaderboard() {
     tr.innerHTML = `
       <td class="rating-place">${row.place === 1 ? '<span class="rating-medal">🥇</span>' : row.place}</td>
       <td class="rating-player">
-        <img class="rating-avatar" src="${row.avatar}" alt="${row.name}">
+        <span class="rating-avatar">${typeof avatarMarkup === 'function'
+          ? avatarMarkup(row.name, { size: 38, photo: row.avatar, frame: row.isMe && typeof getEquippedFrame === 'function' ? getEquippedFrame() : '' })
+          : ''}</span>
         <span class="rating-name">${row.name}${row.isMe ? '<i class="rating-tag is-me-tag">ты</i>' : ''}</span>
       </td>
       <td class="rating-level"><b>${row.level}</b><span>ур.</span></td>

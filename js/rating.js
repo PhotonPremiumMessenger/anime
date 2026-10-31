@@ -21,13 +21,14 @@ const RATING_BOTS = window.RATING_BOTS_DEMO || [];
  */
 function getRatingPlayers() {
   const me = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
-  const currentAvatar = typeof getCurrentAvatar === 'function' ? getCurrentAvatar() : 'assets/images/avatars/avatar1.png';
+  const currentAvatar = typeof getCurrentAvatar === 'function' ? getCurrentAvatar() : '';
 
   // Реальные аккаунты из localStorage
   const real = getUsers().map(user => ({
     username: user.username,
     xp: Math.max(0, Number(user.xp) || 0),
-    avatar: user.avatar || 'assets/images/avatars/avatar1.png',
+    // Фото из аккаунта; если нет — нарисуется первая буква ника
+    avatar: typeof isAvatarPicture === 'function' && isAvatarPicture(user.avatar) ? user.avatar : '',
     isMe: Boolean(me && me.username === user.username),
     isBot: false
   }));
@@ -36,7 +37,8 @@ function getRatingPlayers() {
   const bots = RATING_BOTS.map(bot => ({
     username: bot.username,
     xp: bot.xp,
-    avatar: 'assets/images/avatars/avatar' + bot.avatar + '.png',
+    // У демо-игроков фото нет: у каждого своя буква и свой градиент
+    avatar: '',
     isMe: false,
     isBot: true
   }));
@@ -147,10 +149,16 @@ function renderRating() {
     const playerCell = document.createElement('td');
     playerCell.className = 'rating-player';
 
-    const img = document.createElement('img');
-    img.src = player.avatar;
-    img.alt = player.username;
-    img.className = 'rating-avatar';
+    // Аватар: своё фото, а если его нет — первая буква ника
+    const avatar = document.createElement('span');
+    avatar.className = 'rating-avatar';
+    avatar.innerHTML = typeof avatarMarkup === 'function'
+      ? avatarMarkup(player.username, {
+        size: 38,
+        photo: player.avatar,
+        frame: player.isMe && typeof getEquippedFrame === 'function' ? getEquippedFrame() : ''
+      })
+      : '';
 
     const nameWrap = document.createElement('span');
     nameWrap.className = 'rating-name';
@@ -163,7 +171,7 @@ function renderRating() {
       nameWrap.appendChild(tag);
     }
 
-    playerCell.appendChild(img);
+    playerCell.appendChild(avatar);
     playerCell.appendChild(nameWrap);
 
     // Уровень

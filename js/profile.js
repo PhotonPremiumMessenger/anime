@@ -20,8 +20,8 @@ function checkAuth() {
 
   if (!authorized) {
     // Запоминаем, куда пользователь хотел попасть
-    sessionStorage.setItem('redirectAfterLogin', 'profile.html');
-    window.location.href = 'register.html';
+    sessionStorage.setItem('redirectAfterLogin', 'profile');
+    window.location.href = 'register';
     return false;
   }
 
@@ -91,7 +91,7 @@ function fillProfile() {
   renderAchievementsPreview();
 
   // Аватар и надетые предметы из магазина
-  updateAllAvatars();
+  if (typeof paintAvatarSlots === 'function') paintAvatarSlots();
   if (typeof applyShopStyles === 'function') applyShopStyles();
 }
 

@@ -7,7 +7,7 @@
 
 'use strict';
 
-const VERSION = 'anilingo-v19';
+const VERSION = 'anilingo-v21';
 const STATIC_CACHE = VERSION + '-static';
 const IMAGE_CACHE = VERSION + '-images';
 
@@ -72,6 +72,46 @@ self.addEventListener('activate', event => {
 
 /* ---------- Обработка запросов ---------- */
 
+/**
+ * Страница из кеша, когда сети нет.
+ * Адрес без .html (чистые ссылки сайта) ищет в кеше сам файл,
+ * иначе офлайн-переход на /lessons открывал бы заглушку.
+ */
+function navigateFromCache(request) {
+  const url = new URL(request.url);
+  const bare = url.pathname.replace(/\/$/, '');
+
+  const variants = [
+    request,
+    new URL(bare + '.html', url.origin).href,
+    new URL(bare + '/index.html', url.origin).href
+  ];
+
+  return variants.reduce(
+    (chain, target) => chain.then(hit => hit || caches.match(target)),
+    Promise.resolve(null)
+  ).then(hit => hit || caches.match('offline.html'));
+}
+
+/**
+ * Адрес без .html на хостинге, который чистых адресов не понимает
+ * (GitHub Pages). Если сервер ответил 404 — пробуем сам файл:
+ * страница откроется, а в адресной строке останется /lessons.
+ */
+function navigateAlternative(url) {
+  if (/\.[a-z0-9]+$/i.test(url.pathname)) return Promise.resolve(null);
+
+  const bare = url.pathname.replace(/\/+$/, '');
+  const candidates = [bare + '.html', bare + '/index.html'];
+
+  return candidates.reduce(
+    (chain, path) => chain.then(hit => hit || fetch(new URL(path + url.search, url.origin))
+      .then(response => (response.ok ? response : null))
+      .catch(() => null)),
+    Promise.resolve(null)
+  );
+}
+
 self.addEventListener('fetch', event => {
   const request = event.request;
 
@@ -86,11 +126,20 @@ self.addEventListener('fetch', event => {
     event.respondWith(
       fetch(request)
         .then(response => {
-          const copy = response.clone();
-          caches.open(STATIC_CACHE).then(cache => cache.put(request, copy));
+          // Чистый адрес, которого хостинг не знает: подставляем файл
+          if (response.status === 404) {
+            return navigateAlternative(url).then(found => found || response);
+          }
+
+          // 404 в кеш не кладём: иначе офлайн откроется ошибка
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(STATIC_CACHE).then(cache => cache.put(request, copy));
+          }
+
           return response;
         })
-        .catch(() => caches.match(request).then(hit => hit || caches.match('offline.html')))
+        .catch(() => navigateFromCache(request))
     );
     return;
   }

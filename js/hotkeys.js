@@ -9,27 +9,27 @@
 
 // Куда можно прыгнуть из палитры
 const COMMAND_PAGES = [
-  { title: 'Главная', hint: 'index.html', url: 'index.html', icon: '🏠' },
-  { title: 'Поиск по сайту', hint: 'search.html', url: 'search.html', icon: '🔎' },
-  { title: 'Уроки', hint: 'lessons.html', url: 'lessons.html', icon: '📚' },
-  { title: 'Флешкарты', hint: 'flashcards.html', url: 'flashcards.html', icon: '🃏' },
-  { title: 'Кандзи-пары', hint: 'match.html', url: 'match.html', icon: '🧩' },
-  { title: 'Избранное', hint: 'favorites.html', url: 'favorites.html', icon: '⭐' },
-  { title: 'Слабые места', hint: 'weakspots.html', url: 'weakspots.html', icon: '🎯' },
-  { title: 'Аудирование', hint: 'listening.html', url: 'listening.html', icon: '🎧' },
-  { title: 'Пробный экзамен JLPT', hint: 'exam.html', url: 'exam.html', icon: '📝' },
-  { title: 'Аниме', hint: 'anime.html', url: 'anime.html', icon: '🎌' },
-  { title: 'Тесты', hint: 'tests.html', url: 'tests.html', icon: '✅' },
-  { title: 'Грамматика', hint: 'grammar.html', url: 'grammar.html', icon: '🈴' },
-  { title: 'Словарь', hint: 'dictionary.html', url: 'dictionary.html', icon: '📖' },
-  { title: 'Видео-уроки', hint: 'video.html', url: 'video.html', icon: '🎬' },
-  { title: 'Рейтинг', hint: 'rating.html', url: 'rating.html', icon: '🏆' },
-  { title: 'Магазин', hint: 'shop.html', url: 'shop.html', icon: '🛍' },
-  { title: 'Тест на скорость', hint: 'speed.html', url: 'speed.html', icon: '⚡' },
-  { title: 'Профиль', hint: 'profile.html', url: 'profile.html', icon: '👤' },
-  { title: 'Настройки', hint: 'settings.html', url: 'settings.html', icon: '⚙️' },
-  { title: 'Обновления', hint: 'updates.html', url: 'updates.html', icon: '🆕' },
-  { title: 'О проекте', hint: 'about.html', url: 'about.html', icon: 'ℹ️' }
+  { title: 'Главная', hint: 'главная', url: './', icon: '🏠' },
+  { title: 'Поиск по сайту', hint: 'search', url: 'search', icon: '🔎' },
+  { title: 'Уроки', hint: 'lessons', url: 'lessons', icon: '📚' },
+  { title: 'Флешкарты', hint: 'flashcards', url: 'flashcards', icon: '🃏' },
+  { title: 'Кандзи-пары', hint: 'match', url: 'match', icon: '🧩' },
+  { title: 'Избранное', hint: 'favorites', url: 'favorites', icon: '⭐' },
+  { title: 'Слабые места', hint: 'weakspots', url: 'weakspots', icon: '🎯' },
+  { title: 'Аудирование', hint: 'listening', url: 'listening', icon: '🎧' },
+  { title: 'Пробный экзамен JLPT', hint: 'exam', url: 'exam', icon: '📝' },
+  { title: 'Аниме', hint: 'anime', url: 'anime', icon: '🎌' },
+  { title: 'Тесты', hint: 'tests', url: 'tests', icon: '✅' },
+  { title: 'Грамматика', hint: 'grammar', url: 'grammar', icon: '🈴' },
+  { title: 'Словарь', hint: 'dictionary', url: 'dictionary', icon: '📖' },
+  { title: 'Видео-уроки', hint: 'video', url: 'video', icon: '🎬' },
+  { title: 'Рейтинг', hint: 'rating', url: 'rating', icon: '🏆' },
+  { title: 'Магазин', hint: 'shop', url: 'shop', icon: '🛍' },
+  { title: 'Тест на скорость', hint: 'speed', url: 'speed', icon: '⚡' },
+  { title: 'Профиль', hint: 'profile', url: 'profile', icon: '👤' },
+  { title: 'Настройки', hint: 'settings', url: 'settings', icon: '⚙️' },
+  { title: 'Обновления', hint: 'updates', url: 'updates', icon: '🆕' },
+  { title: 'О проекте', hint: 'about', url: 'about', icon: 'ℹ️' }
 ];
 
 const COMMAND_ACTIONS = [
@@ -267,7 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (event.key.toLowerCase() === 't') cycleTheme();
-    if (event.key.toLowerCase() === 'p') window.location.href = 'profile.html';
+    if (event.key.toLowerCase() === 'p') window.location.href = 'profile';
   });
 });
 

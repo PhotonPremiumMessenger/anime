@@ -142,7 +142,7 @@ function renderFavorites(containerId = 'favoritesBlock') {
       <div class="weak-empty">
         <span>☆</span>
         <p>Пусто. Жми звёздочку у тайтла, правила или слова — всё соберётся здесь.</p>
-        <a class="btn btn-outline btn-small" href="anime.html">Выбрать аниме</a>
+        <a class="btn btn-outline btn-small" href="anime">Выбрать аниме</a>
       </div>
     `;
     return;

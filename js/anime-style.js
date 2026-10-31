@@ -15,69 +15,69 @@
 
 // Вертикальные подписи для разных страниц
 const ANIME_SIDE_MARKS = {
-  'index.html': '物語',
-  'lessons.html': '学び',
-  'lesson.html': '稽古',
-  'anime.html': '世界',
-  'tests.html': '試練',
-  'grammar.html': '文法',
-  'dictionary.html': '言葉',
-  'video.html': '映像',
-  'profile.html': '旅路',
-  'rating.html': '頂上',
-  'shop.html': '店',
-  'settings.html': '調整',
-  'about.html': '物語',
-  'exam.html': '試験',
-  'flashcards.html': '暗記',
-  'match.html': '遊び',
-  'listening.html': '耳',
-  'speed.html': '疾走',
-  'game.html': '遊戯',
-  'weakspots.html': '弱点',
-  'favorites.html': '想い',
-  'search.html': '探す',
-  'updates.html': '更新',
-  'register.html': '入門',
-  'offline.html': '放置',
-  'privacy.html': '約束'
+  'index': '物語',
+  'lessons': '学び',
+  'lesson': '稽古',
+  'anime': '世界',
+  'tests': '試練',
+  'grammar': '文法',
+  'dictionary': '言葉',
+  'video': '映像',
+  'profile': '旅路',
+  'rating': '頂上',
+  'shop': '店',
+  'settings': '調整',
+  'about': '物語',
+  'exam': '試験',
+  'flashcards': '暗記',
+  'match': '遊び',
+  'listening': '耳',
+  'speed': '疾走',
+  'game': '遊戯',
+  'weakspots': '弱点',
+  'favorites': '想い',
+  'search': '探す',
+  'updates': '更新',
+  'register': '入門',
+  'offline': '放置',
+  'privacy': '約束'
 };
 
 // Римские цифры эпизода для верхней метки кадра
 const ANIME_EPISODES = {
-  'index.html': '第壱話',
-  'lessons.html': '第弐話',
-  'lesson.html': '第参話',
-  'anime.html': '第四話',
-  'tests.html': '第五話',
-  'grammar.html': '第六話',
-  'dictionary.html': '第七話',
-  'video.html': '第八話',
-  'profile.html': '第九話',
-  'rating.html': '第十話',
-  'shop.html': '第十一話',
-  'favorites.html': '第十二話',
-  'flashcards.html': '第十三話',
-  'match.html': '第十四話',
-  'listening.html': '第十五話',
-  'speed.html': '第十六話',
-  'game.html': '第十七話',
-  'weakspots.html': '第十八話',
-  'search.html': '第十九話',
-  'exam.html': '第二十話',
-  'updates.html': '第二十一話',
-  'about.html': '第二十二話',
-  'settings.html': '第二十三話',
-  'register.html': '第二十四話',
-  'offline.html': '第二十五話',
-  'privacy.html': '第二十六話'
+  'index': '第壱話',
+  'lessons': '第弐話',
+  'lesson': '第参話',
+  'anime': '第四話',
+  'tests': '第五話',
+  'grammar': '第六話',
+  'dictionary': '第七話',
+  'video': '第八話',
+  'profile': '第九話',
+  'rating': '第十話',
+  'shop': '第十一話',
+  'favorites': '第十二話',
+  'flashcards': '第十三話',
+  'match': '第十四話',
+  'listening': '第十五話',
+  'speed': '第十六話',
+  'game': '第十七話',
+  'weakspots': '第十八話',
+  'search': '第十九話',
+  'exam': '第二十話',
+  'updates': '第二十一話',
+  'about': '第二十二話',
+  'settings': '第二十三話',
+  'register': '第二十四話',
+  'offline': '第二十五話',
+  'privacy': '第二十六話'
 };
 
 /** Нынешняя страница без пути. */
 function currentAnimePage() {
   const parts = window.location.pathname.split('/');
-  const name = parts[parts.length - 1];
-  return name || 'index.html';
+  const name = (parts[parts.length - 1] || '').replace(/\.html$/, '');
+  return name || 'index';
 }
 
 /** Облегчённый режим — на телефоне тяжёлые эффекты не включаем. */

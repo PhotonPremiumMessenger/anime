@@ -1,6 +1,7 @@
 /* ============================================================
    player.js — своя музыка и мини-плеер в углу
-   • плейлист из загруженных файлов (data URL, только localStorage);
+   • плейлист из загруженных файлов: сами файлы лежат в IndexedDB
+     (до 2,5 МБ на трек), а в localStorage — только список треков;
    • Spotify по ссылке: трек, альбом, плейлист или подкаст играет
      во встроенном плеере — без скачивания и без сервера;
    • красивый плеер: виниловый диск, живой эквалайзер, обложка,
@@ -13,12 +14,18 @@
 
 'use strict';
 
-const MP_LIST_KEY = 'anilingo_playlist';   // [{ id, name, kind, data | spotify }]
+const MP_LIST_KEY = 'anilingo_playlist';   // [{ id, name, kind, stored | data | spotify }]
 const MP_STATE_KEY = 'anilingo_player';    // { trackId, time, playing, volume, muted, hidden, repeat, shuffle }
 
-const MP_MAX_TRACK_BYTES = 1.8 * 1024 * 1024;  // один файл: base64 съедает треть
-const MP_MAX_TRACKS = 12;                       // больше не влезет в localStorage
+// Файлы храним в IndexedDB: там нет лимита localStorage (≈5 МБ на домен),
+// поэтому в один трек влезает 2,5 МБ — втрое больше, чем было.
+const MP_MAX_TRACK_BYTES = 2.5 * 1024 * 1024;
+const MP_MAX_TRACKS = 24;
 const MP_SPOTIFY_EMBED = 'https://open.spotify.com/embed/';
+
+// Отдельная база для аудиофайлов
+const MP_DB_NAME = 'anilingo_music';
+const MP_DB_STORE = 'files';
 
 let mpTracks = [];
 let mpCurrent = '';
@@ -63,18 +70,109 @@ function mpWrite(key, value) {
   }
 }
 
+/* ---------- Хранилище файлов (IndexedDB) ---------- */
+
+let mpDbPromise = null;
+
+/** Открывает базу для аудио. Один раз за страницу. */
+function mpDb() {
+  if (mpDbPromise) return mpDbPromise;
+
+  mpDbPromise = new Promise((resolve, reject) => {
+    if (!('indexedDB' in window)) {
+      reject(new Error('Браузер не умеет IndexedDB'));
+      return;
+    }
+
+    const request = indexedDB.open(MP_DB_NAME, 1);
+
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(MP_DB_STORE)) {
+        db.createObjectStore(MP_DB_STORE);
+      }
+    };
+
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error || new Error('Не открылась база'));
+  });
+
+  return mpDbPromise;
+}
+
+/** Кладёт файл трека в базу. */
+function mpStoreBlob(id, blob) {
+  return mpDb().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction(MP_DB_STORE, 'readwrite');
+    tx.objectStore(MP_DB_STORE).put(blob, id);
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => reject(tx.error || new Error('Не записалось'));
+  }));
+}
+
+/** Достаёт файл трека. */
+function mpReadBlob(id) {
+  return mpDb().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction(MP_DB_STORE, 'readonly');
+    const request = tx.objectStore(MP_DB_STORE).get(id);
+    request.onsuccess = () => resolve(request.result || null);
+    request.onerror = () => reject(request.error || new Error('Не прочиталось'));
+  }));
+}
+
+/** Удаляет файл трека. */
+function mpRemoveBlob(id) {
+  return mpDb().then(db => new Promise(resolve => {
+    const tx = db.transaction(MP_DB_STORE, 'readwrite');
+    tx.objectStore(MP_DB_STORE).delete(id);
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => resolve(false);
+  })).catch(() => false);
+}
+
+/**
+ * Готовит трек к воспроизведению: если файл лежит в IndexedDB,
+ * создаёт для него ссылку в памяти (blob:), по которой играет audio.
+ */
+function mpLoadTrackSource(track) {
+  if (!track) return Promise.resolve(null);
+  if (track.data) return Promise.resolve(track);
+
+  return mpReadBlob(track.id).then(blob => {
+    if (!blob) throw new Error('Файл трека не найден');
+    track.data = URL.createObjectURL(blob);
+    return track;
+  });
+}
+
 /* ---------- Плейлист ---------- */
 
 function mpLoadTracks() {
   const saved = mpReadJson(MP_LIST_KEY, []);
   mpTracks = Array.isArray(saved)
-    ? saved.filter(item => item && item.id && (item.data || item.spotify))
+    ? saved.filter(item => item && item.id && (item.data || item.stored || item.spotify))
     : [];
   return mpTracks;
 }
 
+/**
+ * Сохраняет список треков. Ссылки вида blob: живут только в этой
+ * вкладке — в localStorage вместо них остаётся отметка stored:
+ * сам файл уже лежит в IndexedDB и поднимется при следующем запуске.
+ */
 function mpSaveTracks() {
-  return mpWrite(MP_LIST_KEY, JSON.stringify(mpTracks));
+  const clean = mpTracks.map(item => {
+    const copy = Object.assign({}, item);
+
+    if (copy.data && String(copy.data).indexOf('blob:') === 0) {
+      delete copy.data;
+      copy.stored = true;
+    }
+
+    return copy;
+  });
+
+  return mpWrite(MP_LIST_KEY, JSON.stringify(clean));
 }
 
 function mpTrack(id) {
@@ -242,7 +340,7 @@ function addSpotifyTrack(url) {
 
   if (mpTracks.length >= MP_MAX_TRACKS) {
     if (typeof showToast === 'function') {
-      showToast('Плейлист заполнен', 'Больше ' + MP_MAX_TRACKS + ' треков не влезет', 'warning', { duration: 4600 });
+      showToast('Плейлист заполнен', 'В плейлисте уже ' + MP_MAX_TRACKS + ' треков', 'warning', { duration: 4600 });
     }
     return false;
   }
@@ -429,6 +527,25 @@ function mpPlayTrack(trackId, at) {
   }
 
   mpHideSpotify();
+
+  // Файл из нового хранилища ещё не поднят — достаём и продолжаем
+  if (track.stored && !track.data) {
+    mpSetNote('Загружаем трек…');
+    mpPaintAll();
+
+    mpLoadTrackSource(track)
+      .then(() => {
+        if (mpCurrent === track.id) mpPlayTrack(track.id, at);
+      })
+      .catch(() => {
+        mpSetNote('Файл не найден — удали трек и добавь заново');
+        if (typeof showToast === 'function') {
+          showToast('Файл не найден', 'Похоже, аудио удалили из памяти браузера', 'error');
+        }
+      });
+
+    return;
+  }
 
   const audio = mpAudioElement();
 
@@ -677,20 +794,26 @@ function mpArtFor(track) {
 
   return {
     hue,
+    hue2: (hue + 42) % 360,
     marks: first === second ? first : first + second,
-    initials: name.trim().slice(0, 1).toUpperCase() || '♪'
+    initials: name.trim().slice(0, 1).toUpperCase() || '♪',
+    // Узор обложки: четыре варианта, выбор стабилен для одного трека
+    pattern: (hash % 4) + 1
   };
 }
 
 /** Красит обложку и винил под текущий трек. */
 function mpPaintArt() {
   const art = document.getElementById('mpArt');
+  const dock = document.getElementById('musicDock');
   const track = mpCurrentTrack();
   if (!art) return;
 
   if (!track) {
     art.style.removeProperty('--art-hue');
     art.style.removeProperty('--art-hue-2');
+    art.dataset.pattern = '1';
+    if (dock) dock.style.removeProperty('--art-hue');
     const text = art.querySelector('.mp-art-marks');
     if (text) text.textContent = '♪';
     mpPaintEqualizer(false);
@@ -699,7 +822,11 @@ function mpPaintArt() {
 
   const info = mpArtFor(track);
   art.style.setProperty('--art-hue', String(info.hue));
-  art.style.setProperty('--art-hue-2', String((info.hue + 42) % 360));
+  art.style.setProperty('--art-hue-2', String(info.hue2));
+  art.dataset.pattern = String(info.pattern);
+
+  // Тем же цветом красим свёрнутую кнопку — сразу видно, что играет
+  if (dock) dock.style.setProperty('--art-hue', String(info.hue));
 
   const text = art.querySelector('.mp-art-marks');
   if (text) text.textContent = mpIsSpotify(track) ? '♫' : info.marks;
@@ -760,6 +887,10 @@ function mpPaintProgress() {
   fill.style.width = (ratio * 100).toFixed(2) + '%';
   time.textContent = mpFormatTime(audio.currentTime);
   duration.textContent = total ? mpFormatTime(total) : '0:00';
+
+  // Точка на полосе перемотки едет вместе с прогрессом
+  const knob = document.querySelector('.mp-seek-knob');
+  if (knob) knob.style.left = (ratio * 100).toFixed(2) + '%';
 
   if (bar) bar.setAttribute('aria-valuenow', String(Math.round(ratio * 100)));
 }
@@ -836,7 +967,7 @@ function mpPaintList() {
               title="Играть: ${safeName}" aria-label="Играть: ${safeName}">
         ${spotify
           ? '<svg viewBox="0 0 24 24" aria-hidden="true" class="mp-row-spotify"><circle cx="12" cy="12" r="9"></circle><path d="M7.5 9.4c3-.8 6.2-.6 8.8.7M8 12.4c2.4-.6 5-.4 7.1.6M8.6 15.2c1.8-.4 3.7-.2 5.3.5"></path></svg>'
-          : `<span class="mp-row-num">${index + 1}</span>`}
+          : `<span class="mp-row-num" style="--row-hue:${mpArtFor(item).hue}">${index + 1}</span>`}
       </button>
       <span class="mp-row-name" title="${safeName}">${safeName}</span>
       <button class="mp-row-del" type="button" onclick="removeMusicTrack('${item.id}')" title="Убрать трек" aria-label="Убрать трек">
@@ -914,20 +1045,21 @@ function mpBuildDock() {
         </button>
       </header>
 
-      <div class="mp-stage">
-        <div class="mp-art" id="mpArt" aria-hidden="true">
+      <div class="mp-hero">
+        <div class="mp-art" id="mpArt" data-pattern="1" aria-hidden="true">
+          <span class="mp-art-marks">♪</span>
           <span class="mp-art-ring"></span>
           <span class="mp-art-ring mp-art-ring-2"></span>
-          <span class="mp-art-marks">♪</span>
           <span class="mp-art-shine"></span>
         </div>
 
-        <div class="mp-eq" id="mpEq" aria-hidden="true">${mpEqualizerMarkup(14)}</div>
-      </div>
+        <div class="mp-meta">
+          <div class="mp-name" id="mpName">Плейлист пуст</div>
+          <div class="mp-artist">AniLingo · своя музыка</div>
+          <div class="mp-note" id="mpNote">Добавь файл или ссылку Spotify</div>
+        </div>
 
-      <div class="mp-meta">
-        <div class="mp-name" id="mpName">Плейлист пуст</div>
-        <div class="mp-note" id="mpNote">Добавь файл или ссылку Spotify</div>
+        <div class="mp-eq" id="mpEq" aria-hidden="true">${mpEqualizerMarkup(5)}</div>
       </div>
 
       <div class="mp-spotify-holder">
@@ -957,18 +1089,10 @@ function mpBuildDock() {
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 5v14L9 12z"></path><path d="M6 5v14"></path></svg>
         </button>
 
-        <button class="mp-btn mp-btn-small" type="button" onclick="musicSeek(-10)" title="Назад 10 секунд" aria-label="Назад 10 секунд">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 9 6 12l5 3z"></path><path d="M6 12a6 6 0 1 1 6 6"></path></svg>
-        </button>
-
         <button class="mp-btn mp-btn-play" id="mpPlay" type="button" onclick="musicToggle()"
                 data-playing="false" title="Играть" aria-label="Играть">
           <svg class="mp-icon-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l12 7-12 7z"></path></svg>
           <svg class="mp-icon-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5v14M15 5v14"></path></svg>
-        </button>
-
-        <button class="mp-btn mp-btn-small" type="button" onclick="musicSeek(10)" title="Вперёд 10 секунд" aria-label="Вперёд 10 секунд">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 9l5 3-5 3z"></path><path d="M18 12a6 6 0 1 0-6 6"></path></svg>
         </button>
 
         <button class="mp-btn" type="button" onclick="musicNext()" title="Следующий трек" aria-label="Следующий трек">
@@ -1101,6 +1225,16 @@ function removeMusicTrack(trackId) {
   mpTracks.splice(index, 1);
   mpSaveTracks();
 
+  // Файл из IndexedDB тоже убираем, иначе он занимает место навсегда
+  if (removed.stored || (removed.data && String(removed.data).indexOf('blob:') === 0)) {
+    mpRemoveBlob(removed.id);
+  }
+
+  // Ссылку в памяти освобождаем: файл уже не нужен
+  if (removed.data && String(removed.data).indexOf('blob:') === 0) {
+    try { URL.revokeObjectURL(removed.data); } catch (error) { /* пусто */ }
+  }
+
   // Освобождаем окно Spotify, если убрали именно его
   if (wasCurrent && mpIsSpotify(removed)) {
     const frame = document.getElementById('mpSpotifyFrame');
@@ -1126,13 +1260,19 @@ function removeMusicTrack(trackId) {
   if (typeof showToast === 'function') showToast('Трек убран', 'Плейлист обновлён', 'info', { duration: 2200 });
 }
 
-/** Добавляет выбранный файл в плейлист и включает его. */
+/**
+ * Добавляет выбранный файл в плейлист и включает его.
+ *
+ * Сам файл уходит в IndexedDB — там нет тесного лимита localStorage.
+ * В список попадает только имя и отметка stored, поэтому плейлист
+ * может быть длиннее, а треки — тяжелее (до 2,5 МБ).
+ */
 function pickCustomMusic(input) {
   const file = input && input.files && input.files[0];
   if (!file) return;
 
-  if (!/^audio\//.test(file.type) && !/\.(mp3|ogg|wav|m4a|flac|aac)$/i.test(file.name)) {
-    if (typeof showToast === 'function') showToast('Нужен аудиофайл', 'Подойдёт MP3, OGG или WAV', 'error');
+  if (!/^audio\//.test(file.type) && !/\.(mp3|ogg|wav|m4a|flac|aac|opus)$/i.test(file.name)) {
+    if (typeof showToast === 'function') showToast('Нужен аудиофайл', 'Подойдёт MP3, OGG, WAV или M4A', 'error');
     input.value = '';
     return;
   }
@@ -1140,9 +1280,8 @@ function pickCustomMusic(input) {
   if (file.size > MP_MAX_TRACK_BYTES) {
     if (typeof showToast === 'function') {
       showToast('Файл слишком большой',
-        'Лимит — 1,8 МБ на трек: браузер хранит музыку в localStorage, а base64 съедает ещё треть. ' +
-        'Длинный трек лучше добавить ссылкой Spotify',
-        'error', { duration: 7200 });
+        'Лимит — 2,5 МБ на трек. Длинную песню лучше добавить ссылкой Spotify',
+        'error', { duration: 6200 });
     }
     input.value = '';
     return;
@@ -1150,31 +1289,33 @@ function pickCustomMusic(input) {
 
   if (mpTracks.length >= MP_MAX_TRACKS) {
     if (typeof showToast === 'function') {
-      showToast('Плейлист заполнен', 'Больше ' + MP_MAX_TRACKS + ' треков localStorage не выдержит', 'warning', { duration: 5000 });
+      showToast('Плейлист заполнен', 'Больше ' + MP_MAX_TRACKS + ' треков не поместится', 'warning', { duration: 4600 });
     }
     input.value = '';
     return;
   }
 
-  const reader = new FileReader();
+  const id = 'tr' + Date.now();
 
-  reader.onerror = () => {
-    if (typeof showToast === 'function') showToast('Не удалось прочитать файл', 'Попробуй другой трек', 'error');
-  };
-
-  reader.onload = () => {
+  const addTrack = (dataUrl) => {
     const track = {
-      id: 'tr' + Date.now(),
+      id: id,
       name: file.name.replace(/\.[^.]+$/, '').slice(0, 60) || 'Трек',
-      kind: 'file',
-      data: String(reader.result)
+      kind: 'file'
     };
+
+    if (dataUrl) track.data = dataUrl;
+    else {
+      track.stored = true;
+      track.data = URL.createObjectURL(file);
+    }
 
     mpTracks.push(track);
 
-    // Если места не хватило — откатываем
+    // Если места не хватило — откатываем и убираем файл
     if (!mpSaveTracks()) {
       mpTracks.pop();
+      mpRemoveBlob(id);
       input.value = '';
       return;
     }
@@ -1184,14 +1325,40 @@ function pickCustomMusic(input) {
     toggleMusicDock(true);
 
     if (typeof showToast === 'function') {
-      showToast('Трек добавлен', 'Плеер в правом нижнем углу — он играет на всех страницах', 'success', { icon: 'music', duration: 3600 });
+      showToast('Трек добавлен',
+        (file.size / (1024 * 1024)).toFixed(1).replace('.', ',') + ' МБ · играет на всех страницах',
+        'success', { icon: 'music', duration: 3600 });
     }
 
     if (typeof renderCustomizationState === 'function') renderCustomizationState();
     input.value = '';
   };
 
-  reader.readAsDataURL(file);
+  mpStoreBlob(id, file)
+    .then(() => addTrack(''))
+    .catch(() => {
+      // Приватный режим без IndexedDB: старый способ через data URL.
+      // Base64 съедает треть, поэтому здесь лимит ниже.
+      if (file.size > 1.8 * 1024 * 1024) {
+        if (typeof showToast === 'function') {
+          showToast('Хранилище недоступно',
+            'В приватном режиме трек не больше 1,8 МБ. Открой обычное окно браузера',
+            'error', { duration: 6400 });
+        }
+        input.value = '';
+        return;
+      }
+
+      const reader = new FileReader();
+
+      reader.onerror = () => {
+        if (typeof showToast === 'function') showToast('Не удалось прочитать файл', 'Попробуй другой трек', 'error');
+        input.value = '';
+      };
+
+      reader.onload = () => addTrack(String(reader.result));
+      reader.readAsDataURL(file);
+    });
 }
 
 /** Совместимость со старыми кнопками в настройках. */
@@ -1265,17 +1432,21 @@ function initMusicPlayer() {
   toggleMusicDock(!state.hidden);
 
   const track = mpTrack(mpCurrent);
+  if (!track) return;
 
-  // Spotify поднимаем сразу: iframe сам покажет свою кнопку
-  if (mpIsSpotify(track)) {
-    mpShowSpotify(track);
-    return;
-  }
+  const start = () => {
+    // Spotify поднимаем сразу: iframe сам покажет свою кнопку
+    if (mpIsSpotify(track)) {
+      mpShowSpotify(track);
+      return;
+    }
 
-  // Продолжаем трек с той же секунды, что и на прошлой странице
-  if (state.playing) {
-    mpPlayTrack(mpCurrent, Number(state.time) || 0);
-  } else {
+    // Продолжаем трек с той же секунды, что и на прошлой странице
+    if (state.playing) {
+      mpPlayTrack(mpCurrent, Number(state.time) || 0);
+      return;
+    }
+
     // Трек не играл: только готовим его и возвращаем прошлую секунду
     const audio = mpAudioElement();
     audio.dataset.trackId = mpCurrent;
@@ -1283,7 +1454,20 @@ function initMusicPlayer() {
     mpResumeTime = Number(state.time) || 0;
     audio.load();
     mpPaintProgress();
+  };
+
+  // Новые треки лежат в IndexedDB: поднимаем файл и только потом играем
+  if (track.stored && !track.data) {
+    mpLoadTrackSource(track)
+      .then(start)
+      .catch(() => {
+        mpSetNote('Файл не найден — удали трек и добавь заново');
+        mpPaintAll();
+      });
+    return;
   }
+
+  start();
 }
 
 /** Пробел — пауза, стрелки — перемотка. Только вне полей ввода. */

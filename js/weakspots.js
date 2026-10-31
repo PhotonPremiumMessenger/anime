@@ -99,13 +99,13 @@ function getWeakTopics(limit = 6) {
 function weakRecommendation(item) {
   const subject = item.subject.toLowerCase();
 
-  if (subject.includes('грамматик')) return { url: 'grammar.html', text: 'Открыть грамматику' };
-  if (subject.includes('слов') || subject.includes('флеш')) return { url: 'flashcards.html', text: 'Повторить карточки' };
-  if (subject.includes('аудир')) return { url: 'listening.html', text: 'Потренировать слух' };
-  if (subject.includes('тест')) return { url: 'tests.html', text: 'Пройти тесты' };
-  if (subject.includes('экзамен')) return { url: 'exam.html', text: 'Пробный экзамен' };
-  if (subject.includes('викторин')) return { url: 'index.html', text: 'Викторина дня' };
-  return { url: 'lessons.html', text: 'К урокам' };
+  if (subject.includes('грамматик')) return { url: 'grammar', text: 'Открыть грамматику' };
+  if (subject.includes('слов') || subject.includes('флеш')) return { url: 'flashcards', text: 'Повторить карточки' };
+  if (subject.includes('аудир')) return { url: 'listening', text: 'Потренировать слух' };
+  if (subject.includes('тест')) return { url: 'tests', text: 'Пройти тесты' };
+  if (subject.includes('экзамен')) return { url: 'exam', text: 'Пробный экзамен' };
+  if (subject.includes('викторин')) return { url: './', text: 'Викторина дня' };
+  return { url: 'lessons', text: 'К урокам' };
 }
 
 /* ---------- Отрисовка ---------- */
@@ -123,7 +123,7 @@ function renderWeakSpots() {
       <div class="weak-empty">
         <span>🎯</span>
         <p>Ошибок пока нет. Пройди тест или викторину — и здесь появится разбор слабых тем.</p>
-        <a class="btn btn-outline btn-small" href="tests.html">К тестам</a>
+        <a class="btn btn-outline btn-small" href="tests">К тестам</a>
       </div>
     `;
     return;

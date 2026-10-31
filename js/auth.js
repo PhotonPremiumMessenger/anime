@@ -128,8 +128,8 @@ function showLogin() {
 
   // Сбрасываем подсветку ошибок
   clearFieldErrors();
-  const nick = document.getElementById('loginNickname');
-  if (nick) nick.focus();
+  const emailField = document.getElementById('loginEmail');
+  if (emailField) emailField.focus();
 }
 
 /** Показывает форму регистрации. */
@@ -391,7 +391,7 @@ async function verifyCode() {
     { icon: 'sparkles', duration: 7000, rewards: rewards }
   );
 
-  setTimeout(() => (window.location.href = 'profile.html'), 900);
+  setTimeout(() => (window.location.href = 'profile'), 900);
 }
 
 /** Закрывает модалку подтверждения. */
@@ -454,15 +454,17 @@ async function resendCode() {
 async function login() {
   clearFieldErrors();
 
-  const nickInput = document.getElementById('loginNickname');
+  const emailInput = document.getElementById('loginEmail');
   const passInput = document.getElementById('loginPassword');
   const btn = document.getElementById('loginBtn');
 
-  const nickname = nickInput ? nickInput.value.trim() : '';
+  // Вход только по почте: ник знают все, почту — только владелец
+  const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
   const password = passInput ? passInput.value : '';
 
-  if (!nickname) {
-    setFieldError('loginNickname', 'Введите ник');
+  if (!isValidEmail(email)) {
+    setFieldError('loginEmail', 'Введите почту, на которую регистрировались');
+    if (emailInput) emailInput.focus();
     return;
   }
 
@@ -476,7 +478,7 @@ async function login() {
     btn.textContent = 'Входим...';
   }
 
-  const result = await apiLogin(nickname, password);
+  const result = await apiLogin(email, password);
 
   if (btn) {
     btn.disabled = false;
@@ -484,23 +486,28 @@ async function login() {
   }
 
   if (!result.ok) {
-    showToast('Не удалось войти', result.data.message || 'Проверьте ник и пароль', 'error');
+    showToast('Не удалось войти', result.data.message || 'Проверьте почту и пароль', 'error');
     return;
   }
 
   // Токен и ник уже записаны в localStorage внутри apiLogin
   const data = result.data || {};
 
-  showToast('С возвращением!', 'Рады видеть вас снова, ' + (data.username || nickname), 'success', {
+  // Шапка сразу показывает ник и аватар нового аккаунта
+  updateHeaderAuth();
+
+  showToast('С возвращением!', 'Рады видеть вас снова, ' + (data.username || email), 'success', {
     icon: 'heart',
     duration: 3600
   });
 
   // Если пользователя выкинуло с защищённой страницы — возвращаем его туда
-  const redirect = sessionStorage.getItem('redirectAfterLogin');
+  // Старые вкладки могли сохранить адрес с .html — приводим к новому виду
+  const redirect = String(sessionStorage.getItem('redirectAfterLogin') || '')
+    .replace(/\.html(?=$|[?#])/, '');
   sessionStorage.removeItem('redirectAfterLogin');
 
-  setTimeout(() => (window.location.href = redirect || 'profile.html'), 700);
+  setTimeout(() => (window.location.href = redirect || 'profile'), 700);
 }
 
 /* ---------- Выход ---------- */
@@ -572,7 +579,7 @@ function logout() {
   }
 
   // 3. На главную
-  window.location.href = 'index.html';
+  window.location.href = './';
 }
 
 /* ---------- Сброс пароля ---------- */
@@ -585,8 +592,8 @@ function toggleResetBox() {
   box.classList.toggle('open');
   if (box.classList.contains('open')) {
     const input = document.getElementById('resetEmail');
-    const loginNick = document.getElementById('loginNickname');
-    if (input && loginNick && loginNick.value.includes('@')) input.value = loginNick.value;
+    const loginEmail = document.getElementById('loginEmail');
+    if (input && loginEmail && loginEmail.value.includes('@')) input.value = loginEmail.value.trim();
     if (input) input.focus();
   }
 }
@@ -627,8 +634,8 @@ async function resetPassword() {
     showToast('Новый пароль: ' + temporary, 'Сохраните его и войдите: почта сейчас в демо-режиме', 'success', { duration: 9000 });
     const passInput = document.getElementById('loginPassword');
     if (passInput) passInput.value = temporary;
-    const nickInput = document.getElementById('loginNickname');
-    if (nickInput) nickInput.focus();
+    const emailField = document.getElementById('loginEmail');
+    if (emailField) emailField.focus();
   } else {
     // Письмо ушло: пароль в письме, а не «какой-то новый»
     showToast('Письмо отправлено', 'Новый пароль придёт на ' + email + '. Войдите с ним', 'success', { duration: 7000 });
@@ -652,12 +659,14 @@ function updateHeaderAuth() {
     el.textContent = nickname;
   });
 
-  const avatar = (user && user.avatar) ||
-    localStorage.getItem(STORAGE_KEYS.avatar) ||
-    'assets/images/avatars/avatar1.png';
-  document.querySelectorAll('[data-header-avatar]').forEach(img => {
-    img.src = avatar;
-  });
+  // Аватар — фото из аккаунта или первая буква ника (avatar.js)
+  if (typeof paintAvatarSlots === 'function') {
+    paintAvatarSlots();
+  } else if (typeof avatarMarkup === 'function') {
+    document.querySelectorAll('[data-header-avatar]').forEach(slot => {
+      slot.innerHTML = avatarMarkup(nickname, { size: 34 });
+    });
+  }
 }
 
 /* ---------- Небольшие помощники форм ---------- */
@@ -701,10 +710,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Кнопка входа в шапке ведёт на страницу регистрации
   document.querySelectorAll('[data-goto-login]').forEach(btn => {
-    btn.addEventListener('click', () => (window.location.href = 'register.html'));
+    btn.addEventListener('click', () => (window.location.href = 'register'));
   });
 
   // Enter в полях формы входа
+  const loginEmail = document.getElementById('loginEmail');
+  if (loginEmail) {
+    loginEmail.addEventListener('keydown', event => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        const pass = document.getElementById('loginPassword');
+        if (pass && pass.value) login();
+        else if (pass) pass.focus();
+      }
+    });
+  }
+
   const loginPassword = document.getElementById('loginPassword');
   if (loginPassword) {
     loginPassword.addEventListener('keydown', event => {

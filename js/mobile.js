@@ -258,8 +258,8 @@ function buildAuthActions() {
   const block = document.createElement('div');
   block.className = 'nav-auth';
   block.innerHTML = `
-    <a class="btn btn-primary" href="register.html">Регистрация</a>
-    <a class="btn btn-ghost" href="register.html">Войти в аккаунт</a>
+    <a class="btn btn-primary" href="register">Регистрация</a>
+    <a class="btn btn-ghost" href="register">Войти в аккаунт</a>
   `;
 
   block.querySelectorAll('a').forEach(link => link.addEventListener('click', closeMobileNav));

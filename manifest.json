@@ -3,7 +3,7 @@
   "short_name": "AniLingo",
   "description": "Уроки японского, аниме, грамматика, словарь и JLPT — всё в одном месте.",
   "lang": "ru",
-  "start_url": "./index.html",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
@@ -15,9 +15,9 @@
     { "src": "assets/images/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "shortcuts": [
-    { "name": "Уроки", "url": "./lessons.html" },
-    { "name": "Флешкарты", "url": "./flashcards.html" },
-    { "name": "Профиль", "url": "./profile.html" },
-    { "name": "Собери слово", "url": "./game.html" }
+    { "name": "Уроки", "url": "./lessons" },
+    { "name": "Флешкарты", "url": "./flashcards" },
+    { "name": "Профиль", "url": "./profile" },
+    { "name": "Собери слово", "url": "./game" }
   ]
 }

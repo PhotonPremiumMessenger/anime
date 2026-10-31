@@ -287,7 +287,7 @@ async function apiRegister(nickname, email, password) {
     username: nick,
     email: mail,
     password: String(password),
-    avatar: localStorage.getItem(STORAGE_KEYS.avatar) || 'assets/images/avatars/avatar1.png',
+    avatar: localStorage.getItem(STORAGE_KEYS.avatar) || '',
     createdAt: new Date().toISOString()
   };
 
@@ -309,14 +309,16 @@ async function apiRegister(nickname, email, password) {
  * Вход по нику и паролю.
  * Дополнительно принимает почту вместо ника — так удобнее.
  */
-async function apiLogin(nickname, password) {
-  const login = String(nickname || '').trim();
+async function apiLogin(loginValue, password) {
+  const login = String(loginValue || '').trim();
   const pass = String(password || '');
 
+  // Вход по почте. Старый способ — по нику — оставляем для совместимости:
+  // так входят те, у кого в сохранённых данных ещё ник.
   const user = login.includes('@') ? findUserByEmail(login) : findUserByNickname(login);
 
   if (!user) {
-    return { ok: false, data: { message: 'Пользователь с таким ником не найден' } };
+    return { ok: false, data: { message: 'Аккаунт с такой почтой не найден' } };
   }
 
   if (String(user.password) !== pass) {

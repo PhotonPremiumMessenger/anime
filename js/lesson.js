@@ -16,8 +16,8 @@ let checked = false;   // проверен ли тест
 /** Без сессии отправляем на регистрацию, запомнив адрес возврата. */
 function guardLessonPage() {
   if (typeof isAuthorized === 'function' && !isAuthorized()) {
-    sessionStorage.setItem('redirectAfterLogin', 'lesson.html' + window.location.search);
-    window.location.href = 'register.html';
+    sessionStorage.setItem('redirectAfterLogin', 'lesson' + window.location.search);
+    window.location.href = 'register';
     return false;
   }
   return true;
@@ -42,7 +42,7 @@ function renderLesson() {
 
   if (!currentLesson) {
     const root = document.getElementById('lessonRoot');
-    if (root) root.innerHTML = '<div class="empty-state">Урок не найден. <a href="lessons.html">Вернуться к каталогу</a></div>';
+    if (root) root.innerHTML = '<div class="empty-state">Урок не найден. <a href="lessons">Вернуться к каталогу</a></div>';
     return;
   }
 
@@ -368,7 +368,7 @@ function renderLessonNav(previous, next) {
   if (!nav) return;
 
   nav.innerHTML = `
-    <a class="btn btn-ghost" href="lessons.html">← Все уроки</a>
+    <a class="btn btn-ghost" href="lessons">← Все уроки</a>
     <div class="lesson-nav-right"></div>
   `;
 
@@ -377,7 +377,7 @@ function renderLessonNav(previous, next) {
   if (previous) {
     const link = document.createElement('a');
     link.className = 'btn btn-outline';
-    link.href = 'lesson.html?id=' + previous.id;
+    link.href = 'lesson?id=' + previous.id;
     link.textContent = '← ' + previous.title;
     right.appendChild(link);
   }
@@ -385,7 +385,7 @@ function renderLessonNav(previous, next) {
   if (next) {
     const link = document.createElement('a');
     link.className = 'btn btn-primary';
-    link.href = 'lesson.html?id=' + next.id;
+    link.href = 'lesson?id=' + next.id;
     link.textContent = next.title + ' →';
     right.appendChild(link);
   }

@@ -552,6 +552,59 @@ async function apiChangeEmailConfirm(newEmail, code) {
   return { ok: true, data: { email: newEmail } };
 }
 
+/* ---------- Аватар ---------- */
+
+/**
+ * Сохраняет фото аватара в аккаунте.
+ * Пустая строка убирает фото — на сайте останется буква ника.
+ * Картинка приходит уже сжатой в avatar.js (data URL, до ~140 КБ).
+ */
+async function apiUploadAvatar(avatar) {
+  const photo = String(avatar == null ? '' : avatar);
+  const user = getCurrentUser();
+
+  // В демо-режиме хватает записи в списке пользователей браузера
+  if (user) updateUserRecord(user.username, { avatar: photo });
+
+  const mode = await apiModeNow();
+  if (mode === 'local') return { ok: true, data: { avatar: photo } };
+
+  const response = await apiRequest('/api/auth/avatar', {
+    method: 'PUT',
+    body: { avatar: photo }
+  });
+
+  if (!response.ok) {
+    return { ok: false, data: { message: response.data.message || 'Не удалось сохранить фото' } };
+  }
+
+  // Свежий пользователь с сервера — чтобы кэш не разошёлся с базой
+  try {
+    const token = getToken();
+    if (response.data.user && token) apiCacheUser(response.data.user, token);
+  } catch (error) {
+    // не критично
+  }
+
+  return { ok: true, data: { avatar: response.data.user ? response.data.user.avatar : photo } };
+}
+
+/**
+ * Публичная визитка по нику — нужна, чтобы в чужом профиле
+ * показывался загруженный аватар, а не заглушка.
+ * Возвращает null, если аккаунта нет (или сервер недоступен).
+ */
+async function apiPublicProfile(username) {
+  const mode = await apiModeNow();
+  if (mode === 'local') return null;
+
+  // Публичный адрес, без токена
+  const response = await apiRequest('/api/public/user/' + encodeURIComponent(username));
+
+  if (!response.ok || !response.data || !response.data.user) return null;
+  return response.data.user;
+}
+
 /* ---------- Выгрузка данных ---------- */
 
 /** Все данные аккаунта для кнопки «Скачать мои данные». */
@@ -603,6 +656,8 @@ window.apiChangePassword = apiChangePassword;
 window.apiChangeNickname = apiChangeNickname;
 window.apiChangeEmailRequest = apiChangeEmailRequest;
 window.apiChangeEmailConfirm = apiChangeEmailConfirm;
+window.apiUploadAvatar = apiUploadAvatar;
+window.apiPublicProfile = apiPublicProfile;
 window.getAccountData = getAccountData;
 
 /* ---------- Проверка связи при загрузке ---------- */

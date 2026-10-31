@@ -14,7 +14,8 @@
    падающие лепестки, если их включили сами. */
 .perf-lite .hero-card,
 .perf-lite .hero h1 .hero-line:first-child,
-.perf-lite .avatar-frame::after,
+.perf-lite .avatar-round::after,
+.perf-lite .avatar-ring,
 .perf-lite .badge-dot,
 .perf-lite .hero-card-top .live i,
 .perf-lite .donate-beat,

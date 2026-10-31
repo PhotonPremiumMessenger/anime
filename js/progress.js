@@ -215,6 +215,11 @@ function completeLesson(lessonId, correct, total) {
     if (newWords > 0) notifyAction('word', newWords, { reason: 'Новые слова' });
   }
 
+  // Первый пройденный урок открывает бесплатную рамку «Первый шаг»
+  if (typeof window.grantFirstLessonFrame === 'function') {
+    try { window.grantFirstLessonFrame(); } catch (error) { /* не критично */ }
+  }
+
   // Достижения проверяет модуль achievements.js
   const fresh = typeof window.checkAchievements === 'function' ? window.checkAchievements() : [];
 

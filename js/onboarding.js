@@ -36,8 +36,8 @@ const TOUR_STEPS = [
     hint: 'Кнопка «Дизайн»'
   },
   {
-    selector: '.nav-link[href="anime.html"]',
-    mobileSelector: '.mobile-more .nav-link[href="anime.html"]',
+    selector: '.nav-link[href="anime"]',
+    mobileSelector: '.mobile-more .nav-link[href="anime"]',
     fallbackSelector: '.nav-more-btn',
     icon: 'film',
     title: 'Каталог аниме',

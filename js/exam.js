@@ -318,7 +318,7 @@ function renderExamResult(result, best, timeUp) {
 
       <div class="btn-row">
         <button class="btn btn-primary" onclick="startExam()">Ещё попытка</button>
-        <a class="btn btn-outline" href="tests.html">К тестам</a>
+        <a class="btn btn-outline" href="tests">К тестам</a>
       </div>
     </div>
   `;

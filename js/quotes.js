@@ -84,7 +84,7 @@ function renderQuoteBlock() {
       <button class="btn btn-ghost btn-small" onclick="speakJapanese(document.querySelector('.quote-jp').textContent)">🔊 Прослушать</button>
       <button class="btn btn-ghost btn-small" onclick="nextQuote()">Другая цитата</button>
       <button class="btn btn-ghost btn-small" onclick="copyQuote()">Скопировать</button>
-      <a class="btn btn-ghost btn-small" href="anime.html">Все тайтлы →</a>
+      <a class="btn btn-ghost btn-small" href="anime">Все тайтлы →</a>
     </div>
   `;
 

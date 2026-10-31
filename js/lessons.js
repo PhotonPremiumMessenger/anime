@@ -75,7 +75,7 @@ function buildLessonCard(lesson, index) {
 
   const card = document.createElement('a');
   card.className = 'lesson-card reveal';
-  card.href = 'lesson.html?id=' + lesson.id;
+  card.href = 'lesson?id=' + lesson.id;
   card.style.transitionDelay = (index * 60) + 'ms';
 
   // Статус в правом верхнем углу обложки
