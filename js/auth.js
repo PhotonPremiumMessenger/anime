@@ -562,6 +562,11 @@ function logout() {
   try {
     localStorage.removeItem(STORAGE_KEYS.avatar);
     localStorage.removeItem(PENDING_EMAIL_KEY);
+
+    // Уведомления и отметка «до какого уровня дошёл» принадлежат
+    // аккаунту: после выхода гость не должен видеть чужие события
+    localStorage.removeItem('anilingo_notifications');
+    localStorage.removeItem('anilingo_notify_level');
   } catch (error) {
     // ничего не поделать
   }
@@ -607,7 +612,7 @@ async function resetPassword() {
 
   if (btn) {
     btn.disabled = false;
-    btn.textContent = 'Отправить ссылку';
+    btn.textContent = 'Отправить новый пароль';
   }
 
   if (!result.ok) {
@@ -618,11 +623,15 @@ async function resetPassword() {
   const temporary = result.data && result.data.temporaryPassword;
 
   if (temporary) {
-    showToast('Новый пароль: ' + temporary, 'Демо-режим: сохраните пароль и войдите с ним', 'success');
+    // Почта не настроена на сервере — показываем пароль прямо здесь
+    showToast('Новый пароль: ' + temporary, 'Сохраните его и войдите: почта сейчас в демо-режиме', 'success', { duration: 9000 });
     const passInput = document.getElementById('loginPassword');
     if (passInput) passInput.value = temporary;
+    const nickInput = document.getElementById('loginNickname');
+    if (nickInput) nickInput.focus();
   } else {
-    showToast('Пароль обновлён', 'Войдите с новым паролем', 'success');
+    // Письмо ушло: пароль в письме, а не «какой-то новый»
+    showToast('Письмо отправлено', 'Новый пароль придёт на ' + email + '. Войдите с ним', 'success', { duration: 7000 });
   }
 }
 

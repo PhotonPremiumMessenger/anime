@@ -220,6 +220,10 @@ function saveUnlockedAchievements(list) {
 function checkAchievements(silent = false) {
   if (achievementCheckRunning) return [];
 
+  // Достижения — часть аккаунта: гостю их не открываем
+  // и не показываем всплывашки с наградой
+  if (typeof accountIsActive === 'function' && !accountIsActive()) return [];
+
   const stats = getPlayerStats();
   const unlocked = getUnlockedAchievements();
   const fresh = [];

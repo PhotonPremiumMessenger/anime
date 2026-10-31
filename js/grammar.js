@@ -573,7 +573,9 @@ function markGrammarRead(id) {
 
   const rule = GRAMMAR_RULES.find(item => item.id === id);
   if (typeof showToast === 'function') {
-    showToast('Правило изучено', (rule ? rule.title : 'Грамматика') + ' · +15 XP', 'success');
+    // Гостю опыт не начисляется — не обещаем +15 XP
+    const reward = typeof accountIsActive === 'function' && accountIsActive() ? ' · +15 XP' : '';
+    showToast('Правило изучено', (rule ? rule.title : 'Грамматика') + reward, 'success');
   }
 
   const button = document.getElementById('grammarReadBtn');

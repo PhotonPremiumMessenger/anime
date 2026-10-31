@@ -7,7 +7,6 @@
 
 const THEME_KEY = 'theme';
 const SAKURA_KEY = 'sakuraOn';
-const RELEASE_KEY = 'releaseDate';
 
 /* ---------- Панель дизайна ---------- */
 
@@ -319,29 +318,21 @@ function applyStoredSettings() {
 // Сколько всего дней растёт платформа (пункт 1: было «60 месяцев», стало 250 дней)
 const RELEASE_DAYS = 250;
 
-// Ключ схемы: если он изменился — отсчёт начинается заново
-const RELEASE_SCHEMA = 'anilingo_release_start_v2';
-
 /**
- * Дата старта отсчёта. Хранится в localStorage, поэтому при перезагрузке
- * и переходах между страницами ничего не обнуляется.
- * Старый ключ releaseDate больше не используется — счёт идёт от старта.
+ * Общая точка отсчёта — одна на весь сайт, а не на браузер.
+ *
+ * Раньше дата старта лежала в localStorage: у каждого посетителя
+ * счётчик начинался с его первого визита, то есть обнулялся у всех
+ * новых людей. Теперь старт — это день рождения платформы, поэтому
+ * у всех одинаковые «прошло» и «осталось», и сбросить его нельзя
+ * ни очисткой кэша, ни другим устройством.
  */
+const RELEASE_START_ISO = '2026-10-23T09:05:37Z';
+const RELEASE_START = Date.parse(RELEASE_START_ISO);
+
+/** Дата старта платформы: одна для всех, всегда одна и та же. */
 function getReleaseStart() {
-  let saved = Number(localStorage.getItem(RELEASE_SCHEMA));
-
-  if (!Number.isFinite(saved) || saved <= 0) {
-    saved = Date.now();
-    try {
-      localStorage.setItem(RELEASE_SCHEMA, String(saved));
-      // Чистим устаревшую дату «через 6 месяцев»
-      localStorage.removeItem(RELEASE_KEY);
-    } catch (error) {
-      /* приватный режим — считаем от текущей сессии */
-    }
-  }
-
-  return saved;
+  return RELEASE_START;
 }
 
 /** Дата открытия платформы: старт + 250 дней. */

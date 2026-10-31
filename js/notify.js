@@ -24,12 +24,25 @@ function getUnreadCount() {
 }
 
 /**
+ * Есть ли у человека аккаунт. Гость (не вошёл и не зарегистрировался)
+ * уведомлений не получает вовсе: это события аккаунта — уровни,
+ * достижения, повторения и напоминания.
+ */
+function notifyAccountActive() {
+  if (typeof accountIsActive === 'function') return accountIsActive();
+  return typeof isAuthorized === 'function' ? Boolean(isAuthorized()) : false;
+}
+
+/**
  * Добавляет уведомление.
  * @param {string} type — lesson | reward | social | system | exam
  * @param {string} title
  * @param {string} text
  */
 function pushNotification(type, title, text = '') {
+  // Гостю уведомления не приходят
+  if (!notifyAccountActive()) return null;
+
   const list = getNotifications();
   const day = new Date().toISOString().slice(0, 10);
 
@@ -184,6 +197,9 @@ function closeNotifyPanel() {
  * Вызывается один раз за загрузку страницы.
  */
 function buildSmartNotifications() {
+  // Гостю напоминания не нужны: их некуда копить
+  if (!notifyAccountActive()) return;
+
   // Карточки к повторению
   if (typeof getSRSStats === 'function') {
     const stats = getSRSStats(typeof getJLPT === 'function' ? getJLPT() : 'all');
@@ -217,6 +233,9 @@ function buildSmartNotifications() {
 function mountNotifyBell() {
   const container = document.querySelector('.header .container');
   if (!container || document.getElementById('notifyBell')) return;
+
+  // Гость: ни колокольчика, ни панели — уведомлений у него нет
+  if (!notifyAccountActive()) return;
 
   const bell = document.createElement('button');
   bell.className = 'notify-bell nav-design';

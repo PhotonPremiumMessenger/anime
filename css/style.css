@@ -18428,39 +18428,6 @@ body.focus-mode .pomodoro {
   justify-content: center;
 }
 
-/* ---------- 19.9 Озвучка выделенного ---------- */
-.tts-button {
-  position: fixed;
-  z-index: 500;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 13px;
-  border-radius: 999px;
-  border: 1px solid hsl(var(--accent-hue) var(--accent-sat) 62% / 0.5);
-  background: rgba(16, 16, 24, 0.96);
-  color: var(--text-main);
-  font-family: var(--font-body);
-  font-size: 0.8rem;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
-}
-
-.tts-button svg {
-  width: 15px;
-  height: 15px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.9;
-  stroke-linecap: round;
-}
-
-.tts-button:hover {
-  color: hsl(var(--accent-hue) var(--accent-sat) 70%);
-  border-color: hsl(var(--accent-hue) var(--accent-sat) 66%);
-}
-
 /* ---------- 19.10 Дневник ошибок ---------- */
 .diary-table-wrap {
   margin-bottom: 16px;
@@ -18771,8 +18738,7 @@ body.theme-light .diary-wrong {
 }
 
 body.theme-light .pomodoro,
-body.theme-light .focus-exit,
-body.theme-light .tts-button {
+body.theme-light .focus-exit {
   background: rgba(255, 255, 255, 0.97);
   border-color: rgba(0, 0, 0, 0.12);
   color: rgb(37, 37, 37);

@@ -7,7 +7,7 @@
 
 'use strict';
 
-const VERSION = 'anilingo-v18';
+const VERSION = 'anilingo-v19';
 const STATIC_CACHE = VERSION + '-static';
 const IMAGE_CACHE = VERSION + '-images';
 
@@ -43,7 +43,6 @@ const CORE = [
   'js/study.js',
   'js/quick-review.js',
   'js/mistakes.js',
-  'js/tts-select.js',
   'js/progress-map.js',
   'js/lesson-tools.js',
   'js/game.js'

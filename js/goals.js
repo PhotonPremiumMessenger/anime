@@ -96,6 +96,9 @@ function getGoalsProgress() {
  * Вызывается из addXP через шину действий и при загрузке страницы.
  */
 function checkGoalBonus() {
+  // Цели дня — часть аккаунта: гостю бонус не начисляем
+  if (typeof accountIsActive === 'function' && !accountIsActive()) return false;
+
   const progress = getGoalsProgress();
   const goals = progress.goals;
 

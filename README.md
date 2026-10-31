@@ -46,6 +46,20 @@ python -m http.server 8000
 Google Translate (перевод выделенного текста) и Google как SMTP для писем
 с кодами подтверждения.
 
+### На своём сервере (anilingo.fun)
+
+Рабочий сайт живёт на VPS, а не на GitHub Pages. После каждого коммита в
+`main` запускается workflow **Deploy to Server**: он заходит по SSH и
+обновляет копии репозитория на сервере (`git reset --hard origin/main`),
+ставит зависимости и перезапускает `pm2`. В GitHub → Settings → Secrets
+должны быть `SSH_HOST`, `SSH_USER`, `SSH_PRIVATE_KEY`; при желании —
+`SSH_PORT`, `DEPLOY_SITE_DIR`, `DEPLOY_API_DIR`.
+
+**Если сайт не обновился** — открой Actions → Deploy to Server и посмотри
+последний запуск. Красный статус на шаге «Deploy via SSH» значит, что
+GitHub не смог зайти на сервер (ключ, IP или пользователь), и на сервере
+осталась старая версия. Вручную: `cd /var/www/<папка> && git pull && pm2 restart anilingo-api`.
+
 ---
 
 ## 🔄 Что на сервере, а что в браузере

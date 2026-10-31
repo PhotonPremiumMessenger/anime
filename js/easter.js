@@ -60,9 +60,11 @@ function triggerEaster(id, message) {
   }
 
   if (typeof showToast === 'function') {
+    // Опыт — только аккаунту, гостю просто показываем находку
+    const reward = typeof accountIsActive === 'function' && accountIsActive() ? ' · +20 XP' : '';
     showToast(
       '🕵️ Пасхалка: ' + egg.title,
-      (message || egg.hint) + ' · +20 XP · найдено ' + found.length + ' из ' + EASTER_EGGS.length,
+      (message || egg.hint) + reward + ' · найдено ' + found.length + ' из ' + EASTER_EGGS.length,
       'success'
     );
   }
