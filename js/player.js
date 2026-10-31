@@ -13,8 +13,8 @@
 
 'use strict';
 
-const MP_LIST_KEY = 'nihongo_playlist';   // [{ id, name, kind, data | spotify }]
-const MP_STATE_KEY = 'nihongo_player';    // { trackId, time, playing, volume, muted, hidden, repeat, shuffle }
+const MP_LIST_KEY = 'anilingo_playlist';   // [{ id, name, kind, data | spotify }]
+const MP_STATE_KEY = 'anilingo_player';    // { trackId, time, playing, volume, muted, hidden, repeat, shuffle }
 
 const MP_MAX_TRACK_BYTES = 1.8 * 1024 * 1024;  // один файл: base64 съедает треть
 const MP_MAX_TRACKS = 12;                       // больше не влезет в localStorage
@@ -1230,10 +1230,10 @@ function hasCustomMusic() {
 
 /**
  * Переносит трек из старой версии (он лежал одним файлом в
- * nihongo_custom_music) в новый плейлист.
+ * anilingo_custom_music) в новый плейлист.
  */
 function mpMigrateOldTrack() {
-  const old = mpRead('nihongo_custom_music', '');
+  const old = mpRead('anilingo_custom_music', '');
   if (!old) return;
 
   if (!mpTracks.length) {
@@ -1241,7 +1241,7 @@ function mpMigrateOldTrack() {
     mpSaveTracks();
   }
 
-  try { localStorage.removeItem('nihongo_custom_music'); } catch (error) { /* пусто */ }
+  try { localStorage.removeItem('anilingo_custom_music'); } catch (error) { /* пусто */ }
 }
 
 function initMusicPlayer() {

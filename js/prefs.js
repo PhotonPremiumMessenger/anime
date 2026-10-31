@@ -297,7 +297,7 @@ function scheduleDailyReminder() {
   const now = new Date();
   const today = now.toISOString().slice(0, 10);
 
-  if (localStorage.getItem('nihongo_daily_ping') === today) return;
+  if (localStorage.getItem('anilingo_daily_ping') === today) return;
 
   const [hours, minutes] = time.split(':').map(Number);
   const target = new Date(now);
@@ -306,11 +306,11 @@ function scheduleDailyReminder() {
   if (now < target) return;
 
   // Если сегодня уже занимались — не мешаем
-  const practiced = localStorage.getItem('nihongo_last_practice');
+  const practiced = localStorage.getItem('anilingo_last_practice');
   if (practiced === today) return;
 
   pushNotification('daily', 'Пора позаниматься', 'Дневная цель ждёт: 5 минут хватит, чтобы сохранить серию');
-  localStorage.setItem('nihongo_daily_ping', today);
+  localStorage.setItem('anilingo_daily_ping', today);
 
   showToast('Напоминание', 'Пять минут практики — и серия дней не прервётся', 'info', {
     icon: 'bell',
@@ -326,10 +326,10 @@ function scheduleWeeklyDigest() {
   const now = new Date();
   const week = Math.floor(now.getTime() / (7 * 24 * 60 * 60 * 1000));
 
-  if (localStorage.getItem('nihongo_digest_week') === String(week)) return;
+  if (localStorage.getItem('anilingo_digest_week') === String(week)) return;
 
   pushNotification('digest', 'Дайджест недели', 'Свежие разборы фраз и обновления каталога уже на сайте');
-  localStorage.setItem('nihongo_digest_week', String(week));
+  localStorage.setItem('anilingo_digest_week', String(week));
 }
 
 /* ============================================================

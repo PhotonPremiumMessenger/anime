@@ -8,21 +8,21 @@
    • напоминание о перерыве после часа занятий.
 
    Ключи localStorage:
-   nihongo_active_lesson      — { lessonId, currentStep, totalSteps }
-   nihongo_completed_lessons  — массив id пройденных уроков
-   nihongo_last_study         — дата последнего занятия (YYYY-MM-DD)
-   nihongo_study_pace         — темп в минутах
-   nihongo_words_log          — когда какое слово учили
+   anilingo_active_lesson      — { lessonId, currentStep, totalSteps }
+   anilingo_completed_lessons  — массив id пройденных уроков
+   anilingo_last_study         — дата последнего занятия (YYYY-MM-DD)
+   anilingo_study_pace         — темп в минутах
+   anilingo_words_log          — когда какое слово учили
    ============================================================ */
 
 'use strict';
 
 const STUDY_KEYS = {
-  active: 'nihongo_active_lesson',
-  completed: 'nihongo_completed_lessons',
-  lastStudy: 'nihongo_last_study',
-  pace: 'nihongo_study_pace',
-  wordsLog: 'nihongo_words_log'
+  active: 'anilingo_active_lesson',
+  completed: 'anilingo_completed_lessons',
+  lastStudy: 'anilingo_last_study',
+  pace: 'anilingo_study_pace',
+  wordsLog: 'anilingo_words_log'
 };
 
 // Темп по умолчанию — 15 минут в день
@@ -83,8 +83,8 @@ function studyYesterdayKey() {
 function getCompletedLessonIds() {
   const ids = new Set();
 
-  // Основной источник — nihongo_progress
-  const progress = studyRead('nihongo_progress', null);
+  // Основной источник — anilingo_progress
+  const progress = studyRead('anilingo_progress', null);
   if (progress && progress.lessons && typeof progress.lessons === 'object') {
     Object.keys(progress.lessons).forEach(id => {
       if (progress.lessons[id] && progress.lessons[id].completed) ids.add(String(id));
@@ -157,7 +157,7 @@ function markStudyDone() {
   studyWrite(STUDY_KEYS.lastStudy, studyTodayKey());
 
   mountStudyDot();
-  document.dispatchEvent(new CustomEvent('nihongo:study'));
+  document.dispatchEvent(new CustomEvent('anilingo:study'));
 }
 
 /** Занимался ли игрок сегодня. */
@@ -208,7 +208,7 @@ function setStudyPace(value) {
 
   renderStudyLaunch();
   if (typeof renderLessonPaceCards === 'function') renderLessonPaceCards();
-  document.dispatchEvent(new CustomEvent('nihongo:pace', { detail: { pace: pace } }));
+  document.dispatchEvent(new CustomEvent('anilingo:pace', { detail: { pace: pace } }));
 
   if (typeof showToast === 'function') {
     showToast('Темп учёбы обновлён', pace + ' минут в день · карточек на урок: ' + studyCardsPerSession(), 'success');
@@ -283,7 +283,7 @@ function getAllLoggedWords() {
 
 /** Находит урок по id среди загруженных. */
 function studyFindLesson(lessonId) {
-  const lessons = window.nihongo_lessons || [];
+  const lessons = window.anilingo_lessons || [];
   return lessons.find(lesson => String(lesson.id) === String(lessonId)) || null;
 }
 
@@ -296,7 +296,7 @@ function renderStudyLaunch() {
   const activeLesson = active ? studyFindLesson(active.lessonId) : null;
   const pace = getStudyPace();
 
-  const lessons = window.nihongo_lessons || [];
+  const lessons = window.anilingo_lessons || [];
   const completedIds = getCompletedLessonIds();
 
   // Первый непройденный урок — с него начинаем, если продолжать нечего
@@ -362,7 +362,7 @@ function studyEscape(text) {
  * @returns {object|null}
  */
 function pickRandomLesson() {
-  const lessons = window.nihongo_lessons || [];
+  const lessons = window.anilingo_lessons || [];
   if (!lessons.length) return null;
 
   const completed = getCompletedLessonIds();
@@ -438,7 +438,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Кнопка «Продолжить» и точка должны обновляться сразу после занятия
-document.addEventListener('nihongo:study', () => {
+document.addEventListener('anilingo:study', () => {
   mountStudyDot();
   renderStudyLaunch();
 });

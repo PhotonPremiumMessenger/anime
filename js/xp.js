@@ -9,15 +9,15 @@
 /* ---------- Ключи localStorage ---------- */
 
 const XP_KEYS = {
-  streak: 'nihongo_streak',        // серия дней подряд
-  counters: 'nihongo_counters',    // счётчики действий (для достижений)
-  daily: 'nihongo_daily',          // ежедневные задания
-  weekly: 'nihongo_weekly',        // челлендж недели
-  quiz: 'nihongo_quiz',            // викторина дня
-  speed: 'nihongo_speed',          // тест на скорость
-  shop: 'nihongo_shop',            // покупки магазина
-  achievements: 'nihongo_achievements',
-  guestXP: 'nihongo_guest_xp'
+  streak: 'anilingo_streak',        // серия дней подряд
+  counters: 'anilingo_counters',    // счётчики действий (для достижений)
+  daily: 'anilingo_daily',          // ежедневные задания
+  weekly: 'anilingo_weekly',        // челлендж недели
+  quiz: 'anilingo_quiz',            // викторина дня
+  speed: 'anilingo_speed',          // тест на скорость
+  shop: 'anilingo_shop',            // покупки магазина
+  achievements: 'anilingo_achievements',
+  guestXP: 'anilingo_guest_xp'
 };
 
 // Максимальный уровень аккаунта
@@ -201,7 +201,7 @@ function spendXP(amount) {
 
 /* ---------- Опыт по дням ---------- */
 
-const XP_DAYS_KEY = 'nihongo_xp_days';
+const XP_DAYS_KEY = 'anilingo_xp_days';
 
 /** Опыт по дням: { '2026-10-24': 120, ... }. */
 function getXPDays() {
@@ -302,7 +302,7 @@ function getStreak() {
     };
   }
 
-  // Миграция из nihongo_progress.streak
+  // Миграция из anilingo_progress.streak
   const progress = typeof getProgress === 'function' ? getProgress() : null;
   const legacy = progress && progress.streak ? progress.streak : null;
 
@@ -390,7 +390,7 @@ function getPlayerStats() {
     level: levelInfo.level,
     levelInfo: levelInfo,
     lessons: lessons,
-    totalLessons: (window.nihongo_lessons || []).length || 5,
+    totalLessons: (window.anilingo_lessons || []).length || 5,
     words: words,
     streak: streak.count,
     bestStreak: streak.best,
@@ -422,11 +422,11 @@ function getPlayerStats() {
 /* ---------- Шина действий ---------- */
 
 // Сюда модули (задания, челленджи) добавляют свои обработчики
-const nihongoActionHooks = [];
+const anilingoActionHooks = [];
 
 /** Регистрирует обработчик действий. */
 function registerActionHook(fn) {
-  if (typeof fn === 'function') nihongoActionHooks.push(fn);
+  if (typeof fn === 'function') anilingoActionHooks.push(fn);
 }
 
 // Сколько XP даёт каждое действие
@@ -463,7 +463,7 @@ function notifyAction(type, amount = 1, extra = {}) {
   if (xp > 0) addXP(xp, extra.reason || '');
 
   // Сообщаем модулям (задания, челлендж, достижения)
-  nihongoActionHooks.forEach(hook => {
+  anilingoActionHooks.forEach(hook => {
     try {
       hook(type, value, extra);
     } catch (error) {

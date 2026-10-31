@@ -2,12 +2,12 @@
    profile-custom.js — оформление профиля и био
    Пункт 21: шапка профиля, акцент, свечение карточек, эффект ника.
    Пункт 22: био, город и любимый тайтл.
-   Всё хранится в localStorage: nihongo_custom и поле bio в аккаунте.
+   Всё хранится в localStorage: anilingo_custom и поле bio в аккаунте.
    ============================================================ */
 
 'use strict';
 
-const CUSTOM_KEY = 'nihongo_custom';
+const CUSTOM_KEY = 'anilingo_custom';
 const BIO_LIMIT = 200;
 
 /* ---------- Пресеты ---------- */

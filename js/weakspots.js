@@ -1,13 +1,13 @@
 /* ============================================================
    weakspots.js — слабые места
-   Каждая ошибка записывается в nihongo_weak: предмет, тема,
+   Каждая ошибка записывается в anilingo_weak: предмет, тема,
    вопрос и правильный ответ. Дальше модуль считает, какие темы
    проваливаются чаще всего, и предлагает, что подтянуть.
    ============================================================ */
 
 'use strict';
 
-const WEAK_KEY = 'nihongo_weak';
+const WEAK_KEY = 'anilingo_weak';
 const WEAK_LIMIT = 300;
 
 /* ---------- Запись ошибок ---------- */
@@ -51,7 +51,7 @@ function recordMistake(subject, topic, prompt, right, picked) {
   writeJSON(WEAK_KEY, list.slice(0, WEAK_LIMIT));
 
   // Дневник ошибок в профиле перерисовывается сразу
-  document.dispatchEvent(new CustomEvent('nihongo:mistake', { detail: { mistake: mistake } }));
+  document.dispatchEvent(new CustomEvent('anilingo:mistake', { detail: { mistake: mistake } }));
 
   return mistake;
 }
@@ -62,7 +62,7 @@ function clearMistakes() {
   renderWeakSpots();
 
   // Дневник ошибок в профиле тоже должен опустеть
-  document.dispatchEvent(new CustomEvent('nihongo:mistake', { detail: { cleared: true } }));
+  document.dispatchEvent(new CustomEvent('anilingo:mistake', { detail: { cleared: true } }));
   if (typeof showToast === 'function') showToast('История ошибок очищена', 'Начинаем с чистого листа', 'info');
 }
 

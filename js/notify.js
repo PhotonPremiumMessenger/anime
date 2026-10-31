@@ -1,13 +1,13 @@
 /* ============================================================
    notify.js — центр уведомлений
    Колокольчик в шапке, панель со списком событий и счётчик
-   непрочитанных. Уведомления пишутся в nihongo_notifications
+   непрочитанных. Уведомления пишутся в anilingo_notifications
    и не дублируются: одинаковые события за день схлопываются.
    ============================================================ */
 
 'use strict';
 
-const NOTIFY_KEY = 'nihongo_notifications';
+const NOTIFY_KEY = 'anilingo_notifications';
 const NOTIFY_LIMIT = 40;
 
 /* ---------- Хранилище ---------- */
@@ -52,6 +52,8 @@ function pushNotification(type, title, text = '') {
   writeJSON(NOTIFY_KEY, list.slice(0, NOTIFY_LIMIT));
 
   renderNotifyBell();
+  if (typeof refreshQuickNotifyCount === 'function') refreshQuickNotifyCount();
+
   if (document.getElementById('notifyPanel') && document.getElementById('notifyPanel').classList.contains('open')) {
     renderNotifyPanel();
   }
@@ -65,6 +67,8 @@ function markNotificationsRead() {
   writeJSON(NOTIFY_KEY, list);
   renderNotifyBell();
   renderNotifyPanel();
+
+  if (typeof refreshQuickNotifyCount === 'function') refreshQuickNotifyCount();
 }
 
 /** Удаляет все уведомления. */
@@ -72,6 +76,8 @@ function clearNotifications() {
   writeJSON(NOTIFY_KEY, []);
   renderNotifyBell();
   renderNotifyPanel();
+
+  if (typeof refreshQuickNotifyCount === 'function') refreshQuickNotifyCount();
 }
 
 /* ---------- Отрисовка ---------- */
@@ -145,17 +151,30 @@ function toggleNotifyPanel(event) {
   const panel = document.getElementById('notifyPanel');
   if (!panel) return;
 
-  const isOpen = panel.classList.toggle('open');
-  if (isOpen) {
+  const willOpen = !panel.classList.contains('open');
+
+  // На телефоне одновременно открыта только одна панель:
+  // меню и дизайн закрываются, прежде чем появятся уведомления
+  if (willOpen && typeof closeOtherMobilePanels === 'function') {
+    closeOtherMobilePanels('notify');
+  }
+
+  panel.classList.toggle('open', willOpen);
+
+  if (willOpen) {
     renderNotifyPanel();
     setTimeout(markNotificationsRead, 900);
   }
+
+  if (typeof syncPanelBackdrop === 'function') syncPanelBackdrop();
 }
 
-/** Закрывает панель. */
+/** Закрывает панель: она плавно уезжает вправо, а не пропадает. */
 function closeNotifyPanel() {
   const panel = document.getElementById('notifyPanel');
   if (panel) panel.classList.remove('open');
+
+  if (typeof syncPanelBackdrop === 'function') syncPanelBackdrop();
 }
 
 /* ---------- Умные напоминания ---------- */
@@ -184,10 +203,10 @@ function buildSmartNotifications() {
   // Свежий уровень
   if (typeof getLevelInfo === 'function' && typeof getXP === 'function') {
     const level = getLevelInfo(getXP()).level;
-    const flag = readJSON('nihongo_notify_level', 0);
+    const flag = readJSON('anilingo_notify_level', 0);
     if (level > Number(flag || 0)) {
       pushNotification('reward', 'Новый уровень: ' + level, 'Открой магазин — там открылись предметы');
-      writeJSON('nihongo_notify_level', level);
+      writeJSON('anilingo_notify_level', level);
     }
   }
 }

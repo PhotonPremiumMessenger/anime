@@ -18,7 +18,7 @@
 'use strict';
 
 const PERF_LITE_CLASS = 'perf-lite';
-const PERF_SAVE_KEY = 'nihongo_light_graphics';   // ручной выключатель эффектов
+const PERF_SAVE_KEY = 'anilingo_light_graphics';   // ручной выключатель эффектов
 
 /**
  * Устройство слабое? Телефон, мало ядер или включён режим

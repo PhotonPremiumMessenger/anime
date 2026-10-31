@@ -7,7 +7,7 @@
 
 'use strict';
 
-const VERSION = 'nihongo-v16';
+const VERSION = 'anilingo-v18';
 const STATIC_CACHE = VERSION + '-static';
 const IMAGE_CACHE = VERSION + '-images';
 
@@ -25,6 +25,7 @@ const CORE = [
   'game.html',
   'css/style.css',
   'css/perf.css',
+  'css/mobile.css',
   'manifest.json',
   'assets/images/background.webp',
   // Волна 12: плавность и аниме-слой

@@ -1,12 +1,12 @@
 /* ============================================================
    lesson-steps.js — прогресс прохождения урока
    Четыре шага: слова, грамматика, примеры, тест.
-   Состояние — nihongo_lesson_steps, ключ — id урока.
+   Состояние — anilingo_lesson_steps, ключ — id урока.
    ============================================================ */
 
 'use strict';
 
-const LESSON_STEPS_KEY = 'nihongo_lesson_steps';
+const LESSON_STEPS_KEY = 'anilingo_lesson_steps';
 
 // Вес шагов в общем прогрессе (в сумме 100)
 const STEP_WEIGHTS = { words: 30, grammar: 15, examples: 15, test: 40 };
@@ -22,7 +22,7 @@ function getLessonId() {
 /** Текущий урок из общего массива. */
 function getLessonData() {
   const id = getLessonId();
-  const lessons = window.nihongo_lessons || [];
+  const lessons = window.anilingo_lessons || [];
   return lessons.find(lesson => String(lesson.id) === id) || lessons[0] || null;
 }
 

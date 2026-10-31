@@ -1,6 +1,6 @@
 /* ============================================================
    backup.js — экспорт и импорт прогресса
-   Один JSON-файл со всеми ключами nihongo_*: опыт, уроки, слова,
+   Один JSON-файл со всеми ключами anilingo_*: опыт, уроки, слова,
    достижения, купленные предметы, друзья, настройки оформления.
    Импорт проверяет формат и не трогает чужие ключи localStorage.
    ============================================================ */
@@ -14,7 +14,7 @@ function backupKeys() {
   for (let i = 0; i < localStorage.length; i += 1) {
     const key = localStorage.key(i);
     if (!key) continue;
-    if (key.startsWith('nihongo_') || ['settings', 'theme', 'sakuraOn', 'avatar'].includes(key)) {
+    if (key.startsWith('anilingo_') || ['settings', 'theme', 'sakuraOn', 'avatar'].includes(key)) {
       keys.push(key);
     }
   }
@@ -31,7 +31,7 @@ function buildBackup() {
   });
 
   return {
-    app: 'nihongo',
+    app: 'anilingo',
     version: 2,
     exportedAt: new Date().toISOString(),
     user: typeof getCurrentUser === 'function' && getCurrentUser() ? getCurrentUser().username : null,
@@ -49,7 +49,7 @@ function exportProgress() {
   const link = document.createElement('a');
   const stamp = new Date().toISOString().slice(0, 10);
   link.href = url;
-  link.download = 'nihongo-progress-' + stamp + '.json';
+  link.download = 'anilingo-progress-' + stamp + '.json';
   document.body.appendChild(link);
   link.click();
   link.remove();
@@ -83,15 +83,27 @@ function importProgressText(text, silent = false) {
     return false;
   }
 
-  if (!parsed || parsed.app !== 'nihongo' || !parsed.data || typeof parsed.data !== 'object') {
+  // Файлы, сохранённые до переименования, помечены старым названием:
+  // их тоже принимаем, иначе люди не смогут вернуть свой прогресс
+  const knownApp = parsed && (parsed.app === 'anilingo' || parsed.app === 'nihongo');
+
+  if (!knownApp || !parsed.data || typeof parsed.data !== 'object') {
     if (!silent && typeof showToast === 'function') {
       showToast('Не тот файл', 'Нужен файл, сохранённый кнопкой «Скачать прогресс»', 'error');
     }
     return false;
   }
 
-  const keys = Object.keys(parsed.data).filter(key =>
-    key.startsWith('nihongo_') || ['settings', 'theme', 'sakuraOn', 'avatar'].includes(key)
+  // В старых файлах ключи начинались с nihongo_ — переносим их на новые имена
+  const renamed = {};
+
+  Object.keys(parsed.data).forEach(key => {
+    const nextKey = key.indexOf('nihongo_') === 0 ? 'anilingo_' + key.slice('nihongo_'.length) : key;
+    renamed[nextKey] = parsed.data[key];
+  });
+
+  const keys = Object.keys(renamed).filter(key =>
+    key.startsWith('anilingo_') || ['settings', 'theme', 'sakuraOn', 'avatar'].includes(key)
   );
 
   if (!keys.length) {
@@ -102,7 +114,7 @@ function importProgressText(text, silent = false) {
   }
 
   keys.forEach(key => {
-    const value = parsed.data[key];
+    const value = renamed[key];
     if (typeof value === 'string') localStorage.setItem(key, value);
   });
 

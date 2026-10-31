@@ -8,7 +8,7 @@
 
 'use strict';
 
-const AUTOTHEME_KEY = 'nihongo_autotheme';
+const AUTOTHEME_KEY = 'anilingo_autotheme';
 
 /* ---------- Настройка ---------- */
 

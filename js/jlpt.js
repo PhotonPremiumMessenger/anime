@@ -1,12 +1,12 @@
 /* ============================================================
    jlpt.js — уровень японского N5 / N4 / N3
-   Выбор хранится в nihongo_jlpt и в аккаунте (поле jlpt).
+   Выбор хранится в anilingo_jlpt и в аккаунте (поле jlpt).
    Уровень фильтрует уроки, тесты, словарь и каталог аниме.
    ============================================================ */
 
 'use strict';
 
-const JLPT_KEY = 'nihongo_jlpt';
+const JLPT_KEY = 'anilingo_jlpt';
 
 /** Доступные уровни. */
 const JLPT_LEVELS = [
@@ -136,7 +136,7 @@ function renderJLPTSwitchers() {
 
 /** Сколько уроков каждого уровня пройдено. */
 function getJLPTProgress() {
-  const lessons = window.nihongo_lessons || [];
+  const lessons = window.anilingo_lessons || [];
   const progress = typeof getProgress === 'function' ? getProgress() : { lessons: {} };
 
   const byLevel = {};

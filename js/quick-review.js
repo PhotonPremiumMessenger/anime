@@ -1,7 +1,7 @@
 /* ============================================================
    quick-review.js — «Быстрый повтор» на главной
    Пять карточек из слов, которые учили вчера (даты лежат в
-   nihongo_words_log, их пишет js/study.js). Если вчера занятий
+   anilingo_words_log, их пишет js/study.js). Если вчера занятий
    не было — берём слова из копилки, чтобы блок не пустовал.
    Клик по карточке переворачивает её: слово → перевод.
    ============================================================ */
@@ -15,7 +15,7 @@ const QUICK_REVIEW_COUNT = 5;
 function quickReviewWordIndex() {
   const index = {};
 
-  (window.nihongo_lessons || []).forEach(lesson => {
+  (window.anilingo_lessons || []).forEach(lesson => {
     (lesson.words || []).forEach(word => {
       if (word && word.jp && !index[word.jp]) index[word.jp] = word;
     });
@@ -65,7 +65,7 @@ function getQuickReviewWords() {
   }
 
   // 3. Резерв: слова из копилки, которые есть в уроках
-  const progress = typeof readJSON === 'function' ? readJSON('nihongo_progress', null) : null;
+  const progress = typeof readJSON === 'function' ? readJSON('anilingo_progress', null) : null;
   const learned = progress && Array.isArray(progress.words) ? progress.words : [];
 
   const stock = learned

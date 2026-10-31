@@ -30,11 +30,11 @@ function getAllTimeStats() {
   const activeDays = Object.keys(days).filter(key => Number(days[key]) > 0).length;
   const totalXP = Object.values(days).reduce((sum, value) => sum + (Number(value) || 0), 0);
   const since = user && user.createdAt ? user.createdAt : null;
-  const best = Math.max(Number(readJSON('nihongo_best_streak', 0)) || 0, streak.count || 0);
+  const best = Math.max(Number(readJSON('anilingo_best_streak', 0)) || 0, streak.count || 0);
 
   // Обновляем лучший стрик, если текущий его побил
-  if ((streak.count || 0) > (Number(readJSON('nihongo_best_streak', 0)) || 0)) {
-    writeJSON('nihongo_best_streak', streak.count);
+  if ((streak.count || 0) > (Number(readJSON('anilingo_best_streak', 0)) || 0)) {
+    writeJSON('anilingo_best_streak', streak.count);
   }
 
   return {

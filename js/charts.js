@@ -201,7 +201,7 @@ function renderStudyRings(containerId = 'studyRings') {
   if (!box) return;
 
   const progress = typeof getProgress === 'function' ? getProgress() : { lessons: {} };
-  const lessons = window.nihongo_lessons || [];
+  const lessons = window.anilingo_lessons || [];
 
   const done = Object.keys(progress.lessons || {}).filter(
     id => progress.lessons[id] && progress.lessons[id].completed

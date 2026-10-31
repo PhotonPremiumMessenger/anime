@@ -2,12 +2,12 @@
    game.js — мини-игра «Собери слово»
    Из перемешанных слогов нужно собрать японское слово.
    Раунд — 30 секунд. Верное слово +10, ошибка −5.
-   Лучший счёт хранится в localStorage: nihongo_game_best.
+   Лучший счёт хранится в localStorage: anilingo_game_best.
    ============================================================ */
 
 'use strict';
 
-const GAME_KEY = 'nihongo_game_best';
+const GAME_KEY = 'anilingo_game_best';
 const GAME_SECONDS = 30;
 
 // Слова: слово целиком, слоги и перевод-подсказка

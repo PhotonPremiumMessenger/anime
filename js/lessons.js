@@ -1,6 +1,6 @@
 /* ============================================================
    lessons.js — каталог уроков (lessons.html)
-   Рисует карточки из nihongo_lessons, показывает прогресс
+   Рисует карточки из anilingo_lessons, показывает прогресс
    и фильтрует по уровню и поиску.
    ============================================================ */
 
@@ -18,7 +18,7 @@ function renderLessons() {
   const grid = document.getElementById('lessonsGrid');
   if (!grid) return;
 
-  const lessons = window.nihongo_lessons || [];
+  const lessons = window.anilingo_lessons || [];
   const query = searchQuery.trim().toLowerCase();
 
   // Фильтр по уровню и поиску по названию/описанию/словам
@@ -148,7 +148,7 @@ function onLessonSearch(value) {
 /** Заполняет полосу «пройдено уроков / слов / достижений». */
 function renderCatalogStats() {
   const stats = getStats();
-  const total = (window.nihongo_lessons || []).length;
+  const total = (window.anilingo_lessons || []).length;
 
   const doneEl = document.getElementById('catalogDone');
   const wordsEl = document.getElementById('catalogWords');

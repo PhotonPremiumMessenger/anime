@@ -10,13 +10,13 @@
 'use strict';
 
 // Ключи localStorage
-const CUSTOM_BG_KEY = 'nihongo_custom_bg';        // data URL картинки
-const CUSTOM_BG_DIM = 'nihongo_bg_dim';           // затемнение, 0–90
-const CUSTOM_BG_BLUR = 'nihongo_bg_blur';         // размытие, 0–20 px
-const CUSTOM_ACCENT_KEY = 'nihongo_accent';       // свой цвет, #rrggbb
-const CUSTOM_PRESET_KEY = 'nihongo_accent_preset'; // id готовой палитры
-const CUSTOM_RAINBOW_KEY = 'nihongo_accent_rainbow'; // радужный режим
-const CUSTOM_CURSOR_KEY = 'nihongo_cursor';       // id курсора
+const CUSTOM_BG_KEY = 'anilingo_custom_bg';        // data URL картинки
+const CUSTOM_BG_DIM = 'anilingo_bg_dim';           // затемнение, 0–90
+const CUSTOM_BG_BLUR = 'anilingo_bg_blur';         // размытие, 0–20 px
+const CUSTOM_ACCENT_KEY = 'anilingo_accent';       // свой цвет, #rrggbb
+const CUSTOM_PRESET_KEY = 'anilingo_accent_preset'; // id готовой палитры
+const CUSTOM_RAINBOW_KEY = 'anilingo_accent_rainbow'; // радужный режим
+const CUSTOM_CURSOR_KEY = 'anilingo_cursor';       // id курсора
 
 // Ограничения: localStorage небольшой, поэтому файлы ужимаем
 const BG_MAX_SIDE = 1920;
@@ -606,7 +606,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Настройки могли поменять в другой вкладке
   window.addEventListener('storage', event => {
     if (!event.key) return;
-    if (!/^nihongo_(custom_|accent|bg_|cursor)/.test(event.key)) return;
+    if (!/^anilingo_(custom_|accent|bg_|cursor)/.test(event.key)) return;
 
     applyCustomization();
     renderCustomizationState();

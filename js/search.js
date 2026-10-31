@@ -24,7 +24,7 @@ function buildSearchIndex() {
   const items = [];
 
   // Уроки
-  (window.nihongo_lessons || []).forEach(lesson => {
+  (window.anilingo_lessons || []).forEach(lesson => {
     items.push({
       type: 'lesson',
       title: lesson.title,

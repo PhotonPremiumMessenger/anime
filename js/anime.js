@@ -574,12 +574,12 @@ async function shareAnimePhrase(id) {
   }
 
   // XP за шаринг — только в первый раз для каждого тайтла
-  const shared = readJSON('nihongo_anime_shared', []);
+  const shared = readJSON('anilingo_anime_shared', []);
   const list = Array.isArray(shared) ? shared : [];
 
   if (!list.includes(id)) {
     list.push(id);
-    writeJSON('nihongo_anime_shared', list);
+    writeJSON('anilingo_anime_shared', list);
 
     if (typeof notifyAction === 'function') {
       notifyAction('share', 1, { reason: 'Фраза из аниме' });

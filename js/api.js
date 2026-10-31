@@ -139,9 +139,9 @@ async function apiRequest(path, options = {}) {
 
 // Ключи те же, что были раньше: старые данные не теряются,
 // а миграция localStorage пользователю не нужна.
-const CACHE_USERS_KEY = 'nihongo_users';
-const CACHE_CURRENT_KEY = 'nihongo_current_user';
-const CACHE_TOKEN_KEY = 'nihongo_token';
+const CACHE_USERS_KEY = 'anilingo_users';
+const CACHE_CURRENT_KEY = 'anilingo_current_user';
+const CACHE_TOKEN_KEY = 'anilingo_token';
 
 /** Приводит запись пользователя к единому виду. */
 function apiNormalizeUser(user) {
@@ -570,8 +570,8 @@ function getAccountData() {
     account: user
       ? { username: user.username, email: user.email, avatar: user.avatar, createdAt: user.createdAt }
       : null,
-    progress: readJSON('nihongo_progress', {}),
-    achievements: readJSON('nihongo_achievements', []),
+    progress: readJSON('anilingo_progress', {}),
+    achievements: readJSON('anilingo_achievements', []),
     settings: readJSON('settings', {}),
     exportedAt: new Date().toISOString()
   };

@@ -8,7 +8,7 @@
 
 'use strict';
 
-const COLLAPSE_KEY = 'nihongo_blocks';
+const COLLAPSE_KEY = 'anilingo_blocks';
 
 /** Состояние блоков: { 'заголовок': true/false }. */
 function getBlockStates() {

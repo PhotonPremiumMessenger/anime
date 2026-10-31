@@ -205,7 +205,7 @@ const ACHIEVEMENTS = [
 let achievementCheckRunning = false;
 
 // getUnlockedAchievements() и hasAchievement() объявлены в js/progress.js —
-// он подключается раньше и хранит ключ nihongo_achievements. Здесь не дублируем.
+// он подключается раньше и хранит ключ anilingo_achievements. Здесь не дублируем.
 
 /** Сохраняет список открытых. */
 function saveUnlockedAchievements(list) {
@@ -325,7 +325,7 @@ function renderAchievementGrid(containerId = 'achGrid') {
   const stats = getPlayerStats();
 
   // Дополнительные «одноразовые» условия
-  const extra = readJSON('nihongo_flags', {});
+  const extra = readJSON('anilingo_flags', {});
   stats.quizPerfect = Boolean(extra.quizPerfect);
   stats.dailyAllDone = Boolean(extra.dailyAllDone);
   stats.earlyBird = Boolean(extra.earlyBird);
@@ -346,9 +346,9 @@ function renderAchievementGrid(containerId = 'achGrid') {
 
 /** Помечает одноразовые условия (например «викторина без ошибок»). */
 function setAchievementFlag(flag, value = true) {
-  const flags = readJSON('nihongo_flags', {}) || {};
+  const flags = readJSON('anilingo_flags', {}) || {};
   flags[flag] = value;
-  writeJSON('nihongo_flags', flags);
+  writeJSON('anilingo_flags', flags);
 }
 
 /* ---------- Автопроверка ---------- */

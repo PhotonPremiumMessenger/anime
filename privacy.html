@@ -16,6 +16,7 @@
   <link rel="preload" as="image" href="assets/images/background.webp" fetchpriority="low">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/perf.css">
+  <link rel="stylesheet" href="css/mobile.css">
   <script src="js/loader.js"></script>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛩</text></svg>">
   <script src="js/perf.js"></script>
@@ -175,7 +176,7 @@
                устройства после входа. Копия лежит и в браузере — как кэш.</p>
             <ul>
               <li><b>На сервере:</b> ник, почта, хеш пароля, опыт, уровень, прогресс и настройки. Доступ к ним — только по твоему токену входа.</li>
-              <li><b>В браузере (кэш):</b> те же данные в <b>localStorage</b> — ключи с префиксом <code>nihongo_</code>, а также <code>theme</code>, <code>settings</code>, <code>avatar</code>. Нужны, чтобы сайт открывался мгновенно и работал без сети.</li>
+              <li><b>В браузере (кэш):</b> те же данные в <b>localStorage</b> — ключи с префиксом <code>anilingo_</code>, а также <code>theme</code>, <code>settings</code>, <code>avatar</code>. Нужны, чтобы сайт открывался мгновенно и работал без сети.</li>
               <li><b>Только в браузере:</b> фон, который ты загрузил сам, музыка и плейлист, флаги «приветствие показано». На сервер они не уходят.</li>
               <li><b>sessionStorage</b> — только служебный флаг перехода между страницами; он стирается при закрытии вкладки.</li>
               <li>Резервную копию можно сделать в настройках кнопкой «Скачать прогресс».</li>

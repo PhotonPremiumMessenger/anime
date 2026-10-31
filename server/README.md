@@ -111,8 +111,8 @@ GET /api/health → { ok: true, service: 'anilingo', mail: true }
 ```json
 {
   "ok": true,
-  "settings": { "data.nihongo_progress": { "1": { "done": true } } },
-  "updated":  { "data.nihongo_progress": "2026-10-30T11:22:33.114Z" }
+  "settings": { "data.anilingo_progress": { "1": { "done": true } } },
+  "updated":  { "data.anilingo_progress": "2026-10-30T11:22:33.114Z" }
 }
 ```
 

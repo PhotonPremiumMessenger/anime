@@ -19,7 +19,15 @@ function toggleDesignPanel() {
   const button = document.getElementById('designToggle');
   if (!panel) return;
 
-  const isOpen = panel.classList.toggle('open');
+  const isOpen = !panel.classList.contains('open');
+
+  // На телефоне открыта всегда одна панель: меню и уведомления
+  // закрываются, прежде чем появится дизайн
+  if (isOpen && typeof closeOtherMobilePanels === 'function') {
+    closeOtherMobilePanels('design');
+  }
+
+  panel.classList.toggle('open', isOpen);
 
   if (button) {
     button.classList.toggle('open', isOpen);
@@ -32,6 +40,8 @@ function toggleDesignPanel() {
   } else {
     document.removeEventListener('click', closeDesignOnOutsideClick);
   }
+
+  if (typeof syncPanelBackdrop === 'function') syncPanelBackdrop();
 }
 
 /** Закрывает панель при клике мимо неё. */
@@ -73,7 +83,7 @@ function setTheme(theme, notify = true, options = {}) {
   // Ручной выбор выключает авто-режим, чтобы тема не прыгала сама
   if (source === 'user' && typeof isAutoThemeOn === 'function' && isAutoThemeOn()) {
     try {
-      localStorage.setItem('nihongo_autotheme', 'false');
+      localStorage.setItem('anilingo_autotheme', 'false');
       if (typeof renderAutoThemeSwitch === 'function') renderAutoThemeSwitch();
     } catch (error) {
       /* приватный режим — не страшно */
@@ -310,7 +320,7 @@ function applyStoredSettings() {
 const RELEASE_DAYS = 250;
 
 // Ключ схемы: если он изменился — отсчёт начинается заново
-const RELEASE_SCHEMA = 'nihongo_release_start_v2';
+const RELEASE_SCHEMA = 'anilingo_release_start_v2';
 
 /**
  * Дата старта отсчёта. Хранится в localStorage, поэтому при перезагрузке
