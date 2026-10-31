@@ -1,20 +1,5 @@
 name: Deploy to Server
 
-# Выкладка сайта на VPS (anilingo.fun).
-#
-# Что нужно один раз настроить в GitHub → Settings → Secrets:
-#   SSH_HOST         — адрес сервера
-#   SSH_USER         — пользователь для входа
-#   SSH_PRIVATE_KEY  — приватный ключ
-#   SSH_PORT         — необязательно, по умолчанию 22
-#   DEPLOY_SITE_DIR  — необязательно, папка сайта (иначе ищем сами)
-#   DEPLOY_API_DIR   — необязательно, папка серверной части
-#
-# Если шаг «Deploy via SSH» падает, значит GitHub не может зайти
-# на сервер: устарел ключ, сменился IP или пользователь. Сайт при
-# этом остаётся на старой версии — именно поэтому правки «не
-# доезжают» до anilingo.fun, хотя в репозитории они уже есть.
-
 on:
   push:
     branches: [ main ]
@@ -33,67 +18,12 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT || 22 }}
-          command_timeout: 15m
-          script_stop: true
           script: |
-            set -u
-            echo "Сервер: $(hostname), пользователь: $(whoami)"
+            # 1. Обновляем сайт
+            cd /var/www/anilingo || cd /var/www/nihongo
+            git pull origin main
 
-            # git не доверяет папкам, которыми владеет другой пользователь
-            # (частая причина «dubious ownership» на VPS)
-            git config --global --add safe.directory '*' 2>/dev/null || true
-
-            # Обновляет папку, если это копия нашего репозитория.
-            # Возвращает 1, если папка не подходит.
-            update_repo() {
-              dir="$1"
-              [ -d "$dir/.git" ] || return 1
-
-              origin="$(git -C "$dir" remote get-url origin 2>/dev/null || echo '')"
-              case "$origin" in
-                *PhotonPremiumMessenger/anime*) ;;
-                *) return 1 ;;
-              esac
-
-              git -C "$dir" fetch origin main
-              git -C "$dir" reset --hard origin/main
-              echo "Обновлено: $dir → $(git -C "$dir" log --oneline -1)"
-              return 0
-            }
-
-            # ---------- Сайт ----------
-            # Папку можно задать секретом; иначе проверяем обычные места:
-            # старое имя (nihongo) тоже подходит, переименовывать не обязательно
-            SITE_DIRS="${DEPLOY_SITE_DIR:-/var/www/anilingo /var/www/nihongo /var/www/anime /var/www/html}"
-            UPDATED=0
-
-            for dir in $SITE_DIRS; do
-              if update_repo "$dir"; then UPDATED=$((UPDATED + 1)); fi
-            done
-
-            if [ "$UPDATED" -eq 0 ]; then
-              echo "::error::Не нашёл копию репозитория сайта. Пропишите папку в секрете DEPLOY_SITE_DIR, например /var/www/anilingo"
-              exit 1
-            fi
-
-            # ---------- Серверная часть ----------
-            API_DIRS="${DEPLOY_API_DIR:-/var/www/anilingo-server /var/www/anime-server}"
-            API_DONE=0
-
-            for dir in $API_DIRS; do
-              if update_repo "$dir"; then
-                API_DONE=1
-                # новые зависимости, если появились; не падаем из-за версии Node
-                (cd "$dir" && npm install --omit=dev --no-audit --no-fund) || echo "npm install пропущен"
-              fi
-            done
-
-            if [ "$API_DONE" -eq 0 ]; then
-              echo "Папка API не найдена — обновлён только сайт"
-            fi
-
-            # ---------- Перезапуск ----------
-            pm2 restart anilingo-api || echo "pm2: процесс anilingo-api не найден"
-
-            echo "Готово"
+            # 2. Обновляем сервер (бэкенд)
+            cd server
+            npm install --no-audit --no-fund
+            pm2 restart anilingo-api || echo "PM2 не запущен"
