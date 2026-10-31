@@ -59,7 +59,7 @@ function watchConnection() {
 function mountInstallHint() {
   window.addEventListener('beforeinstallprompt', event => {
     event.preventDefault();
-    window.nihongoInstallPrompt = event;
+    window.anilingoInstallPrompt = event;
 
     const box = document.getElementById('installHint');
     if (box) box.classList.remove('hidden');
@@ -68,7 +68,7 @@ function mountInstallHint() {
 
 /** Запускает установку (если браузер разрешает). */
 function installAniLingo() {
-  const prompt = window.nihongoInstallPrompt;
+  const prompt = window.anilingoInstallPrompt;
   if (!prompt) {
     if (typeof showToast === 'function') {
       showToast('Установка недоступна', 'Открой меню браузера → «Установить приложение»', 'info');
@@ -78,7 +78,7 @@ function installAniLingo() {
 
   prompt.prompt();
   prompt.userChoice.then(() => {
-    window.nihongoInstallPrompt = null;
+    window.anilingoInstallPrompt = null;
     const box = document.getElementById('installHint');
     if (box) box.classList.add('hidden');
   });

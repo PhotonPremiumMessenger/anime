@@ -2,7 +2,7 @@
    progress-map.js — карта прогресса курса (lessons.html)
    Сетка всех уроков: пройденные — оранжевые, текущий —
    пульсирует, будущие — серые. Статус берётся из
-   nihongo_progress и nihongo_completed_lessons.
+   anilingo_progress и anilingo_completed_lessons.
    ============================================================ */
 
 'use strict';
@@ -19,7 +19,7 @@ function renderProgressMap() {
   const box = document.getElementById('progressMap');
   if (!box) return;
 
-  const lessons = window.nihongo_lessons || [];
+  const lessons = window.anilingo_lessons || [];
   if (!lessons.length) return;
 
   const completed = typeof getCompletedLessonIds === 'function' ? getCompletedLessonIds() : [];

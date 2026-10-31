@@ -1,13 +1,13 @@
 /* ============================================================
    favorites.js — избранное
    Звёздочка у тайтлов, правил и слов. Список живёт в
-   nihongo_favorites, показывается в профиле и на отдельной
+   anilingo_favorites, показывается в профиле и на отдельной
    странице favorites.html.
    ============================================================ */
 
 'use strict';
 
-const FAVORITES_KEY = 'nihongo_favorites';
+const FAVORITES_KEY = 'anilingo_favorites';
 
 const FAVORITE_TYPES = {
   anime: { icon: '🎌', title: 'Аниме' },

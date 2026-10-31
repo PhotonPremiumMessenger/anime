@@ -1,12 +1,12 @@
 /* ============================================================
    listening.js — аудирование на слух
    Слово произносится через Web Speech API (ja-JP), нужно выбрать
-   правильный перевод или вписать ромадзи. Ключ nihongo_listening.
+   правильный перевод или вписать ромадзи. Ключ anilingo_listening.
    ============================================================ */
 
 'use strict';
 
-const LISTENING_KEY = 'nihongo_listening';
+const LISTENING_KEY = 'anilingo_listening';
 
 let listeningState = null;
 

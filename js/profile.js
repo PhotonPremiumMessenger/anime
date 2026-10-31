@@ -253,7 +253,7 @@ function renderActivity(stats) {
   if (!list) return;
 
   const progress = getProgress();
-  const lessons = window.nihongo_lessons || [];
+  const lessons = window.anilingo_lessons || [];
   const events = [];
 
   Object.keys(progress.lessons).forEach(id => {
@@ -376,8 +376,24 @@ function closeLogoutModal() {
 
 /** Подтверждённый выход: чистим сессию и уходим на главную. */
 function confirmLogout() {
+  const button = document.querySelector('#logoutModal .btn-primary');
+
+  // Видно, что нажатие сработало: страница уходит не мгновенно
+  if (button) {
+    button.disabled = true;
+    button.textContent = 'Выходим…';
+  }
+
   closeLogoutModal();
-  logout();
+
+  try {
+    logout();
+  } catch (error) {
+    // Даже если что-то пошло не так — уходим и показываем сообщение
+    if (typeof showToast === 'function') {
+      showToast('Не удалось выйти', 'Обновите страницу и попробуйте снова', 'error');
+    }
+  }
 }
 
 /* ---------- Инициализация ---------- */

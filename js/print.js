@@ -11,7 +11,7 @@
 function printLessonData() {
   const params = new URLSearchParams(window.location.search);
   const id = Number(params.get('id')) || 1;
-  return (window.nihongo_lessons || []).find(lesson => Number(lesson.id) === id) || null;
+  return (window.anilingo_lessons || []).find(lesson => Number(lesson.id) === id) || null;
 }
 
 /** Собирает разметку конспекта. */
@@ -99,7 +99,7 @@ function downloadLessonSheet() {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = 'nihongo-lesson-' + lesson.id + '.html';
+  link.download = 'anilingo-lesson-' + lesson.id + '.html';
   document.body.appendChild(link);
   link.click();
   link.remove();

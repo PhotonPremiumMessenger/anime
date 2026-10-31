@@ -4,7 +4,7 @@
    через recordMistake() из js/weakspots.js. Здесь они выводятся
    таблицей: вопрос, верный ответ, твой ответ и кнопка «Повторить».
    Повтор — мини-тест: ответил верно → запись исчезает из дневника.
-   Данные лежат в nihongo_weak (это и есть массив mistakes).
+   Данные лежат в anilingo_weak (это и есть массив mistakes).
    ============================================================ */
 
 'use strict';
@@ -24,7 +24,7 @@ function diaryMistakes() {
 
 /** Сохраняет массив ошибок. */
 function diarySave(list) {
-  if (typeof writeJSON === 'function') writeJSON('nihongo_weak', list.slice(0, 300));
+  if (typeof writeJSON === 'function') writeJSON('anilingo_weak', list.slice(0, 300));
 }
 
 /** Удаляет одну запись: совпадение по вопросу и выбранному ответу. */
@@ -317,7 +317,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // После новой ошибки (тест, викторина) дневник обновляется
-document.addEventListener('nihongo:mistake', renderMistakeDiary);
+document.addEventListener('anilingo:mistake', renderMistakeDiary);
 
 /* Экспорт в глобальную область */
 window.renderMistakeDiary = renderMistakeDiary;

@@ -7,7 +7,7 @@
 
 'use strict';
 
-const TESTS_KEY = 'nihongo_tests';
+const TESTS_KEY = 'anilingo_tests';
 
 /* ---------- Сборка тестов ---------- */
 
@@ -40,7 +40,7 @@ function pickWrong(correct, pool, count, random) {
  */
 function buildLessonTest(lesson) {
   const random = seededRandom(lesson.id * 7919 + 17);
-  const allWords = (window.nihongo_lessons || []).flatMap(item => item.words || []);
+  const allWords = (window.anilingo_lessons || []).flatMap(item => item.words || []);
 
   const questions = [];
 
@@ -106,7 +106,7 @@ function buildGrammarTest() {
 
 /** Смешанный тест: 15 вопросов из всех уроков. */
 function buildMixedTest() {
-  const lessons = window.nihongo_lessons || [];
+  const lessons = window.anilingo_lessons || [];
   const random = seededRandom(987654321);
 
   const questions = [];
@@ -120,7 +120,7 @@ function buildMixedTest() {
 
 /** Список всех доступных тестов. */
 function getAllTests() {
-  const lessons = window.nihongo_lessons || [];
+  const lessons = window.anilingo_lessons || [];
 
   const tests = lessons.map(lesson => ({
     id: 'lesson-' + lesson.id,

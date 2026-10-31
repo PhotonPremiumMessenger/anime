@@ -131,7 +131,7 @@ const DICTIONARY_EXTRA = [
  * @returns {Array<{jp:string,romaji:string,ru:string,level:string,tag:string,lesson:number}>}
  */
 function getAllDictionaryWords() {
-  const lessons = window.nihongo_lessons || [];
+  const lessons = window.anilingo_lessons || [];
   const words = [];
 
   lessons.forEach(lesson => {

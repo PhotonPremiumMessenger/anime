@@ -20,7 +20,7 @@ function isPublicView() {
 
 /**
  * Собирает данные профиля по нику.
- * Аккаунты берём из nihongo_users, демо-игроков — из рейтинга.
+ * Аккаунты берём из anilingo_users, демо-игроков — из рейтинга.
  */
 function getPublicProfile(name) {
   const nickname = String(name || '').trim();

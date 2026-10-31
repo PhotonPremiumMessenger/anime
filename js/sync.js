@@ -82,9 +82,9 @@ const syncPageStart = Date.now();
  * ключ браузера → ключ настройки.
  */
 const SYNC_APPEARANCE_KEYS = {
-  nihongo_accent: 'appearance.accent',
-  nihongo_accent_preset: 'appearance.accentPreset',
-  nihongo_accent_rainbow: 'appearance.accentRainbow'
+  anilingo_accent: 'appearance.accent',
+  anilingo_accent_preset: 'appearance.accentPreset',
+  anilingo_accent_rainbow: 'appearance.accentRainbow'
 };
 
 /**
@@ -96,44 +96,44 @@ const SYNC_APPEARANCE_KEYS = {
  * много мегабайт, они остаются на устройстве.
  */
 const SYNC_DATA_KEYS = [
-  'nihongo_progress',          // пройденные уроки и слова
-  'nihongo_completed_lessons',
-  'nihongo_lessons',
-  'nihongo_achievements',
-  'nihongo_streak',            // серия дней
-  'nihongo_best_streak',
-  'nihongo_counters',          // счётчики для достижений
-  'nihongo_daily',
-  'nihongo_weekly',
-  'nihongo_quiz',
-  'nihongo_speed',
-  'nihongo_shop',              // покупки за XP
-  'nihongo_favorites',
-  'nihongo_mistakes',          // дневник ошибок
-  'nihongo_weak',
-  'nihongo_weakspots',
-  'nihongo_activity',
-  'nihongo_goals',
-  'nihongo_xp_days',
-  'nihongo_review',
-  'nihongo_exam',
-  'nihongo_jlpt',
-  'nihongo_friends',
-  'nihongo_tests',
-  'nihongo_listening',
-  'nihongo_lesson_steps',
-  'nihongo_grammar_read',
-  'nihongo_game_best',
-  'nihongo_match',
-  'nihongo_srs',               // коробки повторения флешкарт
-  'nihongo_words_log',
-  'nihongo_easter',
-  'nihongo_autotheme',
-  'nihongo_voice',
-  'nihongo_voice_tuning'
+  'anilingo_progress',          // пройденные уроки и слова
+  'anilingo_completed_lessons',
+  'anilingo_lessons',
+  'anilingo_achievements',
+  'anilingo_streak',            // серия дней
+  'anilingo_best_streak',
+  'anilingo_counters',          // счётчики для достижений
+  'anilingo_daily',
+  'anilingo_weekly',
+  'anilingo_quiz',
+  'anilingo_speed',
+  'anilingo_shop',              // покупки за XP
+  'anilingo_favorites',
+  'anilingo_mistakes',          // дневник ошибок
+  'anilingo_weak',
+  'anilingo_weakspots',
+  'anilingo_activity',
+  'anilingo_goals',
+  'anilingo_xp_days',
+  'anilingo_review',
+  'anilingo_exam',
+  'anilingo_jlpt',
+  'anilingo_friends',
+  'anilingo_tests',
+  'anilingo_listening',
+  'anilingo_lesson_steps',
+  'anilingo_grammar_read',
+  'anilingo_game_best',
+  'anilingo_match',
+  'anilingo_srs',               // коробки повторения флешкарт
+  'anilingo_words_log',
+  'anilingo_easter',
+  'anilingo_autotheme',
+  'anilingo_voice',
+  'anilingo_voice_tuning'
 ];
 
-// Префикс этих ключей на сервере: data.nihongo_progress
+// Префикс этих ключей на сервере: data.anilingo_progress
 const SYNC_DATA_PREFIX = 'data.';
 
 // Крупные значения на сервер не отправляем: место на диске не резиновое
@@ -187,7 +187,7 @@ SYNC_DATA_KEYS.forEach(key => {
   }
 });
 
-/** Отметки времени с сервера: { 'data.nihongo_progress': '2026-10-30T...' }. */
+/** Отметки времени с сервера: { 'data.anilingo_progress': '2026-10-30T...' }. */
 function syncReadMeta() {
   try {
     const value = JSON.parse(localStorage.getItem(SYNC_META_KEY) || '{}');
@@ -638,7 +638,7 @@ async function syncPullAll() {
           item.username === user.username ? Object.assign({}, item, { xp: profile.xp }) : item
         ));
 
-        writeJSON('nihongo_users', users);
+        writeJSON('anilingo_users', users);
       }
     }
   } finally {
@@ -681,8 +681,8 @@ function syncAfterLogout() {
   });
 
   try {
-    localStorage.removeItem('nihongo_current_user');
-    localStorage.removeItem('nihongo_token');
+    localStorage.removeItem('anilingo_current_user');
+    localStorage.removeItem('anilingo_token');
   } catch (error) {
     // ничего не поделать
   }

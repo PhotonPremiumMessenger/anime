@@ -28,6 +28,40 @@
 
   if (!body) return;
 
+  /* ---------- Переезд со старого названия ---------- */
+
+  // Раньше ключи начинались со старого названия сайта, теперь — с anilingo_.
+  // Переносим прогресс один раз и без потерь: если нового ключа
+  // ещё нет, копируем в него старое значение, а старое убираем.
+  // Без этого у людей обнулились бы уровень, достижения и настройки.
+  //
+  // Префикс собран из двух частей намеренно: если однажды кто-то
+  // снова переименует сайт массовой заменой, эта строка не превратится
+  // в бессмысленную и переезд продолжит работать.
+  try {
+    const legacyPrefix = 'ni' + 'hongo_';
+    const currentPrefix = 'anilingo_';
+    const stale = [];
+
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.indexOf(legacyPrefix) === 0) stale.push(key);
+    }
+
+    stale.forEach(key => {
+      const next = currentPrefix + key.slice(legacyPrefix.length);
+      const value = localStorage.getItem(key);
+
+      if (value !== null && localStorage.getItem(next) === null) {
+        localStorage.setItem(next, value);
+      }
+
+      localStorage.removeItem(key);
+    });
+  } catch (error) {
+    // приватный режим или запрет хранилища — просто работаем без переезда
+  }
+
   /** Строка из localStorage; undefined при запрете хранилища. */
   function read(key, fallback) {
     try {
@@ -122,22 +156,22 @@
     body.classList.add('accent-custom');
   }
 
-  const shop = readObject('nihongo_shop');
+  const shop = readObject('anilingo_shop');
   const shopThemeId = shop && shop.equipped ? shop.equipped.theme : '';
-  const rainbow = read('nihongo_accent_rainbow', 'false') === 'true';
+  const rainbow = read('anilingo_accent_rainbow', 'false') === 'true';
 
   body.classList.toggle('accent-rainbow', rainbow);
 
   // Порядок тот же, что в shop.js и customize.js:
   // тема магазина, потом свой цвет, потом готовая палитра, потом радуга
   let accentHex = shopThemeId && SHOP_THEMES[shopThemeId] ? SHOP_THEMES[shopThemeId] : '';
-  if (!accentHex) accentHex = read('nihongo_accent', '');
+  if (!accentHex) accentHex = read('anilingo_accent', '');
 
   if (accentHex) {
     const hsl = hexToHsl(accentHex);
     if (hsl) applyTone(hsl.h, hsl.s, hsl.l);
   } else {
-    const preset = PRESETS[read('nihongo_accent_preset', '')];
+    const preset = PRESETS[read('anilingo_accent_preset', '')];
 
     if (preset) applyTone(preset[0], preset[1], preset[2]);
     else if (rainbow) applyTone(340, 88, 64);

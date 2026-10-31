@@ -161,7 +161,7 @@ function isRomajiOn() {
     return value !== false;
   }
 
-  const saved = readJSON('nihongo_romaji', true);
+  const saved = readJSON('anilingo_romaji', true);
   return saved !== false;
 }
 
@@ -172,7 +172,7 @@ function setRomajiOn(value) {
   if (typeof setSettingValue === 'function') {
     setSettingValue('interface.romaji', on);
   } else {
-    writeJSON('nihongo_romaji', on);
+    writeJSON('anilingo_romaji', on);
   }
 
   applyRomajiVisibility();

@@ -28,6 +28,13 @@ const { isMailConfigured } = require('./mailer');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 
+// Один раз переименовываем ключи старого названия в новые.
+// На чистой базе ничего не делает, повторный запуск безопасен.
+const migrated = db.migrateLegacyKeys();
+if (migrated) {
+  console.log('[db] Переименовано ключей со старого названия:', migrated);
+}
+
 const app = express();
 
 const PORT = Number(process.env.PORT || 3000);

@@ -139,7 +139,7 @@ function downloadCertificate() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'nihongo-certificate-' + certificateName().replace(/[^\wа-яА-Я-]+/g, '-') + '.png';
+    link.download = 'anilingo-certificate-' + certificateName().replace(/[^\wа-яА-Я-]+/g, '-') + '.png';
     document.body.appendChild(link);
     link.click();
     link.remove();

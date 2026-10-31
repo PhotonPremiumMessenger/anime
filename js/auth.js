@@ -505,12 +505,68 @@ async function login() {
 
 /* ---------- Выход ---------- */
 
-/** Выход — только на клиенте: чистим localStorage и уходим на главную. */
+/**
+ * Чистит всё, что принадлежит аккаунту: кэш настроек и прогресса,
+ * токен, ник. Музыка, свой фон и флаги устройства остаются.
+ */
+function clearAccountCache() {
+  // Основная уборка: settings, data.*, appearance.*, сессия
+  if (typeof syncAfterLogout === 'function') {
+    try {
+      syncAfterLogout();
+    } catch (error) {
+      // приватный режим — добьём вручную ниже
+    }
+  }
+
+  ['anilingo_current_user', 'anilingo_token', 'token', 'username',
+   'anilingo_pending_code', 'anilingo_pending_email'].forEach(key => {
+    try {
+      localStorage.removeItem(key);
+    } catch (error) {
+      // ничего не поделать
+    }
+  });
+
+  try {
+    sessionStorage.removeItem('redirectAfterLogin');
+  } catch (error) {
+    // ничего не поделать
+  }
+}
+
+/**
+ * Выход из аккаунта.
+ *
+ * Раньше здесь вызывалась clearSession() — внутренняя функция модуля
+ * ApiLocal. После разделения api.js на два файла она перестала быть
+ * глобальной, выход падал с ошибкой, окно закрывалось и всё.
+ *
+ * Теперь: сообщаем серверу (не ждём ответа), чистим кэш аккаунта,
+ * уходим на главную. Сеть не может помешать выйти.
+ */
 function logout() {
-  // Очищаем сессию: nihongo_current_user и nihongo_token
-  clearSession();
-  localStorage.removeItem(STORAGE_KEYS.avatar);
-  localStorage.removeItem(PENDING_EMAIL_KEY);
+  // 1. Сервер забывает сессию. keepalive — чтобы запрос дошёл,
+  //    даже если страница уже уходит
+  try {
+    if (typeof apiRequest === 'function' && typeof getToken === 'function' && getToken()) {
+      apiRequest('/api/auth/logout', { method: 'POST', keepalive: true }).catch(() => {});
+    }
+  } catch (error) {
+    // офлайн или демо-режим — не мешает выйти
+  }
+
+  // 2. Уборка в браузере: настройки, прогресс, токен
+  clearAccountCache();
+
+  try {
+    localStorage.removeItem(STORAGE_KEYS.avatar);
+    localStorage.removeItem(PENDING_EMAIL_KEY);
+  } catch (error) {
+    // ничего не поделать
+  }
+
+  // 3. На главную
   window.location.href = 'index.html';
 }
 

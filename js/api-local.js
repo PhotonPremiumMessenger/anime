@@ -24,13 +24,13 @@ window.ApiLocal = (function () {
 /* ---------- Ключи localStorage ---------- */
 
 const STORAGE_KEYS = {
-  users: 'nihongo_users',            // массив аккаунтов
-  currentUser: 'nihongo_current_user', // ник активного пользователя
-  token: 'nihongo_token',            // псевдо-токен сессии
-  progress: 'nihongo_progress',      // прогресс по урокам и словам
-  achievements: 'nihongo_achievements', // открытые достижения
-  pendingCode: 'nihongo_pending_code',  // код подтверждения почты
-  pendingEmail: 'nihongo_pending_email', // почта, ожидающая подтверждения
+  users: 'anilingo_users',            // массив аккаунтов
+  currentUser: 'anilingo_current_user', // ник активного пользователя
+  token: 'anilingo_token',            // псевдо-токен сессии
+  progress: 'anilingo_progress',      // прогресс по урокам и словам
+  achievements: 'anilingo_achievements', // открытые достижения
+  pendingCode: 'anilingo_pending_code',  // код подтверждения почты
+  pendingEmail: 'anilingo_pending_email', // почта, ожидающая подтверждения
   avatar: 'avatar'                   // выбранный аватар (для гостя)
 };
 

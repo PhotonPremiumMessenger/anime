@@ -2,13 +2,13 @@
    consent.js — cookies простыми словами
    Один раз при первом заходе показываем карточку: что такое
    cookies, что мы сохраняем, а что — нет. Выбор лежит в
-   localStorage под ключом nihongo_consent, отозвать можно
+   localStorage под ключом anilingo_consent, отозвать можно
    кнопкой в подвале.
    ============================================================ */
 
 'use strict';
 
-const CONSENT_KEY = 'nihongo_consent';
+const CONSENT_KEY = 'anilingo_consent';
 
 /** Читает сохранённое согласие. */
 function getConsent() {
@@ -260,7 +260,7 @@ function resetCookies() {
 
   try {
     Object.keys(localStorage)
-      .filter(key => key.startsWith('nihongo_') || ['theme', 'settings', 'avatar'].includes(key))
+      .filter(key => key.startsWith('anilingo_') || ['theme', 'settings', 'avatar'].includes(key))
       .forEach(key => localStorage.removeItem(key));
   } catch (error) {
     /* пусто */

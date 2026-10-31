@@ -64,7 +64,7 @@ function getSpeechPitch() {
 /** Сохраняет выбранный голос по имени. */
 function saveVoiceName(name) {
   if (typeof setSettingValue === 'function') setSettingValue(VOICE_SETTINGS.name, name);
-  else writeJSON('nihongo_voice', String(name || ''));
+  else writeJSON('anilingo_voice', String(name || ''));
 }
 
 /** Сохраняет скорость и тон. */
@@ -73,7 +73,7 @@ function saveVoiceTuning(rate, pitch) {
     setSettingValue(VOICE_SETTINGS.rate, Number(rate));
     setSettingValue(VOICE_SETTINGS.pitch, Number(pitch));
   } else {
-    writeJSON('nihongo_voice_tuning', { rate: Number(rate), pitch: Number(pitch) });
+    writeJSON('anilingo_voice_tuning', { rate: Number(rate), pitch: Number(pitch) });
   }
 }
 

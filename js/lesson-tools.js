@@ -7,14 +7,14 @@
    • Карточки по темпу учёбы (темп / 5 штук).
 
    Ключи localStorage:
-   nihongo_focus_mode — '1' или '0'
-   nihongo_pomodoro   — { running, endsAt, left }
+   anilingo_focus_mode — '1' или '0'
+   anilingo_pomodoro   — { running, endsAt, left }
    ============================================================ */
 
 'use strict';
 
-const FOCUS_KEY = 'nihongo_focus_mode';
-const POMODORO_KEY = 'nihongo_pomodoro';
+const FOCUS_KEY = 'anilingo_focus_mode';
+const POMODORO_KEY = 'anilingo_pomodoro';
 const POMODORO_MINUTES = 25;
 
 let pomodoroTimer = null;
@@ -264,7 +264,7 @@ function getCurrentLessonStep() {
 
   const id = lessonToolsId();
   const steps = getLessonSteps(id);
-  const lesson = (window.nihongo_lessons || []).find(item => String(item.id) === id);
+  const lesson = (window.anilingo_lessons || []).find(item => String(item.id) === id);
 
   if (!lesson) return 0;
 
@@ -292,7 +292,7 @@ function resumeLessonIfNeeded() {
   if (params.get('resume') !== 'true') return;
 
   const step = getCurrentLessonStep();
-  const lessons = window.nihongo_lessons || [];
+  const lessons = window.anilingo_lessons || [];
   const lesson = lessons.find(item => String(item.id) === lessonToolsId());
 
   const targets = ['#wordList', '#grammarText', '#exampleList', '#testBox'];
@@ -316,7 +316,7 @@ function renderLessonPaceCards() {
   if (typeof getStudyPace !== 'function') return;
 
   const id = lessonToolsId();
-  const lesson = (window.nihongo_lessons || []).find(item => String(item.id) === id);
+  const lesson = (window.anilingo_lessons || []).find(item => String(item.id) === id);
   if (!lesson) return;
 
   const count = Math.max(1, Math.round(getStudyPace() / 5));
@@ -361,7 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Темп поменяли в настройках — перерисовываем карточки
-document.addEventListener('nihongo:pace', renderLessonPaceCards);
+document.addEventListener('anilingo:pace', renderLessonPaceCards);
 
 /* Экспорт в глобальную область */
 window.toggleFocusMode = toggleFocusMode;

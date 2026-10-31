@@ -1,13 +1,13 @@
 /* ============================================================
    goals.js — цели на день и неделю
    Игрок сам выбирает дневную норму опыта и число уроков в неделю.
-   Прогресс считается по nihongo_xp_days и счётчикам, цель
-   сохраняется в nihongo_goals, закрытая цель даёт бонус XP.
+   Прогресс считается по anilingo_xp_days и счётчикам, цель
+   сохраняется в anilingo_goals, закрытая цель даёт бонус XP.
    ============================================================ */
 
 'use strict';
 
-const GOALS_KEY = 'nihongo_goals';
+const GOALS_KEY = 'anilingo_goals';
 
 const GOAL_PRESETS = {
   light: { title: 'Спокойный', daily: 40, weeklyLessons: 2, note: '10 минут в день' },
@@ -73,7 +73,7 @@ function getGoalsProgress() {
   // activity.js подключён не на всех страницах, поэтому читаем ключ напрямую
   const activity = typeof getActivity === 'function'
     ? getActivity()
-    : (readJSON('nihongo_activity', []) || []);
+    : (readJSON('anilingo_activity', []) || []);
   const weeklyLessons = activity.filter(item =>
     item.type === 'lesson' && new Date(item.at).getTime() >= weekAgo
   ).length;

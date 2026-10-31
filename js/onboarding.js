@@ -7,7 +7,7 @@
 
 'use strict';
 
-const TOUR_KEY = 'nihongo_tour_done';
+const TOUR_KEY = 'anilingo_tour_done';
 
 // Шаги тура: selector, заголовок, текст, иконка и подсказка «куда нажать»
 const TOUR_STEPS = [

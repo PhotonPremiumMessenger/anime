@@ -1,7 +1,7 @@
 /* ============================================================
    progress.js — прогресс уроков и озвучка слов
-   Всё хранится в localStorage под ключами nihongo_progress
-   и nihongo_achievements. Достижения — в js/achievements.js,
+   Всё хранится в localStorage под ключами anilingo_progress
+   и anilingo_achievements. Достижения — в js/achievements.js,
    опыт, уровни и стрик — в js/xp.js.
    ============================================================ */
 
@@ -90,7 +90,7 @@ function touchStreak(progress) {
 
   progress.streak.last = today;
 
-  // Дублируем серию в новый ключ nihongo_streak (если модуль XP подключён)
+  // Дублируем серию в новый ключ anilingo_streak (если модуль XP подключён)
   if (typeof saveStreak === 'function') {
     saveStreak({
       count: progress.streak.count,
@@ -184,7 +184,7 @@ function completeLesson(lessonId, correct, total) {
   const progress = getProgress();
   const id = String(lessonId);
   const percent = total > 0 ? Math.round((correct / total) * 100) : 100;
-  const lesson = (window.nihongo_lessons || []).find(item => String(item.id) === id);
+  const lesson = (window.anilingo_lessons || []).find(item => String(item.id) === id);
 
   // Обновляем запись урока
   const previous = progress.lessons[id] || { best: 0 };
@@ -292,8 +292,8 @@ function speakJapanese(text) {
   window.speechSynthesis.speak(utterance);
 
   // Если японского голоса нет, браузер прочитает текст своим — предупреждаем один раз
-  if (!japaneseVoice && !window.__nihongoVoiceWarned) {
-    window.__nihongoVoiceWarned = true;
+  if (!japaneseVoice && !window.__anilingoVoiceWarned) {
+    window.__anilingoVoiceWarned = true;
     if (typeof showToast === 'function') {
       showToast('Японский голос не найден', 'Установите японский язык в системе — озвучка станет точнее', 'info');
     }

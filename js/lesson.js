@@ -29,7 +29,7 @@ function guardLessonPage() {
 function resolveLesson() {
   const params = new URLSearchParams(window.location.search);
   const id = Number(params.get('id')) || 1;
-  const lessons = window.nihongo_lessons || [];
+  const lessons = window.anilingo_lessons || [];
 
   return lessons.find(lesson => Number(lesson.id) === id) || lessons[0] || null;
 }
@@ -48,7 +48,7 @@ function renderLesson() {
 
   document.title = currentLesson.title + ' — AniLingo';
 
-  const lessons = window.nihongo_lessons || [];
+  const lessons = window.anilingo_lessons || [];
   const index = lessons.findIndex(item => item.id === currentLesson.id);
   const previous = lessons[index - 1] || null;
   const next = lessons[index + 1] || null;

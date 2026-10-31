@@ -9,7 +9,7 @@
 'use strict';
 
 // Флаг в sessionStorage: значит, мы ушли со страницы сами
-const PAGE_LOADER_KEY = 'nihongo_nav_loading';
+const PAGE_LOADER_KEY = 'anilingo_nav_loading';
 
 // Сколько оверлей минимум висит, чтобы не мигал на быстрых страницах
 const PAGE_LOADER_MIN = 420;

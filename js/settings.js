@@ -1169,8 +1169,8 @@ function renderAccentGrid() {
 
 /** Ставит ползунки фона на сохранённые значения. */
 function syncBackgroundControls() {
-  const dim = Number(localStorage.getItem('nihongo_bg_dim') || 35);
-  const blur = Number(localStorage.getItem('nihongo_bg_blur') || 0);
+  const dim = Number(localStorage.getItem('anilingo_bg_dim') || 35);
+  const blur = Number(localStorage.getItem('anilingo_bg_blur') || 0);
 
   const dimRange = document.getElementById('bgDimRange');
   const blurRange = document.getElementById('bgBlurRange');
@@ -1776,11 +1776,11 @@ function downloadMyData() {
   const link = document.createElement('a');
 
   link.href = url;
-  link.download = 'nihongo-data.json';
+  link.download = 'anilingo-data.json';
   link.click();
 
   URL.revokeObjectURL(url);
-  showToast('Данные готовы', 'Файл nihongo-data.json скачан', 'success');
+  showToast('Данные готовы', 'Файл anilingo-data.json скачан', 'success');
 }
 
 /* ---------- Смена пароля ---------- */
@@ -2003,7 +2003,7 @@ function toggleLightGraphics(input) {
   document.documentElement.classList.toggle('light-graphics', on);
 
   try {
-    localStorage.setItem('nihongo_light_graphics', on ? 'off' : 'on');
+    localStorage.setItem('anilingo_light_graphics', on ? 'off' : 'on');
   } catch (error) {
     // приватный режим — просто не запоминаем
   }
@@ -2023,7 +2023,7 @@ function syncLightGraphicsSwitch() {
   if (!box) return;
 
   let saved = 'on';
-  try { saved = localStorage.getItem('nihongo_light_graphics') || 'on'; } catch (error) { /* пусто */ }
+  try { saved = localStorage.getItem('anilingo_light_graphics') || 'on'; } catch (error) { /* пусто */ }
 
   box.checked = saved === 'off' || document.documentElement.classList.contains('perf-lite');
 }

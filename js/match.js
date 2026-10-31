@@ -2,12 +2,12 @@
    match.js — мини-игра «Кандзи-пары»
    На поле 4×4 лежат 8 слов и 8 переводов. Нужно открыть пару
    «слово + перевод». Ходы и время считаются, рекорд живёт
-   в nihongo_match.
+   в anilingo_match.
    ============================================================ */
 
 'use strict';
 
-const MATCH_KEY = 'nihongo_match';
+const MATCH_KEY = 'anilingo_match';
 const MATCH_PAIRS = 8;
 
 let matchState = null;

@@ -79,6 +79,45 @@ db.exec(`
   );
 `);
 
+/* ---------- Переезд старых ключей ---------- */
+
+/**
+ * Раньше у сайта было другое название, и данные аккаунта лежали
+ * в ключах вида data.<старое имя>_progress. Теперь клиент шлёт
+ * data.anilingo_progress. Чтобы прогресс не пропал, при первом
+ * запуске новой версии ключи переименовываются один раз.
+ *
+ * Функция ничего не делает на чистой базе и безопасна при повторном
+ * запуске: старых ключей после переезда просто не остаётся.
+ */
+// Префикс собран из двух частей: массовое переименование сайта
+// не должно превратить эту строку в «anilingo» и сломать переезд
+const LEGACY_KEY_PREFIX = 'data.ni' + 'hongo_';
+const LEGACY_KEY_LIKE = 'data.ni' + 'hongo\_%';
+
+function migrateLegacyKeys() {
+  const legacy = db
+    .prepare('SELECT user_id, key, value, updated_at FROM user_settings WHERE key LIKE ?')
+    .all(LEGACY_KEY_LIKE);
+
+  if (!legacy.length) return 0;
+
+  const insert = db.prepare(`
+    INSERT INTO user_settings (user_id, key, value, updated_at)
+    VALUES (?, ?, ?, ?)
+    ON CONFLICT (user_id, key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at
+  `);
+  const remove = db.prepare('DELETE FROM user_settings WHERE user_id = ? AND key = ?');
+
+  legacy.forEach(row => {
+    const nextKey = 'data.anilingo_' + row.key.slice(LEGACY_KEY_PREFIX.length);
+    insert.run(row.user_id, nextKey, row.value, row.updated_at);
+    remove.run(row.user_id, row.key);
+  });
+
+  return legacy.length;
+}
+
 /* ---------- Утилиты ---------- */
 
 /** Текущее время в ISO-формате. */
@@ -289,7 +328,7 @@ function getSettings(userId) {
  * Когда каждая настройка менялась в последний раз.
  * Нужно не для красоты: по этим отметкам телефон и компьютер
  * понимают, чьё значение свежее, и не затирают чужой прогресс.
- * @returns {Object} { 'data.nihongo_progress': '2026-10-30T...' }
+ * @returns {Object} { 'data.anilingo_progress': '2026-10-30T...' }
  */
 function getSettingsUpdated(userId) {
   const rows = settingsQueries.times.all(Number(userId));
@@ -373,6 +412,7 @@ function wipeUserData(userId) {
 module.exports = {
   db,
   DB_PATH,
+  migrateLegacyKeys,
   nowIso,
   normalizeKey,
   findUserById,

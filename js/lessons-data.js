@@ -1,12 +1,12 @@
 /* ============================================================
    lessons-data.js — пять уроков курса
-   Массив nihongo_lessons используется на lessons.html
+   Массив anilingo_lessons используется на lessons.html
    (каталог) и lesson.html (сам урок).
    ============================================================ */
 
 'use strict';
 
-const nihongo_lessons = [
+const anilingo_lessons = [
   /* ---------- Урок 1 ---------- */
   {
     id: 1,
@@ -189,4 +189,4 @@ const nihongo_lessons = [
 ];
 
 // Отдаём массив в глобальную область: остальные скрипты берут его отсюда
-window.nihongo_lessons = nihongo_lessons;
+window.anilingo_lessons = anilingo_lessons;

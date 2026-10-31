@@ -1,7 +1,7 @@
 /* ============================================================
    daily.js — ежедневные задания, стрик и челлендж недели
-   Состояние хранится в nihongo_daily и nihongo_weekly,
-   серия дней — в nihongo_streak (см. xp.js).
+   Состояние хранится в anilingo_daily и anilingo_weekly,
+   серия дней — в anilingo_streak (см. xp.js).
    ============================================================ */
 
 'use strict';
@@ -264,7 +264,7 @@ function renderStreakBlocks() {
     days.push(xpDateKey(i));
   }
 
-  const visitedDays = readJSON('nihongo_visits', []);
+  const visitedDays = readJSON('anilingo_visits', []);
   const visited = days.map(day => (day === today ? true : visitedDays.includes(day)));
 
   box.innerHTML = `
@@ -405,13 +405,13 @@ function renderWeeklyBlock() {
 /** Запоминает день визита для полосы недели. */
 function markVisitDay() {
   const today = xpTodayKey();
-  const visited = readJSON('nihongo_visits', []);
+  const visited = readJSON('anilingo_visits', []);
   const list = Array.isArray(visited) ? visited : [];
 
   if (!list.includes(today)) {
     list.push(today);
     // Храним только две недели истории
-    writeJSON('nihongo_visits', list.slice(-14));
+    writeJSON('anilingo_visits', list.slice(-14));
   }
 }
 

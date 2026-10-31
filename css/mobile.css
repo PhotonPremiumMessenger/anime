@@ -1,0 +1,710 @@
+/* ============================================================
+   mobile.css — окончательная версия для телефона
+
+   Подключается после style.css и perf.css, поэтому может
+   спокойно переопределять правила. Всё внутри медиазапросов:
+   на компьютере вид не меняется ни на пиксель.
+
+   Что здесь исправляется:
+   • текст больше не слипается и не обрезается в кнопках;
+   • шапка помещается в 320 px: логотип, вход, звонок, меню;
+   • панели (меню, уведомления, дизайн) не открываются друг
+     поверх друга и уезжают вбок при закрытии;
+   • поля ввода не вызывают автоматический зум на iPhone;
+   • кнопки не меньше 44 px — пальцем попасть легко;
+   • ничего не вылезает за край экрана.
+   ============================================================ */
+
+/* ---------- 1. Основа ---------- */
+
+@media (max-width: 900px) {
+  /* Горизонтальной прокрутки быть не должно. clip, а не hidden:
+     hidden ломает position: sticky внутри страницы */
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  /* Длинные слова и адреса переносятся, а не рвут вёрстку */
+  body {
+    overflow-wrap: break-word;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    line-height: 1.22;
+    overflow-wrap: break-word;
+    hyphens: auto;
+  }
+
+  /* Текст в карточках и списках дышит: 1.55 вместо 1.6 не «слипается»
+     при мелком кегле, но и не разваливает плотные блоки */
+  p,
+  li,
+  .card p,
+  .block p {
+    line-height: 1.58;
+  }
+
+  /* Картинки и иконки не выпирают */
+  img,
+  svg,
+  video,
+  canvas {
+    max-width: 100%;
+  }
+
+  img {
+    height: auto;
+  }
+
+  /* Кнопки: текст переносится, а не обрезается. Раньше стояло
+     nowrap + overflow: hidden — длинные подписи теряли конец */
+  .btn {
+    white-space: normal;
+    text-align: center;
+    line-height: 1.28;
+    overflow-wrap: anywhere;
+  }
+
+  /* Палец должен попадать уверенно */
+  .btn,
+  .nav-link,
+  .menu-item,
+  .sheet-item {
+    min-height: 44px;
+  }
+
+  .btn-small {
+    min-height: 36px;
+  }
+
+  /* Поля ввода: 16 px — иначе iPhone зумит страницу при фокусе */
+  input,
+  select,
+  textarea,
+  .input,
+  .textarea {
+    font-size: 16px;
+  }
+
+  /* Внутри гибких строк текст не должен распирать контейнер */
+  .switch-row > div,
+  .panel-sub,
+  .card-head > div,
+  .stat-label,
+  .feature-body {
+    min-width: 0;
+  }
+
+  /* Широкие таблицы прокручиваются внутри себя, а не ломают страницу */
+  .table-wrap,
+  .exam-table-wrap,
+  .rating-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ---------- 2. Шапка ---------- */
+
+@media (max-width: 900px) {
+  .header {
+    height: 60px;
+  }
+
+  .header .container {
+    gap: 8px;
+    padding: 0 12px;
+  }
+
+  .logo {
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .logo-badge {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+  }
+
+  .logo-badge svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Название сайта на телефоне видно: это теперь главное,
+     что должно читаться в шапке */
+  .logo-text {
+    min-width: 0;
+  }
+
+  .logo-jp {
+    display: none;
+  }
+
+  .logo-en {
+    display: block;
+    font-size: 1rem;
+    letter-spacing: 0.6px;
+    white-space: nowrap;
+  }
+
+  .header-actions {
+    gap: 6px;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  .header-actions .btn {
+    min-height: 36px;
+    padding: 7px 12px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  /* Ник в шапке на узком экране обрезался на середине слова.
+     До 480 px оставляем только аватар, на планшете — ник покороче */
+  .user-chip {
+    padding: 4px;
+    gap: 0;
+  }
+
+  .user-chip .user-name {
+    max-width: 90px;
+  }
+
+  .user-chip img {
+    width: 30px;
+    height: 30px;
+  }
+
+  .notify-bell {
+    flex-shrink: 0;
+  }
+
+  .nav-burger {
+    flex-shrink: 0;
+    order: 4;
+    width: 38px;
+    height: 36px;
+    padding: 0 8px;
+  }
+}
+
+/* На совсем узких экранах кнопка «Регистрация» не нужна в шапке:
+   она есть в меню. Зато «Войти» остаётся всегда */
+@media (max-width: 560px) {
+  .header-actions .btn-primary {
+    display: inline-flex;
+  }
+
+  .header-actions .btn-ghost {
+    display: inline-flex;
+  }
+
+  .logo-en {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-chip .user-name {
+    display: none;
+  }
+}
+
+@media (max-width: 400px) {
+  /* Тут остаётся только знак + короткое имя, кнопки — компактнее */
+  .header .container {
+    gap: 6px;
+  }
+
+  .header-actions .btn {
+    padding: 7px 9px;
+    font-size: 0.7667rem;
+  }
+
+  .logo-en {
+    font-size: 0.8667rem;
+    letter-spacing: 0.2px;
+  }
+}
+
+/* ---------- 3. Меню, уведомления, дизайн: одна панель за раз ---------- */
+
+@media (max-width: 900px) {
+  /* Затемнение общее для всех панелей */
+  .nav-backdrop {
+    z-index: 940;
+    background: rgba(4, 4, 8, 0.62);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+
+  /* Открыта любая панель — страница приглушена и не прокручивается */
+  body.panel-open .nav-backdrop {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  body.panel-open {
+    overflow: hidden;
+  }
+
+  /* Выдвижное меню */
+  .nav {
+    z-index: 950;
+    box-shadow: -18px 0 60px rgba(0, 0, 0, 0.62);
+    will-change: transform;
+    transition: transform 0.34s cubic-bezier(0.22, 0.9, 0.24, 1), visibility 0.34s;
+  }
+
+  .nav.is-mobile-open {
+    animation: none;
+  }
+
+  /* Быстрые действия внутри меню */
+  .nav-quick {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin: 4px 0 10px;
+  }
+
+  .nav-quick-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 46px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-main);
+    font: inherit;
+    font-size: 0.8667rem;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .nav-quick-btn svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .nav-quick-btn:active {
+    background: var(--accent-soft);
+    border-color: var(--accent-border, var(--border-strong));
+  }
+
+  /* Кнопка «Дизайн» внутри меню больше не нужна: её роль выполняет
+     быстрое действие выше, а дубль занимал место */
+  .nav .nav-design {
+    display: none;
+  }
+
+  .nav-quick-count {
+    margin-left: auto;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-size: 0.7rem;
+    font-weight: 800;
+    line-height: 20px;
+    text-align: center;
+  }
+
+  /* Гостю в меню — обе кнопки входа */
+  .nav-auth {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+    margin: 0 0 10px;
+  }
+
+  .nav-auth .btn {
+    width: 100%;
+    min-height: 46px;
+  }
+
+  /* Уведомления: выезжают справа во всю высоту */
+  .notify-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: auto;
+    z-index: 950;
+    width: min(380px, 90vw);
+    height: 100%;
+    max-height: none;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    border: none;
+    border-left: 1px solid var(--border-strong);
+    border-radius: 0;
+    background: #0d0d15;
+    box-shadow: -18px 0 60px rgba(0, 0, 0, 0.6);
+
+    /* Закрытое состояние — за правым краем, но не display: none,
+       иначе не получится красивого выезда */
+    opacity: 1;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateX(102%);
+    transition: transform 0.34s cubic-bezier(0.22, 0.9, 0.24, 1), visibility 0.34s;
+  }
+
+  body.theme-light .notify-panel {
+    background: #fff;
+  }
+
+  .notify-panel.open {
+    display: flex;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateX(0);
+    animation: none;
+  }
+
+  .notify-head {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    padding: 14px 16px;
+    padding-top: calc(14px + env(safe-area-inset-top));
+    background: inherit;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .notify-head b {
+    font-size: 0.9667rem;
+  }
+
+  .notify-actions {
+    margin-left: auto;
+  }
+
+  .notify-panel-body {
+    flex: 1;
+    padding: 8px 10px calc(16px + env(safe-area-inset-bottom));
+    overscroll-behavior: contain;
+  }
+
+  .notify-item {
+    padding: 12px 10px;
+    border-radius: 12px;
+  }
+
+  /* Панель дизайна: окошко снизу */
+  .design-panel {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 950;
+    width: auto;
+    max-height: 88vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 20px 16px calc(20px + env(safe-area-inset-bottom));
+    border-radius: 20px 20px 0 0;
+    border: 1px solid var(--border-strong);
+    border-bottom: none;
+    opacity: 1;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(102%);
+    transition: transform 0.34s cubic-bezier(0.22, 0.9, 0.24, 1), visibility 0.34s;
+  }
+
+  .design-panel.open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  /* Кнопка закрытия в углу панели: палец должен иметь очевидный выход */
+  .panel-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 3;
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-gray);
+    cursor: pointer;
+  }
+
+  .panel-close svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+
+  .design-panel .panel-close {
+    top: 14px;
+    right: 14px;
+  }
+
+  /* В уведомлениях кнопка живёт в шапке, поэтому там она не нужна */
+  .notify-panel .panel-close {
+    display: none;
+  }
+
+  /* Ручка, чтобы было видно: окошко тянется вниз */
+  .design-panel::before {
+    content: '';
+    position: sticky;
+    top: -6px;
+    display: block;
+    width: 44px;
+    height: 4px;
+    margin: -8px auto 12px;
+    border-radius: 999px;
+    background: var(--border-strong);
+  }
+
+  .design-panel h4 {
+    font-size: 1rem;
+  }
+
+  .theme-grid {
+    gap: 7px;
+  }
+}
+
+/* ---------- 4. Левое меню-шторка настроек ---------- */
+
+@media (max-width: 900px) {
+  .settings-picker {
+    min-height: 46px;
+    font-size: 0.9333rem;
+  }
+
+  .settings-sheet {
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  }
+
+  .sheet-item {
+    min-height: 48px;
+    font-size: 0.9333rem;
+  }
+}
+
+/* ---------- 5. Содержимое страниц ---------- */
+
+@media (max-width: 900px) {
+  /* Отступы секций одинаковые: раньше где-то текст прилипал к краю */
+  .container {
+    padding: 0 16px;
+  }
+
+  .section {
+    padding: 34px 0;
+  }
+
+  /* Строки «иконка — текст» не слипаются */
+  .badge,
+  .chip,
+  .tag,
+  .stat-pill {
+    white-space: normal;
+    line-height: 1.3;
+  }
+
+  /* Заголовки карточек не упираются в иконку */
+  .card-head {
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .card-head h3,
+  .card-head h4 {
+    min-width: 0;
+  }
+
+  /* Кнопки в ряд переносятся, а не сжимаются до обрезки */
+  .btn-row,
+  .modal-actions,
+  .profile-blocks-tools,
+  .fc-actions,
+  .catalog-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .btn-row .btn,
+  .modal-actions .btn {
+    flex: 1 1 auto;
+  }
+
+  /* Подвал: колонки в один столбец, ссылки не наезжают друг на друга */
+  .footer-grid,
+  .footer .container {
+    gap: 18px;
+  }
+
+  .footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+  }
+
+  .footer-links a {
+    display: inline-block;
+    padding: 4px 0;
+  }
+}
+
+@media (max-width: 600px) {
+  /* Всё, что было в две-три колонки, читается в одну */
+  .stats-grid,
+  .features-grid,
+  .steps-grid,
+  .achievements-grid,
+  .cards-grid,
+  .shop-grid,
+  .catalog-stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .catalog-stats {
+    gap: 8px;
+  }
+
+  /* Заголовки не вылезают за экран */
+  .hero h1,
+  .catalog-hero h1 {
+    font-size: clamp(1.7rem, 8.2vw, 2.4rem);
+    line-height: 1.14;
+  }
+
+  .section-head h2,
+  .block h2 {
+    font-size: clamp(1.25rem, 5.6vw, 1.6rem);
+  }
+
+  /* Кнопки на всю ширину — удобнее нажимать */
+  .hero-actions,
+  .cta-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .hero-actions .btn,
+  .cta-actions .btn {
+    width: 100%;
+  }
+}
+
+/* ---------- 6. Модальные окна и всплывашки ---------- */
+
+@media (max-width: 900px) {
+  .modal-overlay {
+    padding: 12px;
+    align-items: flex-end;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 18px;
+  }
+
+  .toast {
+    left: 12px;
+    right: 12px;
+    width: auto;
+    max-width: none;
+  }
+
+  .toast-stack {
+    left: 12px;
+    right: 12px;
+    top: auto;
+    bottom: calc(12px + env(safe-area-inset-bottom));
+  }
+
+  /* Плеер внизу не залезает под «домашнюю» полоску iPhone */
+  .mp-dock,
+  .mp-player,
+  .player-dock {
+    bottom: calc(12px + env(safe-area-inset-bottom));
+  }
+}
+
+/* ---------- 7. Совсем узкие и горизонтальные экраны ---------- */
+
+@media (max-width: 380px) {
+  .container {
+    padding: 0 12px;
+  }
+
+  .btn {
+    padding: 10px 14px;
+    font-size: 0.8667rem;
+  }
+
+  .nav {
+    width: 92vw;
+  }
+}
+
+@media (max-width: 900px) and (orientation: landscape) and (max-height: 480px) {
+  /* Телефон повернули: меню и окошки не выше экрана */
+  .nav,
+  .notify-panel {
+    padding-bottom: 12px;
+  }
+
+  .design-panel {
+    max-height: 94vh;
+  }
+}
+
+/* ---------- 8. Плавность: не мешаем тем, кто её выключил ---------- */
+
+@media (max-width: 900px) and (prefers-reduced-motion: reduce) {
+  .nav,
+  .notify-panel,
+  .design-panel,
+  .nav-backdrop {
+    transition: none !important;
+  }
+}
