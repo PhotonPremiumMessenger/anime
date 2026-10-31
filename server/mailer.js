@@ -130,4 +130,64 @@ async function sendCodeEmail(email, code, purpose) {
   }
 }
 
-module.exports = { sendCodeEmail, isMailConfigured };
+/* ---------- Письмо с новым паролем ---------- */
+
+/**
+ * HTML-письмо для сброса забытого пароля.
+ * Раньше временный пароль уходил шаблоном «кода», и человек
+ * получал пароль с подписью «введите этот код на сайте» —
+ * непонятно, что с ним делать. Теперь письмо говорит прямо.
+ */
+function buildPasswordEmail(password) {
+  return `
+  <div style="background:#0b0b0e;padding:32px 16px;font-family:-apple-system,Segoe UI,Roboto,sans-serif">
+    <div style="max-width:520px;margin:0 auto;background:#131318;border:1px solid #26262e;border-radius:18px;padding:30px">
+      <p style="margin:0 0 6px;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#8b8b96">
+        AniLingo
+      </p>
+      <h1 style="margin:0 0 14px;font-size:22px;color:#f2f2f5">Новый пароль</h1>
+      <p style="margin:0 0 22px;font-size:15px;line-height:1.6;color:#a9a9b4">
+        Мы сбросили пароль по вашей просьбе. Войдите с ним на сайте
+        и сразу смените его в настройках.
+      </p>
+      <p style="margin:0 0 22px;padding:16px;border-radius:12px;background:#1c1c24;text-align:center;
+                font-family:ui-monospace,Consolas,monospace;font-size:22px;letter-spacing:2px;color:#f2f2f5">
+        ${password}
+      </p>
+      <p style="margin:0;font-size:13px;line-height:1.6;color:#71717c">
+        Если вы не просили сброс — войдите и смените пароль: значит,
+        кто-то знает адрес вашей почты.
+      </p>
+    </div>
+  </div>`;
+}
+
+/**
+ * Отправляет письмо с новым паролем.
+ * @param {string} email — получатель
+ * @param {string} password — временный пароль
+ * @returns {Promise<{delivered: boolean, demoCode?: string}>}
+ */
+async function sendPasswordEmail(email, password) {
+  if (!isMailConfigured()) {
+    console.log(`[mail] Демо-режим. Новый пароль для ${email}: ${password}`);
+    return { delivered: false, demoCode: password };
+  }
+
+  try {
+    await getTransporter().sendMail({
+      from: `"${EMAIL_FROM}" <${EMAIL_USER}>`,
+      to: email,
+      subject: 'AniLingo — новый пароль',
+      text: `Новый пароль AniLingo: ${password}. Войдите с ним и смените его в настройках.`,
+      html: buildPasswordEmail(password)
+    });
+
+    return { delivered: true };
+  } catch (error) {
+    console.error('[mail] Не удалось отправить новый пароль:', error.message);
+    return { delivered: false, error: error.message };
+  }
+}
+
+module.exports = { sendCodeEmail, sendPasswordEmail, isMailConfigured };

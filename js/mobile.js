@@ -19,6 +19,16 @@
 
 /* ---------- Какие панели есть на телефоне ---------- */
 
+/** Сейчас телефонный режим? На компьютере меню горизонтальное. */
+function mobileWidthMatches() {
+  return window.matchMedia('(max-width: 900px)').matches;
+}
+
+/** Есть ли аккаунт. Гостю уведомления не показываем. */
+function mobileAccountActive() {
+  return typeof isAuthorized === 'function' ? Boolean(isAuthorized()) : false;
+}
+
 /** Все выдвижные панели страницы. */
 function mobilePanelParts() {
   return {
@@ -158,10 +168,17 @@ function buildQuickActions() {
   const nav = document.querySelector('.nav');
   if (!nav || nav.querySelector('.nav-quick')) return;
 
-  const quick = document.createElement('div');
-  quick.className = 'nav-quick';
+  // Только для выдвижного меню: на компьютере эти кнопки
+  // вываливались в шапку рядом с логотипом
+  if (!mobileWidthMatches()) return;
 
-  quick.innerHTML = `
+  // Уведомления — событие аккаунта, гостю кнопку не показываем
+  const withNotify = mobileAccountActive();
+
+  const quick = document.createElement('div');
+  quick.className = 'nav-quick' + (withNotify ? '' : ' nav-quick-single');
+
+  const notifyMarkup = !withNotify ? '' : `
     <button class="nav-quick-btn" type="button" data-mobile-action="notify">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M18 8a6 6 0 1 0-12 0c0 7-3 8-3 8h18s-3-1-3-8"></path>
@@ -170,6 +187,9 @@ function buildQuickActions() {
       <span>Уведомления</span>
       <span class="nav-quick-count hidden" data-quick-notify-count>0</span>
     </button>
+  `;
+
+  quick.innerHTML = notifyMarkup + `
     <button class="nav-quick-btn" type="button" data-mobile-action="design">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <circle cx="12" cy="12" r="9"></circle>
@@ -227,6 +247,10 @@ function refreshQuickNotifyCount() {
 function buildAuthActions() {
   const nav = document.querySelector('.nav');
   if (!nav || nav.querySelector('.nav-auth')) return;
+
+  // Только для выдвижного меню: на компьютере в шапке уже есть
+  // свои кнопки, и здесь появлялся их дубль
+  if (!mobileWidthMatches()) return;
 
   const authed = typeof isAuthorized === 'function' && isAuthorized();
   if (authed) return;
@@ -397,12 +421,19 @@ document.addEventListener('DOMContentLoaded', () => {
     syncPanelBackdrop();
   });
 
-  // При переходе на широкий экран меню не должно остаться открытым
+  // При переходе на широкий экран меню не должно остаться открытым,
+  // а «телефонные» кнопки — висеть в шапке
   window.addEventListener('resize', () => {
     if (window.innerWidth > 900) {
       closeMobileNav();
       syncPanelBackdrop();
+
+      document.querySelectorAll('.nav-quick, .nav-auth').forEach(block => block.remove());
+      return;
     }
+
+    buildQuickActions();
+    buildAuthActions();
   });
 });
 
@@ -412,3 +443,4 @@ window.closeMobileNav = closeMobileNav;
 window.closeOtherMobilePanels = closeOtherMobilePanels;
 window.syncPanelBackdrop = syncPanelBackdrop;
 window.refreshQuickNotifyCount = refreshQuickNotifyCount;
+window.mobileWidthMatches = mobileWidthMatches;

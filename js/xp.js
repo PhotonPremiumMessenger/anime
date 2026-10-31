@@ -119,6 +119,16 @@ function getLevelReward(level) {
 
 /* ---------- XP игрока ---------- */
 
+/**
+ * Есть ли аккаунт. Гость — тот, кто не вошёл и не зарегистрировался:
+ * ему опыт, уровни, достижения и уведомления не начисляются.
+ * Без этого гость копил «опыт», получал уровни и всплывашки,
+ * хотя аккаунта у него нет.
+ */
+function accountIsActive() {
+  return typeof isAuthorized === 'function' ? Boolean(isAuthorized()) : false;
+}
+
 /** Текущий баланс XP: у авторизованного — из аккаунта, у гостя — отдельно. */
 function getXP() {
   const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
@@ -148,6 +158,11 @@ function setXP(value) {
 function addXP(amount, reason = '') {
   const delta = Math.round(Number(amount) || 0);
   if (!delta) return { xp: getXP(), level: getLevelInfo(getXP()).level, leveledUp: false };
+
+  // Гость: аккаунта нет — опыт не капает, уровней и наград не будет
+  if (!accountIsActive()) {
+    return { xp: 0, level: 1, leveledUp: false, skipped: true };
+  }
 
   const before = getLevelInfo(getXP());
   const total = setXP(getXP() + delta);
@@ -191,6 +206,9 @@ function addXP(amount, reason = '') {
 
 /** Тратит XP (магазин). Возвращает false, если не хватает. */
 function spendXP(amount) {
+  // Тратить опыт может только аккаунт
+  if (!accountIsActive()) return false;
+
   const price = Math.max(0, Math.round(Number(amount) || 0));
   if (getXP() < price) return false;
   setXP(getXP() - price);
@@ -456,6 +474,9 @@ function notifyAction(type, amount = 1, extra = {}) {
   const value = Number(amount) || 0;
   if (value <= 0) return;
 
+  // Гость: ни опыта, ни счётчиков, ни наград за действия
+  if (!accountIsActive()) return;
+
   bumpCounter(type, value);
 
   // Автоматическое начисление XP по таблице
@@ -561,6 +582,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /* Экспорт в глобальную область */
 window.XP_KEYS = XP_KEYS;
+window.accountIsActive = accountIsActive;
 window.MAX_LEVEL = MAX_LEVEL;
 window.xpTodayKey = xpTodayKey;
 window.xpDateKey = xpDateKey;

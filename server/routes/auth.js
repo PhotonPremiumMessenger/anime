@@ -308,18 +308,30 @@ router.post('/forgot-password', async (req, res, next) => {
     db.db.prepare('UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?')
       .run(hash, db.nowIso(), user.id);
 
-    // Отправляем письмо с тем же шаблоном, что и для кодов
-    const { sendCodeEmail } = require('../mailer');
-    const delivery = await sendCodeEmail(email, temporary, 'reset');
+    // Отправляем отдельное письмо «новый пароль», а не шаблон кода:
+    // человеку должно быть понятно, что это пароль, а не код
+    const { sendPasswordEmail, isMailConfigured } = require('../mailer');
 
-    return res.json({
-      ok: true,
-      demo: !delivery.delivered,
-      temporaryPassword: delivery.delivered ? undefined : temporary,
-      message: delivery.delivered
-        ? 'Новый пароль отправлен на ' + email
-        : 'Демо-режим: пароль показан на экране'
-    });
+    // Почта не настроена — сайт работает в демо-режиме, пароль
+    // показываем прямо на экране (как раньше на статичной версии)
+    if (!isMailConfigured()) {
+      return res.json({
+        ok: true,
+        demo: true,
+        temporaryPassword: temporary,
+        message: 'Демо-режим: почта не настроена, пароль показан на экране'
+      });
+    }
+
+    const delivery = await sendPasswordEmail(email, temporary);
+
+    // Письмо не ушло — не отдаём пароль в ответе: иначе любой,
+    // кто знает почту, мог бы забрать аккаунт при сбое SMTP
+    if (!delivery.delivered) {
+      return fail(res, 502, 'Не удалось отправить письмо. Проверьте настройки почты и попробуйте позже');
+    }
+
+    return res.json({ ok: true, message: 'Новый пароль отправлен на ' + email });
   } catch (error) {
     return next(error);
   }
