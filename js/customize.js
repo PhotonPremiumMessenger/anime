@@ -1,26 +1,34 @@
 /* ============================================================
    customize.js — «сделай сайт своим»
-   Всё живёт только в localStorage, сервер не нужен:
-   • свой фон из файла + затемнение и размытие;
-   • цвет сайта: готовые палитры, любой свой цвет и радужный режим;
-   • курсоры и палитры. Музыка живёт в player.js — там плейлист и плеер;
-   • восемь аниме-курсоров, плюс кнопка «загрузить свой» (заглушка).
+   Всё живёт только в браузере, сервер не нужен:
+   • свой фон из файла (картинка или видео) + затемнение и размытие;
+   • цвет сайта: готовые палитры, любой свой цвет и радужный режим.
+   Музыка живёт в player.js — там плейлист и плеер.
+   Курсоры удалены: на сайте обычный указатель.
    ============================================================ */
 
 'use strict';
 
 // Ключи localStorage
 const CUSTOM_BG_KEY = 'anilingo_custom_bg';        // data URL картинки
+const CUSTOM_BG_KIND = 'anilingo_custom_bg_kind';  // 'image' | 'video'
 const CUSTOM_BG_DIM = 'anilingo_bg_dim';           // затемнение, 0–90
 const CUSTOM_BG_BLUR = 'anilingo_bg_blur';         // размытие, 0–20 px
+
+// Видео в localStorage не помещается (там всего ~5 МБ), поэтому
+// ролик лежит в IndexedDB — это тоже память браузера, сервер не нужен.
+const BG_DB_NAME = 'anilingo_bg';
+const BG_DB_STORE = 'bg';
+const BG_VIDEO_KEY = 'video';
 const CUSTOM_ACCENT_KEY = 'anilingo_accent';       // свой цвет, #rrggbb
 const CUSTOM_PRESET_KEY = 'anilingo_accent_preset'; // id готовой палитры
 const CUSTOM_RAINBOW_KEY = 'anilingo_accent_rainbow'; // радужный режим
-const CUSTOM_CURSOR_KEY = 'anilingo_cursor';       // id курсора
 
-// Ограничения: localStorage небольшой, поэтому файлы ужимаем
+// Ограничения: localStorage небольшой, поэтому картинки ужимаем
 const BG_MAX_SIDE = 1920;
 const BG_QUALITY = 0.82;
+const BG_IMAGE_LIMIT = 5 * 1024 * 1024;  // 5 МБ на картинку
+const BG_VIDEO_LIMIT = 10 * 1024 * 1024; // 10 МБ на видео
 
 /* ---------- Готовые палитры ---------- */
 
@@ -39,96 +47,6 @@ const ACCENT_PRESETS = [
   { id: 'sakura',   name: 'Сакура', hue: 340, sat: 88, light: 76 },
   { id: 'ice',      name: 'Лёд',    hue: 186, sat: 78, light: 66 }
 ];
-
-/* ---------- Аниме-курсоры ---------- */
-
-/**
- * Собирает SVG-курсор в data URL.
- * @param {string} body — внутренности svg 32×32
- * @param {number} hotX — точка нажатия по X
- * @param {number} hotY — точка нажатия по Y
- */
-function animeCursor(body, hotX = 4, hotY = 4) {
-  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">' +
-    body + '</svg>';
-
-  return 'url("data:image/svg+xml,' + encodeURIComponent(svg) + '") ' + hotX + ' ' + hotY;
-}
-
-// Семь аниме-курсоров: каждый — маленькая картинка, нарисованная кодом
-const ANIME_CURSORS = [
-  {
-    id: 'katana',
-    name: 'Катана',
-    css: animeCursor(
-      '<path d="M4 26 L22 6" stroke="#e8eef7" stroke-width="3" stroke-linecap="round"/>' +
-      '<path d="M22 6 L26 3" stroke="#ffd166" stroke-width="3" stroke-linecap="round"/>' +
-      '<path d="M4 26 L8 28" stroke="#b23a48" stroke-width="4" stroke-linecap="round"/>'
-    )
-  },
-  {
-    id: 'sakura',
-    name: 'Сакура',
-    css: animeCursor(
-      '<g fill="#ffb6cd"><ellipse cx="16" cy="8" rx="5" ry="7"/>' +
-      '<ellipse cx="16" cy="24" rx="5" ry="7"/><ellipse cx="8" cy="16" rx="7" ry="5"/>' +
-      '<ellipse cx="24" cy="16" rx="7" ry="5"/></g>' +
-      '<circle cx="16" cy="16" r="3.4" fill="#ffd166"/>'
-    , 16, 16)
-  },
-  {
-    id: 'star',
-    name: 'Звезда',
-    css: animeCursor(
-      '<path d="M16 2 L20 12 L30 13 L22 20 L24 30 L16 25 L8 30 L10 20 L2 13 L12 12 Z" ' +
-      'fill="#ffd166" stroke="#b8860b" stroke-width="1.4" stroke-linejoin="round"/>'
-    , 16, 16)
-  },
-  {
-    id: 'shuriken',
-    name: 'Сюрикэн',
-    css: animeCursor(
-      '<path d="M16 2 L20 12 L30 16 L20 20 L16 30 L12 20 L2 16 L12 12 Z" fill="#c9d6e8" ' +
-      'stroke="#7b8a9e" stroke-width="1.2" stroke-linejoin="round"/>' +
-      '<circle cx="16" cy="16" r="2.6" fill="#1b2130"/>'
-    , 16, 16)
-  },
-  {
-    id: 'onigiri',
-    name: 'Онигири',
-    css: animeCursor(
-      '<path d="M16 4 L29 26 H3 Z" fill="#f4f6f9" stroke="#c7ced8" stroke-width="1.6" stroke-linejoin="round"/>' +
-      '<rect x="11" y="17" width="10" height="9" rx="1.6" fill="#24313f"/>'
-    , 16, 12)
-  },
-  {
-    id: 'kitsune',
-    name: 'Кицунэ',
-    css: animeCursor(
-      '<path d="M6 6 L12 14 L20 14 L26 6 L26 22 C26 26 22 29 16 29 C10 29 6 26 6 22 Z" ' +
-      'fill="#ff9f43" stroke="#b25f10" stroke-width="1.5" stroke-linejoin="round"/>' +
-      '<circle cx="12" cy="20" r="1.8" fill="#241a12"/><circle cx="20" cy="20" r="1.8" fill="#241a12"/>' +
-      '<path d="M14 24 L18 24 L16 26 Z" fill="#241a12"/>'
-    , 16, 10)
-  },
-  {
-    id: 'heart',
-    name: 'Сердце',
-    css: animeCursor(
-      '<path d="M16 28 C4 20 2 13 6 8 C10 3 16 6 16 10 C16 6 22 3 26 8 C30 13 28 20 16 28 Z" ' +
-      'fill="#ff5e7a" stroke="#b2263c" stroke-width="1.5"/>'
-    , 16, 14)
-  }
-];
-
-/** CSS-значение курсора по id. */
-function cursorCss(id) {
-  if (id === 'accent') return 'var(--cursor-accent, pointer)';
-  if (id === 'default' || !id) return '';
-
-  const found = ANIME_CURSORS.find(item => item.id === id);
-  return found ? found.css : '';
-}
 
 /* ---------- Чтение и запись ---------- */
 
@@ -171,26 +89,169 @@ function customBgLayer() {
   return layer;
 }
 
+/* ---------- Видео-фон в IndexedDB ---------- */
+
+/** Открывает базу браузера для видео-фона. */
+function bgDbOpen() {
+  return new Promise((resolve, reject) => {
+    if (typeof indexedDB === 'undefined') {
+      reject(new Error('Браузер не умеет хранить видео'));
+      return;
+    }
+
+    const request = indexedDB.open(BG_DB_NAME, 1);
+
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(BG_DB_STORE)) db.createObjectStore(BG_DB_STORE);
+    };
+
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error || new Error('Не открылась память браузера'));
+  });
+}
+
+/** Кладёт файл видео в IndexedDB. */
+async function bgSaveVideo(file) {
+  const db = await bgDbOpen();
+
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction(BG_DB_STORE, 'readwrite');
+    tx.objectStore(BG_DB_STORE).put(file, BG_VIDEO_KEY);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error || new Error('Видео не сохранилось'));
+  });
+
+  db.close();
+}
+
+/** Достаёт файл видео из IndexedDB (или null). */
+async function bgLoadVideo() {
+  try {
+    const db = await bgDbOpen();
+
+    const file = await new Promise((resolve, reject) => {
+      const tx = db.transaction(BG_DB_STORE, 'readonly');
+      const request = tx.objectStore(BG_DB_STORE).get(BG_VIDEO_KEY);
+      request.onsuccess = () => resolve(request.result || null);
+      request.onerror = () => reject(request.error);
+    });
+
+    db.close();
+    return file;
+  } catch (error) {
+    return null;
+  }
+}
+
+/** Удаляет видео-фон из IndexedDB. */
+async function bgRemoveVideo() {
+  try {
+    const db = await bgDbOpen();
+
+    await new Promise(resolve => {
+      const tx = db.transaction(BG_DB_STORE, 'readwrite');
+      tx.objectStore(BG_DB_STORE).delete(BG_VIDEO_KEY);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => resolve();
+    });
+
+    db.close();
+  } catch (error) {
+    // нет базы — и удалять нечего
+  }
+}
+
+// Ссылка на текущий ролик: старую отзываем, чтобы не текла память
+let customBgVideoUrl = '';
+
+/** Убирает <video> из слоя фона. */
+function removeBgVideoElement() {
+  const layer = document.querySelector('.bg-custom');
+  if (!layer) return;
+
+  const video = layer.querySelector('video');
+  if (video) {
+    video.pause();
+    video.removeAttribute('src');
+    video.load();
+    video.remove();
+  }
+
+  if (customBgVideoUrl) {
+    URL.revokeObjectURL(customBgVideoUrl);
+    customBgVideoUrl = '';
+  }
+}
+
+/** Показывает ролик в слое фона. */
+async function paintBgVideo() {
+  const layer = customBgLayer();
+  const file = await bgLoadVideo();
+
+  if (!file) {
+    customSet(CUSTOM_BG_KIND, 'image');
+    applyCustomBackground();
+    return;
+  }
+
+  removeBgVideoElement();
+  layer.style.backgroundImage = '';
+  layer.classList.add('is-video');
+
+  customBgVideoUrl = URL.createObjectURL(file);
+
+  const video = document.createElement('video');
+  video.className = 'bg-custom-video';
+  video.src = customBgVideoUrl;
+  video.muted = true;
+  video.loop = true;
+  video.autoplay = true;
+  video.playsInline = true;
+  video.setAttribute('muted', '');
+  video.setAttribute('playsinline', '');
+  video.setAttribute('aria-hidden', 'true');
+  video.preload = 'auto';
+
+  layer.appendChild(video);
+
+  // Автозапуск может не сработать до первого касания — не страшно,
+  // картинка всё равно уже на экране
+  const play = video.play();
+  if (play && typeof play.catch === 'function') play.catch(() => {});
+
+  document.body.classList.add('has-custom-bg');
+}
+
 /** Применяет фон, затемнение и размытие. */
 function applyCustomBackground() {
   const image = customGet(CUSTOM_BG_KEY, '');
+  const kind = customGet(CUSTOM_BG_KIND, 'image');
   const dim = Math.min(90, Math.max(0, Number(customGet(CUSTOM_BG_DIM, 35)) || 0));
   const blur = Math.min(20, Math.max(0, Number(customGet(CUSTOM_BG_BLUR, 0)) || 0));
 
   document.documentElement.style.setProperty('--bg-dim', String(dim / 100));
   document.documentElement.style.setProperty('--bg-blur', blur + 'px');
 
-  if (!image) {
-    document.body.classList.remove('has-custom-bg');
-    const layer = document.querySelector('.bg-custom');
-    if (layer) {
-      layer.style.backgroundImage = '';
-    }
+  const layer = document.querySelector('.bg-custom');
+
+  // Видео: картинки в localStorage нет, ролик лежит в IndexedDB
+  if (kind === 'video') {
+    paintBgVideo();
     return;
   }
 
-  const layer = customBgLayer();
-  layer.style.backgroundImage = 'url("' + image + '")';
+  removeBgVideoElement();
+  if (layer) layer.classList.remove('is-video');
+
+  if (!image) {
+    document.body.classList.remove('has-custom-bg');
+    if (layer) layer.style.backgroundImage = '';
+    return;
+  }
+
+  const target = customBgLayer();
+  target.style.backgroundImage = 'url("' + image + '")';
   document.body.classList.add('has-custom-bg');
 }
 
@@ -235,20 +296,65 @@ function shrinkImage(file, maxSide, quality) {
   });
 }
 
-/** Загружает свой фон из выбранного файла. */
+/**
+ * Загружает свой фон: картинку (до 5 МБ) или видео (до 10 МБ).
+ * Картинка ужимается и уходит в localStorage, ролик — в IndexedDB.
+ * Всё остаётся в браузере, на сервер ничего не отправляется.
+ */
 async function pickCustomBackground(input) {
   const file = input && input.files && input.files[0];
   if (!file) return;
 
-  if (!/^image\//.test(file.type)) {
-    if (typeof showToast === 'function') showToast('Нужна картинка', 'Выбери JPG, PNG или WebP', 'error');
+  const isVideo = /^video\//.test(file.type);
+  const isImage = /^image\//.test(file.type);
+
+  if (!isVideo && !isImage) {
+    if (typeof showToast === 'function') {
+      showToast('Нужна картинка или видео', 'Подойдут JPG, PNG, WebP, MP4 и WebM', 'error');
+    }
     input.value = '';
     return;
   }
 
-  if (typeof showToast === 'function') showToast('Готовим фон', 'Ужимаем картинку, чтобы она поместилась в браузер', 'info', { duration: 2400 });
+  // Лимиты: фото до 5 МБ, видео до 10 МБ
+  const limit = isVideo ? BG_VIDEO_LIMIT : BG_IMAGE_LIMIT;
+  if (file.size > limit) {
+    const mb = Math.round(limit / (1024 * 1024));
+    if (typeof showToast === 'function') {
+      showToast(
+        'Файл слишком большой',
+        (isVideo ? 'Видео' : 'Картинка') + ' до ' + mb + ' МБ. Ваш файл — ' +
+          (file.size / (1024 * 1024)).toFixed(1) + ' МБ',
+        'error',
+        { duration: 5600 }
+      );
+    }
+    input.value = '';
+    return;
+  }
 
   try {
+    if (isVideo) {
+      if (typeof showToast === 'function') {
+        showToast('Готовим видео-фон', 'Ролик сохраняется в этом браузере', 'info', { duration: 2200 });
+      }
+
+      await bgSaveVideo(file);
+      customSet(CUSTOM_BG_KIND, 'video');
+
+      // Картинка больше не нужна — освобождаем место
+      try { localStorage.removeItem(CUSTOM_BG_KEY); } catch (error) { /* пусто */ }
+
+      await paintBgVideo();
+      renderCustomizationState();
+
+      if (typeof showToast === 'function') showToast('Видео-фон включён', 'Ролик крутится на фоне всех страниц', 'success', { icon: 'image' });
+      input.value = '';
+      return;
+    }
+
+    if (typeof showToast === 'function') showToast('Готовим фон', 'Ужимаем картинку, чтобы она поместилась в браузер', 'info', { duration: 2400 });
+
     const dataUrl = await shrinkImage(file, BG_MAX_SIDE, BG_QUALITY);
 
     // Старый фон убираем заранее — иначе места может не хватить
@@ -256,12 +362,15 @@ async function pickCustomBackground(input) {
 
     if (!customSet(CUSTOM_BG_KEY, dataUrl)) return;
 
+    customSet(CUSTOM_BG_KIND, 'image');
+    await bgRemoveVideo();
+
     applyCustomBackground();
     renderCustomizationState();
 
     if (typeof showToast === 'function') showToast('Фон обновлён', 'Теперь страницу украшает твоя картинка', 'success', { icon: 'image' });
   } catch (error) {
-    if (typeof showToast === 'function') showToast('Не получилось', error.message || 'Попробуй другую картинку', 'error');
+    if (typeof showToast === 'function') showToast('Не получилось', error.message || 'Попробуй другой файл', 'error');
   }
 
   input.value = '';
@@ -270,6 +379,10 @@ async function pickCustomBackground(input) {
 /** Убирает свой фон и возвращает стандартный. */
 function clearCustomBackground() {
   try { localStorage.removeItem(CUSTOM_BG_KEY); } catch (error) { /* пусто */ }
+  try { localStorage.removeItem(CUSTOM_BG_KIND); } catch (error) { /* пусто */ }
+
+  removeBgVideoElement();
+  bgRemoveVideo();
 
   applyCustomBackground();
   renderCustomizationState();
@@ -465,61 +578,13 @@ function applyAccentSettings() {
   if (rainbow) applyAccentTone(340, 88, 64);
 }
 
-/* ---------- Курсоры ---------- */
+/* ---------- Курсоры удалены ---------- */
 
-/** Применяет выбранный курсор. */
-function applyCursorSetting(value, silent) {
-  const id = value || 'default';
-  customSet(CUSTOM_CURSOR_KEY, id);
-
-  // Держим настройку интерфейса синхронной, если она доступна
-  if (!silent && typeof setSettingValue === 'function') {
-    setSettingValue('interface.cursor', id);
-  }
-
-  document.body.classList.remove('cursor-accent', 'cursor-anime');
-  document.documentElement.style.removeProperty('--cursor-image');
-
-  if (id === 'default') {
-    renderCustomizationState();
-    return;
-  }
-
-  if (id === 'accent') {
-    document.body.classList.add('cursor-accent');
-    renderCustomizationState();
-    return;
-  }
-
-  const css = cursorCss(id);
-  if (!css) return;
-
-  document.documentElement.style.setProperty('--cursor-image', css);
-  document.body.classList.add('cursor-anime');
-  renderCustomizationState();
-}
-
-/** Заглушка загрузки своего курсора (сделаем позже). */
-function uploadCustomCursor() {
-  if (typeof showToast === 'function') {
-    showToast('Скоро будет',
-      'Загрузка своих курсоров появится в следующем обновлении. Пока выбери один из восьми',
-      'info', { duration: 4200, icon: 'cursor' });
-  }
-}
-
-/** Применяет сохранённый курсор при загрузке страницы. */
-function applyCursorSettings() {
-  // Настройка интерфейса главнее: она же видна в списке «Курсор»
-  let saved = customGet(CUSTOM_CURSOR_KEY, 'default');
-
-  if (typeof prefValue === 'function') {
-    const fromSettings = String(prefValue('interface.cursor', ''));
-    if (fromSettings) saved = fromSettings;
-  }
-
-  applyCursorSetting(saved, true);
-}
+/*
+  Раньше здесь можно было выбрать аниме-курсор или загрузить свой.
+  Курсоры мешали читать текст и ломали наведение, поэтому выбор
+  курсора убран целиком: на сайте обычный указатель.
+*/
 
 /* ---------- Подписи и активные состояния в настройках ---------- */
 
@@ -534,13 +599,8 @@ function updateCustomLabels() {
   if (blurRange && blurLabel) blurLabel.textContent = blurRange.value + 'px';
 }
 
-/** Подсвечивает выбранные цвет и курсор. */
+/** Подсвечивает выбранный цвет сайта. */
 function renderCustomizationState() {
-  const currentCursor = customGet(CUSTOM_CURSOR_KEY, 'default');
-  document.querySelectorAll('[data-cursor-id]').forEach(btn => {
-    btn.classList.toggle('is-active', btn.dataset.cursorId === currentCursor);
-  });
-
   const currentAccent = customGet(CUSTOM_ACCENT_KEY, '');
   const currentPreset = customGet(CUSTOM_PRESET_KEY, '') || (currentAccent ? '' : 'graphite');
   const rainbow = customGet(CUSTOM_RAINBOW_KEY, 'false') === 'true';
@@ -557,9 +617,12 @@ function renderCustomizationState() {
 
   const bgState = document.getElementById('customBgState');
   if (bgState) {
-    bgState.textContent = customGet(CUSTOM_BG_KEY, '')
-      ? 'Свой фон загружен'
-      : 'Сейчас стандартный фон сайта';
+    const image = customGet(CUSTOM_BG_KEY, '');
+    const kind = customGet(CUSTOM_BG_KIND, 'image');
+
+    if (kind === 'video') bgState.textContent = 'Своё видео на фоне';
+    else if (image) bgState.textContent = 'Своя картинка на фоне';
+    else bgState.textContent = 'Сейчас стандартный фон сайта';
   }
 
   // Кружки панели дизайна тоже должны знать, что цвет сменился
@@ -596,7 +659,6 @@ function renderPanelAccent() {
 function applyCustomization() {
   applyCustomBackground();
   applyAccentSettings();
-  applyCursorSettings();
   renderPanelAccent();
 }
 
@@ -615,7 +677,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* Экспорт */
-window.ANIME_CURSORS = ANIME_CURSORS;
 window.ACCENT_PRESETS = ACCENT_PRESETS;
 window.applyAccentTone = applyAccentTone;
 window.renderPanelAccent = renderPanelAccent;
@@ -623,7 +684,6 @@ window.getAccentColor = getAccentColor;
 window.applyCustomization = applyCustomization;
 window.applyCustomBackground = applyCustomBackground;
 window.applyAccentSettings = applyAccentSettings;
-window.applyCursorSettings = applyCursorSettings;
 window.pickCustomBackground = pickCustomBackground;
 window.clearCustomBackground = clearCustomBackground;
 window.setBackgroundDim = setBackgroundDim;
@@ -631,6 +691,4 @@ window.setBackgroundBlur = setBackgroundBlur;
 window.setAccentPreset = setAccentPreset;
 window.setAccentCustom = setAccentCustom;
 window.toggleRainbowAccent = toggleRainbowAccent;
-window.applyCursorSetting = applyCursorSetting;
-window.uploadCustomCursor = uploadCustomCursor;
 window.renderCustomizationState = renderCustomizationState;

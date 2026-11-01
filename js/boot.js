@@ -235,7 +235,6 @@
   if (background === 'plain') body.classList.add('bg-plain');
   else if (background === 'torii') body.classList.add('bg-torii');
 
-  body.classList.toggle('cursor-accent', settings['interface.cursor'] === 'accent');
   body.classList.toggle('no-anim', settings['interface.animations'] === false);
   body.classList.toggle('compact', Boolean(settings['interface.compact']));
 

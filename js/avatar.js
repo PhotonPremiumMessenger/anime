@@ -114,26 +114,37 @@ function getEquippedFrame() {
 
   if (!id) return '';
 
-  // id рамки и класс совпадают: frame-gold → frame-gold
-  return id.indexOf('frame-') === 0 ? id : '';
+  // Художественная рамка: файл есть — значит всё в порядке
+  if (typeof getAvatarFrame === 'function' && getAvatarFrame(id)) return id;
+
+  // Старая рамка из магазина жила классом frame-*
+  if (typeof getShopItem === 'function') {
+    const item = getShopItem(id);
+    return item && item.frame ? item.frame : '';
+  }
+
+  return '';
 }
 
 /* ---------- Разметка ---------- */
 
-/** Внутренность аватара: кольцо-рамка, фото или буква. */
-function avatarInnerMarkup(name, photo) {
+/** Внутренность аватара: кольцо, фото или буква и арт-рамка поверх. */
+function avatarInnerMarkup(name, photo, frame) {
   // Кольцо — отдельный слой: так его градиент можно вращать,
   // не задевая фото и букву внутри
   const ring = '<i class="avatar-ring" aria-hidden="true"></i>';
 
+  // Художественная рамка лежит поверх всего: она заходит на аватар
+  const art = typeof avatarFrameArtMarkup === 'function' ? avatarFrameArtMarkup(frame) : '';
+
   if (isAvatarPicture(photo)) {
     return ring + '<img class="avatar-photo" src="' + photo + '" alt="' +
-      String(name || 'Аватар').replace(/"/g, '&quot;') + '" loading="lazy" decoding="async">';
+      String(name || 'Аватар').replace(/"/g, '&quot;') + '" loading="lazy" decoding="async">' + art;
   }
 
   const empty = !String(name || '').trim();
   return ring + '<span class="avatar-letter' + (empty ? ' is-empty' : '') + '">' +
-    avatarLetter(name) + '</span>';
+    avatarLetter(name) + '</span>' + art;
 }
 
 /**
@@ -148,7 +159,13 @@ function avatarMarkup(name, options) {
   const tones = avatarTones(name);
 
   const frame = opts.frame === undefined ? getEquippedFrame() : opts.frame;
-  const classes = 'avatar-round' + (frame ? ' ' + frame : '') + (opts.className ? ' ' + opts.className : '');
+
+  // Класс нужен только простым рамкам: художественные рисуются
+  // картинкой внутри, а класса с таким именем в CSS нет
+  const isArt = typeof getAvatarFrame === 'function' && getAvatarFrame(frame);
+  const frameClass = frame && !isArt ? ' ' + frame : '';
+
+  const classes = 'avatar-round' + frameClass + (opts.className ? ' ' + opts.className : '');
 
   const style = '--av-1:' + tones[0] + ';--av-2:' + tones[1] +
     (opts.size ? ';--av-size:' + Number(opts.size) + 'px' : '');
@@ -161,7 +178,7 @@ function avatarMarkup(name, options) {
     (isAvatarPicture(opts.photo) ? ' data-avatar-photo-data="' + opts.photo + '"' : '') +
     ' data-avatar-frame="' + String(frame || '') + '"' +
     ' style="' + style + '">' +
-    avatarInnerMarkup(name, opts.photo) +
+    avatarInnerMarkup(name, opts.photo, frame) +
     '</span>';
 }
 
@@ -185,18 +202,21 @@ function paintAvatarSlots() {
     slot.style.setProperty('--av-1', String(tones[0]));
     slot.style.setProperty('--av-2', String(tones[1]));
 
-    // Рамки — это классы вида frame-gold; остальные классы не трогаем
+    // Классами живут только простые рамки; художественные
+    // рисуются картинкой внутри, класс им не нужен
     Array.from(slot.classList).forEach(cls => {
       if (cls.indexOf('frame-') === 0) slot.classList.remove(cls);
     });
-    if (frame) slot.classList.add(frame);
+
+    const isArtFrame = typeof getAvatarFrame === 'function' && getAvatarFrame(frame);
+    if (frame && !isArtFrame) slot.classList.add(frame);
 
     const signature = (photo ? 'p:' + photo.length + ':' + photo.slice(-24) : 'l:' + name) +
       '|f:' + frame;
 
     if (slot.dataset.avatarPainted === signature) return;
 
-    slot.innerHTML = avatarInnerMarkup(name, photo);
+    slot.innerHTML = avatarInnerMarkup(name, photo, frame);
     slot.dataset.avatarPainted = signature;
     if (photo) slot.dataset.avatarPhotoData = photo;
   });

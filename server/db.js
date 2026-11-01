@@ -77,6 +77,18 @@ db.exec(`
     data       TEXT    NOT NULL DEFAULT '{}',
     updated_at TEXT    NOT NULL
   );
+
+  -- Активации промокодов: одна запись — один код у одного аккаунта
+  CREATE TABLE IF NOT EXISTS promo_redemptions (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id    INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    code       TEXT    NOT NULL,
+    reward     TEXT    NOT NULL DEFAULT '{}',
+    created_at TEXT    NOT NULL,
+    UNIQUE (user_id, code)
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_promo_code ON promo_redemptions (code);
 `);
 
 /* ---------- Переезд старых ключей ---------- */
@@ -413,7 +425,61 @@ function saveProfile(userId, { xp, level, data }) {
   return getProfile(userId);
 }
 
-/** Удаляет весь профиль и настройки (используется при удалении аккаунта). */
+/* ---------- Промокоды ---------- */
+
+const promoQueries = {
+  insert: db.prepare(`
+    INSERT INTO promo_redemptions (user_id, code, reward, created_at)
+    VALUES (?, ?, ?, ?)
+  `),
+  byUser: db.prepare('SELECT code, reward, created_at FROM promo_redemptions WHERE user_id = ? ORDER BY id DESC'),
+  byUserAndCode: db.prepare('SELECT id FROM promo_redemptions WHERE user_id = ? AND code = ?'),
+  countByCode: db.prepare('SELECT COUNT(*) AS total FROM promo_redemptions WHERE code = ?')
+};
+
+/** Уже активировал ли этот аккаунт такой код. */
+function hasRedeemedPromo(userId, code) {
+  return Boolean(promoQueries.byUserAndCode.get(Number(userId), String(code).toUpperCase()));
+}
+
+/** Сколько раз код активировали вообще (для одноразовых). */
+function countPromoUses(code) {
+  const row = promoQueries.countByCode.get(String(code).toUpperCase());
+  return row ? Number(row.total) || 0 : 0;
+}
+
+/**
+ * Записывает активацию. Возвращает false, если код уже был.
+ * Проверку «одна активация на весь сайт» делает маршрут.
+ */
+function redeemPromo(userId, code, reward) {
+  try {
+    promoQueries.insert.run(Number(userId), String(code).toUpperCase(), JSON.stringify(reward || {}), nowIso());
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+/** Все коды аккаунта: [{ code, reward, createdAt }]. */
+function getUserPromos(userId) {
+  return promoQueries.byUser.all(Number(userId)).map(row => ({
+    code: row.code,
+    reward: safeJson(row.reward),
+    createdAt: row.created_at
+  }));
+}
+
+/** JSON из базы без падений. */
+function safeJson(text) {
+  try {
+    return JSON.parse(text || '{}') || {};
+  } catch (error) {
+    return {};
+  }
+}
+
+/* ---------- Удаление аккаунта ---------- */
 function wipeUserData(userId) {
   db.prepare('DELETE FROM user_settings WHERE user_id = ?').run(Number(userId));
   db.prepare('DELETE FROM user_profile WHERE user_id = ?').run(Number(userId));
@@ -442,6 +508,10 @@ module.exports = {
   saveSettings,
   getProfile,
   saveProfile,
+  hasRedeemedPromo,
+  countPromoUses,
+  redeemPromo,
+  getUserPromos,
   wipeUserData
 };
 

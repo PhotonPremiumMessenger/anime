@@ -27,6 +27,7 @@ const db = require('./db');
 const { isMailConfigured } = require('./mailer');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
+const promoRoutes = require('./routes/promo');
 
 // Один раз переименовываем ключи старого названия в новые.
 // На чистой базе ничего не делает, повторный запуск безопасен.
@@ -98,6 +99,7 @@ app.get('/api/health', (req, res) => {
 
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/user', apiLimiter, userRoutes);
+app.use('/api/promo', apiLimiter, promoRoutes);
 
 /**
  * GET /api/public/user/:username — чужая визитка без входа.

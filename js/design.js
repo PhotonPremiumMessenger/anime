@@ -285,15 +285,26 @@ function applyStoredSettings() {
   if (background === 'plain') document.body.classList.add('bg-plain');
   if (background === 'torii') document.body.classList.add('bg-torii');
 
-  // Курсор
-  document.body.classList.toggle('cursor-accent', settings['interface.cursor'] === 'accent');
-
   // Анимации
   const animations = settings['interface.animations'] !== false;
   document.body.classList.toggle('no-anim', !animations);
 
   // Компактный режим
   document.body.classList.toggle('compact', Boolean(settings['interface.compact']));
+
+  // Лёгкая графика: настройка аккаунта главнее флага устройства,
+  // поэтому включённый режим приезжает и на другое устройство
+  if (settings['interface.lightGraphics'] === true) {
+    document.documentElement.classList.add('light-graphics', 'perf-lite');
+    try { localStorage.setItem('anilingo_light_graphics', 'off'); } catch (error) { /* пусто */ }
+  } else if (settings['interface.lightGraphics'] === false) {
+    document.documentElement.classList.remove('light-graphics');
+    // perf-lite мог поставить perf.js для телефона — его не трогаем
+    if (document.documentElement.dataset.perf !== 'lite') {
+      document.documentElement.classList.remove('perf-lite');
+    }
+    try { localStorage.setItem('anilingo_light_graphics', 'on'); } catch (error) { /* пусто */ }
+  }
 
   // Размер шрифта: все размеры в стилях заданы в rem,
   // поэтому меняем базу у html — текст растёт по всему сайту
