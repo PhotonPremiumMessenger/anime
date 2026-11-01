@@ -14,23 +14,22 @@ const SHOP_ITEMS = [
      Остальные дорогие: это долгая цель, а не покупка на вечер. */
   { id: 'frame-first', category: 'frame', name: 'Первый шаг', desc: 'Скромное серебряное кольцо за первый урок', price: 0, frame: 'frame-first', icon: 'star', quest: 'Первый урок' },
 
-  { id: 'frame-bamboo',  category: 'frame', name: 'Бамбук',        desc: 'Зелёное кольцо с пунктиром',        price: 700,  frame: 'frame-bamboo',  icon: 'leaf' },
-  { id: 'frame-lantern', category: 'frame', name: 'Фонарь',        desc: 'Тёплый янтарный свет и свечение',   price: 800,  frame: 'frame-lantern', icon: 'lantern' },
-  { id: 'frame-torii',   category: 'frame', name: 'Тории',         desc: 'Алые врата с золотой искрой',       price: 950,  frame: 'frame-torii',   icon: 'torii' },
-  { id: 'frame-sakura',  category: 'frame', name: 'Сакура',        desc: 'Лепестки и розовое сияние',         price: 1200, frame: 'frame-sakura',  icon: 'sakura' },
-  { id: 'frame-dragon',  category: 'frame', name: 'Дракон',        desc: 'Золотая чешуя, медленное вращение', price: 1400, frame: 'frame-dragon',  icon: 'fire' },
-  { id: 'frame-frost',   category: 'frame', name: 'Иней',          desc: 'Ледяное кольцо с белой искрой',     price: 1600, frame: 'frame-frost',   icon: 'gem' },
-  { id: 'frame-ember',   category: 'frame', name: 'Угли',          desc: 'Раскалённое кольцо, живое свечение', price: 1800, frame: 'frame-ember',  icon: 'fire' },
-  { id: 'frame-aurora',  category: 'frame', name: 'Северное сияние', desc: 'Бирюза и фиолет, две орбиты',   price: 2000, frame: 'frame-aurora',  icon: 'star' },
-  { id: 'frame-void',    category: 'frame', name: 'Пустота',       desc: 'Чёрный бархат с фиолетовым светом', price: 2200, frame: 'frame-void',    icon: 'moon' },
-  { id: 'frame-gold',    category: 'frame', name: 'Золото',        desc: 'Полированное золото и двойное кольцо', price: 2400, frame: 'frame-gold',  icon: 'crown' },
-  { id: 'frame-neon',    category: 'frame', name: 'Неон',          desc: 'Бирюза, пурпур и пульс света',      price: 2600, frame: 'frame-neon',    icon: 'bolt' },
-  { id: 'frame-ocean',   category: 'frame', name: 'Океан',         desc: 'Глубокая вода и бегущая волна',     price: 2800, frame: 'frame-ocean',   icon: 'wave' },
-  { id: 'frame-moon',    category: 'frame', name: 'Луна',          desc: 'Холодное серебро и тонкий серп',    price: 3000, frame: 'frame-moon',    icon: 'moon' },
-  { id: 'frame-storm',   category: 'frame', name: 'Гроза',         desc: 'Индиго и вспышки молний',           price: 3500, frame: 'frame-storm',   icon: 'bolt' },
-  { id: 'frame-royal',   category: 'frame', name: 'Император',   desc: 'Золото на императорском пурпуре',   price: 4000, frame: 'frame-royal',   icon: 'crown' },
-  { id: 'frame-legend',  category: 'frame', name: 'Легенда',       desc: 'Радужная орбита, вращается сама',   price: 5000, frame: 'frame-legend',  icon: 'trophy' },
-  { id: 'frame-eternal', category: 'frame', name: 'Вечность',      desc: 'Платина с призматическим блеском',  price: 6500, frame: 'frame-eternal', icon: 'star' },
+  /* --- Художественные рамки: картинка ложится поверх аватара.
+     Список живёт в frames.js, здесь только превращаем его в товары,
+     чтобы название, цена и картинка не дублировались в двух местах. --- */
+  ...(typeof AVATAR_FRAMES !== 'undefined'
+    ? AVATAR_FRAMES.map(frame => ({
+      id: frame.id,
+      category: 'frame',
+      name: frame.name,
+      desc: frame.desc,
+      price: frame.price,
+      frame: frame.id,
+      art: frame.file,
+      icon: 'star',
+      rarity: frame.price >= 10000 ? 'legendary' : (frame.price >= 8000 ? 'epic' : 'rare')
+    }))
+    : []),
 
   /* --- Темы (акцентные цвета) --- */
   { id: 'theme-sakura-plus', category: 'theme', name: 'Сакура+',   desc: 'Розовый акцент и мягкое свечение', price: 450, accent: '#FF9EC0', accentDark: '#C2477B', icon: 'sakura' },
@@ -347,7 +346,7 @@ function renderShop() {
     // Превью: рамку показываем на своём аватаре — видно, как она смотрится
     const preview = item.category === 'frame' && typeof avatarMarkup === 'function'
       ? avatarMarkup(avatarCurrentName(), {
-        size: 92,
+        size: 88,
         frame: item.frame,
         photo: typeof getCurrentAvatar === 'function' ? getCurrentAvatar() : ''
       })

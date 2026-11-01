@@ -49,6 +49,12 @@ function hasEgg(id) {
 function triggerEaster(id, message) {
   const egg = EASTER_EGGS.find(item => item.id === id);
   if (!egg) return false;
+
+  // Секретные слова выдают промокод — но только один раз:
+  // повторная находка просто молчит, чтобы код нельзя было «нафармить»
+  const promo = SECRET_PROMOS[id];
+  if (promo && hasEgg(id)) return false;
+
   if (hasEgg(id)) return false;
 
   const found = getFoundEggs();
@@ -69,8 +75,31 @@ function triggerEaster(id, message) {
     );
   }
 
+  // Второй тост: секретный промокод за находку
+  if (promo && typeof showToast === 'function') {
+    window.setTimeout(() => {
+      showToast(
+        '🎁 Секретный промокод: ' + promo,
+        'Активируйте его на странице «Промокод» — награда ждёт',
+        'success',
+        { duration: 9000 }
+      );
+    }, 1400);
+  }
+
   return true;
 }
+
+/* ---------- Секретные промокоды ---------- */
+
+/**
+ * Пасхалка → промокод. Коды лежат также в server/promo.js
+ * (hidden: true), поэтому они одинаково работают с сервером
+ * и без него. На странице промокодов их нет.
+ */
+const SECRET_PROMOS = {
+  'type-sensei': 'YAMETE'
+};
 
 /* ---------- Слушатели ---------- */
 

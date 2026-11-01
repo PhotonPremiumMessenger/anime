@@ -46,7 +46,8 @@ function getSettingValue(key, fallback) {
 /**
  * Контент для каждой вкладки.
  * Каждая запись: { title, description, html }.
- * В html используются [data-setting] — их значения собирает saveSetting().
+ * В html используются [data-setting] — любое изменение поля сразу
+ * пишется в настройки (bindLiveSettings), кнопок «Сохранить» нет.
  */
 const SETTINGS_CONTENT = {
   /* ---------- Аккаунт ---------- */
@@ -70,7 +71,7 @@ const SETTINGS_CONTENT = {
             <input class="input" type="password" id="repeatPassword" placeholder="Ещё раз новый пароль" autocomplete="new-password">
           </div>
         </div>
-        <button class="btn btn-primary btn-small" onclick="changePassword()">Сохранить пароль</button>
+        <button class="btn btn-primary btn-small" onclick="changePassword()">Изменить пароль</button>
 
       <div class="settings-group">
         <h4>Перенос прогресса</h4>
@@ -197,7 +198,7 @@ const SETTINGS_CONTENT = {
   /* ---------- Звук ---------- */
   sound: {
     title: 'Звук',
-    description: 'Громкость и звуки интерфейса. Всё слышно сразу — жать «Сохранить» не нужно.',
+    description: 'Громкость и звуки интерфейса. Всё применяется сразу — кнопок сохранения нет.',
     html: `
       <div class="settings-group">
         <h4>Проверка</h4>
@@ -347,8 +348,7 @@ const SETTINGS_CONTENT = {
           </div>
         </div>
       </div>
-    `,
-    saveLabel: 'Сохранить звук'
+    `
   },
 
   /* ---------- Интерфейс ---------- */
@@ -460,18 +460,6 @@ const SETTINGS_CONTENT = {
       </div>
 
       <div class="settings-group">
-        <h4>Курсор</h4>
-        <p class="settings-note">Обычный, акцентный или один из семи аниме. Свой курсор — позже.</p>
-
-        <div class="cursor-grid" id="cursorGrid"></div>
-
-        <div class="custom-actions">
-          <button class="btn btn-outline btn-small" type="button" onclick="uploadCustomCursor()">Загрузить свой курсор</button>
-          <span class="custom-hint">пока заглушка</span>
-        </div>
-      </div>
-
-      <div class="settings-group">
         <h4>Цвет сайта</h4>
         <p class="settings-note">Палитра, свой оттенок или радуга — акцент меняется на всём сайте сразу.</p>
 
@@ -498,18 +486,22 @@ const SETTINGS_CONTENT = {
 
       <div class="settings-group">
         <h4>Свой фон</h4>
-        <p class="settings-note">Картинка хранится в этом браузере (localStorage) и никуда не отправляется.</p>
+        <p class="settings-note">Картинка до 5 МБ или видео до 10 МБ. Файл остаётся в этом браузере и никуда не отправляется.</p>
 
         <div class="setting-row">
           <div class="setting-info">
-            <div class="setting-name">Картинка фона</div>
+            <div class="setting-name">Фон страницы</div>
             <div class="setting-desc" id="customBgState">Сейчас стандартный фон сайта</div>
           </div>
           <div class="setting-control">
             <div class="btn-row">
               <label class="btn btn-outline btn-small file-btn">
-                Загрузить
+                Картинка
                 <input type="file" accept="image/*" onchange="pickCustomBackground(this)" hidden>
+              </label>
+              <label class="btn btn-outline btn-small file-btn">
+                Видео
+                <input type="file" accept="video/mp4,video/webm,video/*" onchange="pickCustomBackground(this)" hidden>
               </label>
               <button class="btn btn-ghost btn-small" type="button" onclick="clearCustomBackground()">Убрать</button>
             </div>
@@ -519,7 +511,7 @@ const SETTINGS_CONTENT = {
         <div class="setting-row">
           <div class="setting-info">
             <div class="setting-name">Затемнение фона</div>
-            <div class="setting-desc">Чтобы текст читался на любой картинке</div>
+            <div class="setting-desc">Кастомизация фона: чтобы текст читался на любой картинке или видео</div>
           </div>
           <div class="setting-control">
             <div class="range-row" style="width:200px">
@@ -601,8 +593,7 @@ const SETTINGS_CONTENT = {
           </div>
         </div>
       </div>
-    `,
-    saveLabel: 'Сохранить интерфейс'
+    `
   },
 
   /* ---------- Уведомления ---------- */
@@ -738,8 +729,7 @@ const SETTINGS_CONTENT = {
           </div>
         </div>
       </div>
-    `,
-    saveLabel: 'Сохранить уведомления'
+    `
   },
 
   /* ---------- Лаунчер ---------- */
@@ -803,8 +793,7 @@ const SETTINGS_CONTENT = {
           </div>
         </div>
       </div>
-    `,
-    saveLabel: 'Сохранить лаунчер'
+    `
   },
 
   /* ---------- Фишки ---------- */
@@ -871,8 +860,7 @@ const SETTINGS_CONTENT = {
           </div>
         </div>
       </div>
-    `,
-    saveLabel: 'Сохранить фишки'
+    `
   }
 };
 
@@ -898,18 +886,12 @@ function showSettingsTab(tabId, buttonElement) {
     if (item) item.classList.add('active');
   }
 
-  // Кнопка сохранения нужна только вкладкам-заглушкам
-  const saveButton = content.saveLabel
-    ? `<button class="btn btn-primary btn-small" onclick="saveSetting('${tabId}')">${content.saveLabel}</button>`
-    : '';
-
   container.innerHTML = `
     <div class="settings-head">
       <div>
         <h2>${content.title}</h2>
         <p>${content.description}</p>
       </div>
-      ${saveButton}
     </div>
     <div class="settings-body">${content.html}</div>
   `;
@@ -1104,39 +1086,6 @@ window.addEventListener('resize', () => {
   if (window.innerWidth > 900) closeSettingsSheet();
 });
 
-/**
- * Рисует сетку курсоров: обычный, акцентный и семь аниме.
- */
-function renderCursorGrid() {
-  const grid = document.getElementById('cursorGrid');
-  if (!grid) return;
-
-  const cursors = [{ id: 'default', name: 'Обычный' }, { id: 'accent', name: 'Акцентный' }]
-    .concat((window.ANIME_CURSORS || []).map(item => ({ id: item.id, name: item.name })));
-
-  const saved = typeof prefValue === 'function'
-    ? String(prefValue('interface.cursor', 'default'))
-    : 'default';
-
-  const anime = window.ANIME_CURSORS || [];
-
-  grid.innerHTML = cursors.map(item => {
-    // У аниме-курсоров превью — та же картинка, что и сам курсор
-    const found = anime.find(entry => entry.id === item.id);
-    const urlMatch = found ? /url\("?([^")]+)"?\)/.exec(found.css) : null;
-    const style = urlMatch ? ` style="--cursor-thumb:url('${urlMatch[1]}')"` : '';
-
-    return `
-    <button class="cursor-card${item.id === saved ? ' is-active' : ''}" type="button"
-            data-cursor-id="${item.id}" onclick="applyCursorSetting('${item.id}')"
-            title="${item.name}" aria-label="Курсор: ${item.name}">
-      <span class="cursor-preview cursor-preview-${item.id}"${style}></span>
-      <span class="cursor-name">${item.name}</span>
-    </button>
-  `;
-  }).join('');
-}
-
 /** Рисует палитру акцентов. */
 function renderAccentGrid() {
   const grid = document.getElementById('accentGrid');
@@ -1231,7 +1180,6 @@ function bindSettingsTab(tabId) {
     const lightSwitch = document.getElementById('lightThemeSwitch');
     if (lightSwitch) lightSwitch.checked = document.body.classList.contains('theme-light');
 
-    renderCursorGrid();
     renderAccentGrid();
     syncBackgroundControls();
     syncStudyPaceControl();
@@ -1293,51 +1241,17 @@ function nicknameCooldownDays() {
 
 /* ---------- Сохранение настроек ---------- */
 
-/**
- * Собирает все поля с data-setting и сохраняет их.
- * Реальные настройки применяются сразу, остальные работают как заглушки.
- */
-function saveSetting(tabId) {
-  const container = document.getElementById('settingsContent');
-  if (!container) return;
-
-  const settings = getSettings();
-  let changed = 0;
-
-  container.querySelectorAll('[data-setting]').forEach(input => {
-    const key = input.dataset.setting;
-    settings[key] = input.type === 'checkbox' ? input.checked : input.value;
-    changed++;
-  });
-
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-
-  // Применяем всё: внешний вид, звук, уведомления, язык
-  if (typeof applyStoredSettings === 'function') applyStoredSettings();
-  if (typeof applyAllPreferences === 'function') applyAllPreferences();
-
-  // Подписи кастомных списков могли устареть — синхронизируем
-  if (typeof syncCustomSelects === 'function') syncCustomSelects(container);
-
-  const title = SETTINGS_CONTENT[tabId] ? SETTINGS_CONTENT[tabId].title : tabId;
-  showToast('Настройки сохранены', 'Вкладка «' + title + '» · ' + changed + ' параметр(ов) записано в этот браузер', 'success', {
-    icon: 'checkCircle',
-    duration: 3200
-  });
-}
-
 /* ---------- Мгновенное применение настроек ---------- */
 
 /**
- * Применяет настройку, не дожидаясь кнопки «Сохранить».
- * @param {string} kind — theme | background | cursor | fontSize | animations | compact | sakura
+ * Применяет настройку сразу после нажатия — кнопок «Сохранить» нет.
+ * @param {string} kind — theme | background | fontSize | animations | compact | sakura
  * @param {*} value
  */
 function applyInterfaceSetting(kind, value) {
   const map = {
     theme: 'interface.theme',
     background: 'interface.background',
-    cursor: 'interface.cursor',
     fontSize: 'interface.fontSize',
     animations: 'interface.animations',
     compact: 'interface.compact',
@@ -1989,9 +1903,15 @@ function toggleLightGraphics(input) {
   document.documentElement.classList.toggle('light-graphics', on);
 
   try {
+    // Ключ читает perf.js ещё до отрисовки, поэтому он остаётся отдельным,
+    // а в общих настройках дублируем — так режим уедет и на другие устройства
     localStorage.setItem('anilingo_light_graphics', on ? 'off' : 'on');
   } catch (error) {
     // приватный режим — просто не запоминаем
+  }
+
+  if (typeof setSettingValue === 'function') {
+    setSettingValue('interface.lightGraphics', Boolean(on));
   }
 
   // Тот же облегчённый набор правил, что и на телефоне
@@ -2044,7 +1964,6 @@ document.addEventListener('DOMContentLoaded', () => {
 /* Экспорт в глобальную область */
 window.SETTINGS_CONTENT = SETTINGS_CONTENT;
 window.showSettingsTab = showSettingsTab;
-window.saveSetting = saveSetting;
 window.updateRangeValue = updateRangeValue;
 window.applyInterfaceSetting = applyInterfaceSetting;
 window.changePassword = changePassword;
@@ -2062,7 +1981,6 @@ window.checkConnection = checkConnection;
 window.deleteAccount = deleteAccount;
 window.confirmDeleteAccount = confirmDeleteAccount;
 window.deleteAccountSendCode = deleteAccountSendCode;
-window.renderCursorGrid = renderCursorGrid;
 window.renderAccentGrid = renderAccentGrid;
 window.deleteAccountConfirm = deleteAccountConfirm;
 window.openSettingsModal = openSettingsModal;
