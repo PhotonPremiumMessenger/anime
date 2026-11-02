@@ -10,7 +10,7 @@
 'use strict';
 
 const jwt = require('jsonwebtoken');
-const { findUserById, getProfile } = require('./db');
+const { findUserById, getProfile, getSettings } = require('./db');
 
 const JWT_SECRET = process.env.JWT_SECRET || '';
 
@@ -84,13 +84,29 @@ function publicUser(user) {
     xp = 0;
   }
 
+  // Фон профиля лежит в настройках: отдаём его вместе с аккаунтом,
+  // чтобы на новом устройстве обложка появилась сразу после входа
+  let cover = '';
+  let coverKind = '';
+
+  try {
+    const settings = getSettings(user.id) || {};
+    cover = String(settings['profile.cover'] || '');
+    coverKind = String(settings['profile.coverKind'] || '');
+  } catch (error) {
+    cover = '';
+    coverKind = '';
+  }
+
   return {
     id: user.id,
     username: user.username,
     email: user.email,
     avatar: user.avatar || '',
     createdAt: user.created_at,
-    xp: xp
+    xp: xp,
+    cover: cover,
+    coverKind: coverKind
   };
 }
 

@@ -155,7 +155,10 @@ function apiNormalizeUser(user) {
     createdAt: user.createdAt || user.created_at || new Date().toISOString(),
     jlpt: user.jlpt,
     xp: user.xp,
-    custom: user.custom || null
+    custom: user.custom || null,
+    // Фон профиля: адрес файла на сервере и его тип
+    cover: user.cover || '',
+    coverKind: user.coverKind || ''
   };
 }
 
@@ -605,6 +608,103 @@ async function apiPublicProfile(username) {
   return response.data.user;
 }
 
+/* ---------- Фон профиля ---------- */
+
+/**
+ * Адрес файла на сервере в виде, понятном браузеру.
+ * Сервер отдаёт путь вида /uploads/covers/..., а сайт может быть
+ * на другом домене (GitHub Pages) — тогда нужен полный адрес API.
+ */
+function apiMediaUrl(path) {
+  const clean = String(path || '').trim();
+  if (!clean) return '';
+  if (/^(https?:|data:|blob:)/.test(clean)) return clean;
+
+  return ANILINGO_API_BASE + (clean.charAt(0) === '/' ? '' : '/') + clean;
+}
+
+/**
+ * Загружает фон профиля файлом на сервер.
+ * @param {File} file
+ * @returns {Promise<{ok: boolean, cover?: string, kind?: string, message?: string}>}
+ */
+async function apiUploadCover(file) {
+  const mode = await apiModeNow();
+
+  if (mode !== 'remote' || !file) {
+    return { ok: false, message: 'Сервер недоступен' };
+  }
+
+  const body = new FormData();
+  body.append('file', file);
+
+  const headers = {};
+  const token = getToken();
+  if (token) headers.Authorization = 'Bearer ' + token;
+
+  let response;
+
+  try {
+    // Content-Type не ставим: браузер сам добавит boundary
+    response = await apiFetch(apiUrl('/api/user/cover'), {
+      method: 'POST',
+      headers: headers,
+      body: body
+    }, 60000);
+  } catch (error) {
+    return { ok: false, message: 'Сервер не ответил. Проверьте связь' };
+  }
+
+  let data = null;
+  try {
+    data = await response.json();
+  } catch (error) {
+    data = null;
+  }
+
+  if (!response.ok) {
+    return {
+      ok: false,
+      status: response.status,
+      message: (data && data.message) || 'Не удалось загрузить файл'
+    };
+  }
+
+  // Адрес запоминаем в кэше аккаунта: так фон виден сразу
+  // и переживёт перезагрузку страницы
+  const user = getCurrentUser();
+  if (user && typeof updateUserRecord === 'function') {
+    updateUserRecord(user.username, {
+      cover: data.cover || '',
+      coverKind: data.kind || ''
+    });
+  }
+
+  return {
+    ok: true,
+    cover: data.cover || '',
+    kind: data.kind || '',
+    url: apiMediaUrl(data.cover || '')
+  };
+}
+
+/** Убирает фон профиля на сервере. */
+async function apiDeleteCover() {
+  const mode = await apiModeNow();
+  if (mode !== 'remote') return { ok: false, message: 'Сервер недоступен' };
+
+  const response = await apiRequest('/api/user/cover', { method: 'DELETE' });
+
+  if (response.ok) {
+    const user = getCurrentUser();
+    if (user && typeof updateUserRecord === 'function') {
+      updateUserRecord(user.username, { cover: '', coverKind: '' });
+    }
+  }
+
+  return { ok: response.ok, message: (response.data && response.data.message) || '' };
+}
+
 /* ---------- Выгрузка данных ---------- */
 
 /** Все данные аккаунта для кнопки «Скачать мои данные». */
@@ -658,6 +758,9 @@ window.apiChangeEmailRequest = apiChangeEmailRequest;
 window.apiChangeEmailConfirm = apiChangeEmailConfirm;
 window.apiUploadAvatar = apiUploadAvatar;
 window.apiPublicProfile = apiPublicProfile;
+window.apiMediaUrl = apiMediaUrl;
+window.apiUploadCover = apiUploadCover;
+window.apiDeleteCover = apiDeleteCover;
 window.getAccountData = getAccountData;
 
 /* ---------- Проверка связи при загрузке ---------- */

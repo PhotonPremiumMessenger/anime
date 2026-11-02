@@ -28,9 +28,14 @@ const { isMailConfigured } = require('./mailer');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 const promoRoutes = require('./routes/promo');
+const uploads = require('./uploads');
 
 // Один раз переименовываем ключи старого названия в новые.
 // На чистой базе ничего не делает, повторный запуск безопасен.
+// Папка для фонов профиля: создаём при старте, чтобы первый
+// же запрос на загрузку не упал из-за отсутствующего каталога
+uploads.ensureUploadDirs();
+
 const migrated = db.migrateLegacyKeys();
 if (migrated) {
   console.log('[db] Переименовано ключей со старого названия:', migrated);
@@ -107,7 +112,8 @@ app.use('/api/promo', apiLimiter, promoRoutes);
  * Зачем: аватар хранится в аккаунте, и по ссылке profile?user=ник
  * человек должен видеть то же фото, что и владелец, а не заглушку.
  * Отдаём только то, что и так видно в рейтинге: ник, аватар,
- * уровень, опыт и дату регистрации. Почту и настройки — никогда.
+ * фон профиля, уровень, опыт и дату регистрации.
+ * Почту и остальные настройки — никогда.
  */
 app.get('/api/public/user/:username', apiLimiter, (req, res) => {
   const user = db.findUserByUsername(String(req.params.username || '').trim());
@@ -117,12 +123,19 @@ app.get('/api/public/user/:username', apiLimiter, (req, res) => {
   }
 
   const profile = db.getProfile(user.id) || {};
+  const settings = db.getSettings(user.id) || {};
+
+  // Фон профиля — часть оформления, поэтому его видят все.
+  // Показывать его уважаем только если владелец не закрыл визитку.
+  const publicOpen = settings['launcher.publicProfile'] !== false;
 
   return res.json({
     ok: true,
     user: {
       username: user.username,
       avatar: user.avatar || '',
+      cover: publicOpen ? String(settings['profile.cover'] || '') : '',
+      coverKind: publicOpen ? String(settings['profile.coverKind'] || '') : '',
       xp: Number(profile.xp) || 0,
       level: Number(profile.level) || 1,
       createdAt: user.created_at
@@ -134,6 +147,16 @@ app.get('/api/public/user/:username', apiLimiter, (req, res) => {
 app.use('/api', (req, res) => {
   res.status(404).json({ message: 'Такого метода API нет' });
 });
+
+/* ---------- Загруженные файлы ---------- */
+
+// Фоны профиля и прочее оформление. Имена файлов уникальные,
+// поэтому кешируем надолго: перезагрузка не нужна.
+app.use('/uploads', express.static(uploads.UPLOAD_ROOT, {
+  maxAge: '30d',
+  immutable: true,
+  fallthrough: true
+}));
 
 /* ---------- Статика сайта ---------- */
 

@@ -7,7 +7,7 @@
 
 'use strict';
 
-const VERSION = 'anilingo-v23';
+const VERSION = 'anilingo-v24';
 const STATIC_CACHE = VERSION + '-static';
 const IMAGE_CACHE = VERSION + '-images';
 

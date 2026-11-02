@@ -17,6 +17,7 @@
 const express = require('express');
 const db = require('../db');
 const { requireAuth } = require('../auth');
+const uploads = require('../uploads');
 
 const router = express.Router();
 
@@ -98,6 +99,90 @@ router.put('/profile', (req, res) => {
 
   const profile = db.saveProfile(req.user.id, { xp: xp, level: level, data: data });
   return res.json({ ok: true, profile: profile });
+});
+
+/* ---------- Фон профиля ---------- */
+
+// Ключи в user_settings: по ним фон профиля приезжает на другое
+// устройство и виден всем, кто открывает визитку по ссылке.
+const COVER_KEY = 'profile.cover';
+const COVER_KIND_KEY = 'profile.coverKind';
+
+/** Текущий фон профиля из настроек аккаунта. */
+function readCover(userId) {
+  const settings = db.getSettings(userId) || {};
+
+  return {
+    cover: String(settings[COVER_KEY] || ''),
+    kind: String(settings[COVER_KIND_KEY] || '')
+  };
+}
+
+/**
+ * POST /api/user/cover — загрузить фон профиля файлом.
+ *
+ * Ждём multipart/form-data с полем file. Фото до 5 МБ,
+ * видео до 10 МБ. Тип проверяем по MIME, имя файла собираем сами.
+ * В ответе — адрес, который сразу можно поставить в CSS.
+ */
+router.post('/cover', (req, res) => {
+  uploads.takeCoverFile(req, res, error => {
+    if (error) {
+      if (error.message === 'UNSUPPORTED_TYPE') {
+        return res.status(415).json({ message: 'Нужна картинка (JPG, PNG, WebP) или видео (MP4, WebM)' });
+      }
+
+      if (error.code === 'LIMIT_FILE_SIZE') {
+        return res.status(413).json({ message: 'Файл больше 10 МБ' });
+      }
+
+      console.error('[cover]', error);
+      return res.status(400).json({ message: 'Не удалось принять файл' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ message: 'Файл не пришёл' });
+    }
+
+    const isVideo = Boolean(uploads.VIDEO_TYPES[req.file.mimetype]);
+    const url = uploads.publicUrl('covers', req.file.filename);
+
+    // У фото свой предел — 5 МБ. Проверяем после приёма: тип
+    // становится известен только здесь
+    if (!isVideo && req.file.size > uploads.IMAGE_LIMIT) {
+      uploads.removeUploaded(url);
+      return res.status(413).json({ message: 'Фото больше 5 МБ' });
+    }
+
+    // Старый файл больше не нужен
+    const previous = readCover(req.user.id);
+    if (previous.cover) uploads.removeUploaded(previous.cover);
+
+    db.saveSettings(req.user.id, {
+      [COVER_KEY]: url,
+      [COVER_KIND_KEY]: isVideo ? 'video' : 'image'
+    });
+
+    return res.json({
+      ok: true,
+      cover: url,
+      kind: isVideo ? 'video' : 'image'
+    });
+  });
+});
+
+/** DELETE /api/user/cover — убрать свой фон профиля. */
+router.delete('/cover', (req, res) => {
+  const previous = readCover(req.user.id);
+
+  if (previous.cover) uploads.removeUploaded(previous.cover);
+
+  db.saveSettings(req.user.id, {
+    [COVER_KEY]: null,
+    [COVER_KIND_KEY]: null
+  });
+
+  return res.json({ ok: true });
 });
 
 /* ---------- Выгрузка ---------- */

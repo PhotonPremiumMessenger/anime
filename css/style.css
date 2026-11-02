@@ -19926,3 +19926,30 @@ body.theme-light.has-custom-bg .word-card {
 .perf-lite body.theme-light.has-custom-bg .modal-card {
   background-color: rgba(252, 252, 255, 0.97);
 }
+
+/* ============================================================
+   Обложка профиля с сервера
+
+   Файл лежит в server/uploads, поэтому обложку видят все:
+   и на другом устройстве, и в чужой визитке по ссылке.
+   ============================================================ */
+
+.public-cover {
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  overflow: hidden;
+}
+
+.public-cover.has-remote-cover::after {
+  background: linear-gradient(to bottom, rgba(8, 8, 12, 0.05), rgba(10, 10, 16, 0.62));
+}
+
+.public-cover-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}

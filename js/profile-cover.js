@@ -1,12 +1,17 @@
 /* ============================================================
    profile-cover.js — фон за аватаркой в профиле
 
-   Своя картинка или видео на обложке карточки игрока. Файл
-   остаётся в браузере: картинка в localStorage, ролик — в
-   IndexedDB. На сервер ничего не уходит — это личное оформление
-   устройства, как и фон сайта.
+   Своя картинка или видео на обложке карточки игрока.
 
-   Ограничения те же, что у фона сайта: фото до 5 МБ, видео до 10 МБ.
+   Как хранится:
+   • вошёл в аккаунт и сервер доступен — файл уезжает на сервер
+     (server/uploads/covers). Тогда обложку видят все: и на другом
+     устройстве, и в чужой визитке по ссылке;
+   • гостю или без сервера — файл остаётся в браузере (картинка в
+     localStorage, ролик в IndexedDB), чтобы оформление работало
+     и без сети.
+
+   Ограничения: фото до 5 МБ, видео до 10 МБ.
    ============================================================ */
 
 'use strict';
@@ -154,8 +159,13 @@ async function paintCoverVideo() {
 
   cover.appendChild(video);
 
-  const play = video.play();
-  if (play && typeof play.catch === 'function') play.catch(() => {});
+  // Автозапуск не везде разрешён — молча ждём, если браузер против
+  try {
+    const play = video.play();
+    if (play && typeof play.catch === 'function') play.catch(() => {});
+  } catch (error) {
+    // браузер без поддержки play() — обложка просто останется картинкой
+  }
 }
 
 /** Показывает картинку на обложке. */
@@ -163,11 +173,18 @@ function paintCoverImage() {
   const cover = document.getElementById('profileCover');
   if (!cover) return;
 
+  // Сервер важнее браузера: его обложку видят все
+  const remote = serverCover();
   let image = '';
-  try {
-    image = localStorage.getItem(PROFILE_COVER_KEY) || '';
-  } catch (error) {
-    image = '';
+
+  if (remote && remote.cover) {
+    image = remote.cover;
+  } else {
+    try {
+      image = localStorage.getItem(PROFILE_COVER_KEY) || '';
+    } catch (error) {
+      image = '';
+    }
   }
 
   removeCoverVideo();
@@ -183,10 +200,46 @@ function paintCoverImage() {
   cover.classList.add('has-custom-cover');
 }
 
+/** Ролик прямо с сервера: адрес постоянный, хранить файл не нужно. */
+function paintCoverVideoFromServer(url) {
+  const cover = document.getElementById('profileCover');
+  if (!cover) return;
+
+  removeCoverVideo();
+  cover.style.backgroundImage = '';
+  cover.classList.add('has-video', 'has-custom-cover');
+
+  const video = document.createElement('video');
+  video.className = 'profile-cover-video';
+  video.src = url;
+  video.muted = true;
+  video.loop = true;
+  video.autoplay = true;
+  video.playsInline = true;
+  video.setAttribute('muted', '');
+  video.setAttribute('playsinline', '');
+  video.setAttribute('aria-hidden', 'true');
+  video.preload = 'auto';
+
+  cover.appendChild(video);
+
+  const play = video.play();
+  if (play && typeof play.catch === 'function') play.catch(() => {});
+}
+
 /** Применяет сохранённый фон профиля. */
 function applyProfileCover() {
   if (!document.getElementById('profileCover')) return;
 
+  // 1) Фон с сервера — он общий для всех устройств
+  const remote = serverCover();
+  if (remote) {
+    if (remote.kind === 'video') paintCoverVideoFromServer(remote.cover);
+    else paintCoverImage();
+    return;
+  }
+
+  // 2) Личный фон этого браузера
   let kind = 'image';
   try {
     kind = localStorage.getItem(PROFILE_COVER_KIND) || 'image';
@@ -245,7 +298,8 @@ function openProfileCoverPicker() {
   wrap.innerHTML = '' +
     '<div class="cover-picker-card" role="dialog" aria-modal="true" aria-label="Фон профиля">' +
       '<h3>Фон за аватаркой</h3>' +
-      '<p class="cover-picker-note">Картинка до 5 МБ или видео до 10 МБ. Файл остаётся в этом браузере.</p>' +
+      '<p class="cover-picker-note">Картинка до 5 МБ или видео до 10 МБ. ' +
+      'Файл сохраняется на сервере, поэтому фон видно всем — и на других устройствах.</p>' +
       '<div class="cover-picker-actions">' +
         '<label class="btn btn-primary btn-small">Картинка' +
           '<input type="file" accept="image/*" hidden data-cover-file="image">' +
@@ -325,13 +379,23 @@ async function pickProfileCover(file) {
     return;
   }
 
+  // Сначала пробуем сервер: тогда обложку увидят другие игроки
+  const uploaded = await uploadCoverToServer(file);
+  if (uploaded) return;
+
   try {
     if (isVideo) {
       await coverSaveVideo(file);
       localStorage.setItem(PROFILE_COVER_KIND, 'video');
       try { localStorage.removeItem(PROFILE_COVER_KEY); } catch (error) { /* пусто */ }
 
-      await paintCoverVideo();
+      // Файл уже сохранён: даже если браузер не смог показать ролик
+      // сразу, фон появится после перезагрузки — ошибки не показываем
+      try {
+        await paintCoverVideo();
+      } catch (error) {
+        // рисование не удалось — не повод ругаться
+      }
 
       if (typeof showToast === 'function') showToast('Фон профиля обновлён', 'Видео крутится за аватаркой', 'success', { icon: 'image' });
       return;
@@ -352,6 +416,68 @@ async function pickProfileCover(file) {
   }
 }
 
+/**
+ * Отправляет файл на сервер.
+ * Возвращает true, если всё получилось: тогда локальная копия
+ * не нужна — обложка берётся с сервера и видна всем.
+ */
+async function uploadCoverToServer(file) {
+  if (typeof apiUploadCover !== 'function') return false;
+  if (typeof accountIsActive === 'function' && !accountIsActive()) return false;
+
+  if (typeof showToast === 'function') {
+    showToast('Загружаем фон', 'Файл уходит на сервер — его увидят все', 'info', { duration: 2200 });
+  }
+
+  let result;
+
+  try {
+    result = await apiUploadCover(file);
+  } catch (error) {
+    result = { ok: false, message: 'Сервер не ответил' };
+  }
+
+  if (!result.ok) {
+    // Сервер не принял файл — работаем локально, но говорим почему
+    if (typeof showToast === 'function') {
+      showToast('Сервер не принял файл', (result.message || '') + ' · сохранили в этом браузере', 'warning', { duration: 5200 });
+    }
+    return false;
+  }
+
+  // Локальную копию убираем: теперь источник правды — сервер
+  try {
+    localStorage.removeItem(PROFILE_COVER_KEY);
+    localStorage.removeItem(PROFILE_COVER_KIND);
+  } catch (error) {
+    // приватный режим — не критично
+  }
+
+  removeCoverVideo();
+  coverRemoveVideo().catch(() => {});
+
+  applyProfileCover();
+
+  if (typeof showToast === 'function') {
+    showToast('Фон профиля обновлён', 'Теперь его видно всем — и на других устройствах', 'success', { icon: 'image' });
+  }
+
+  return true;
+}
+
+/** Фон профиля с сервера для владельца: { cover, kind } или null. */
+function serverCover() {
+  if (typeof getCurrentUser !== 'function') return null;
+
+  const user = getCurrentUser();
+  if (!user || !user.cover) return null;
+
+  return {
+    cover: typeof apiMediaUrl === 'function' ? apiMediaUrl(user.cover) : user.cover,
+    kind: user.coverKind === 'video' ? 'video' : 'image'
+  };
+}
+
 /** Убирает свой фон — возвращается градиент. */
 function clearProfileCover() {
   try {
@@ -361,8 +487,14 @@ function clearProfileCover() {
     // приватный режим — просто не запоминаем
   }
 
+  // На сервере тоже убираем: иначе обложка вернётся после входа
+  if (typeof apiDeleteCover === 'function'
+      && typeof accountIsActive === 'function' && accountIsActive()) {
+    apiDeleteCover().catch(() => {});
+  }
+
   removeCoverVideo();
-  coverRemoveVideo();
+  coverRemoveVideo().catch(() => {});
 
   const cover = document.getElementById('profileCover');
   if (cover) {
@@ -373,8 +505,46 @@ function clearProfileCover() {
   if (typeof showToast === 'function') showToast('Фон убран', 'Вернули стандартную обложку профиля', 'info');
 }
 
+/**
+ * Свежая обложка с сервера.
+ *
+ * Кэш аккаунта обновляется при входе, но если фон поставили
+ * на другом устройстве, здесь о нём ещё не знают. Один запрос
+ * при открытии профиля — и обложка на месте.
+ */
+async function refreshCoverFromServer() {
+  if (!document.getElementById('profileCover')) return;
+  if (typeof accountIsActive !== 'function' || !accountIsActive()) return;
+  if (typeof apiRequest !== 'function' || typeof apiModeNow !== 'function') return;
+
+  const mode = await apiModeNow();
+  if (mode !== 'remote') return;
+
+  const response = await apiRequest('/api/auth/me');
+  if (!response.ok || !response.data || !response.data.user) return;
+
+  const fresh = response.data.user;
+  const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+  if (!user) return;
+
+  const sameCover = (user.cover || '') === (fresh.cover || '');
+  const sameKind = (user.coverKind || '') === (fresh.coverKind || '');
+  if (sameCover && sameKind) return;
+
+  if (typeof updateUserRecord === 'function') {
+    updateUserRecord(user.username, {
+      cover: fresh.cover || '',
+      coverKind: fresh.coverKind || ''
+    });
+  }
+
+  // Пришёл новый адрес — перерисовываем обложку
+  applyProfileCover();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   applyProfileCover();
+  refreshCoverFromServer().catch(() => {});
 });
 
 /* Экспорт */

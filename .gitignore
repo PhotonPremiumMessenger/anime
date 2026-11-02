@@ -5,6 +5,9 @@ server/node_modules/
 server/.env
 .env
 
+# Загруженные файлы оформления (фоны профиля, аватары) — это данные, не код
+server/uploads/
+
 # База данных SQLite и её служебные файлы
 server/data/
 *.db
