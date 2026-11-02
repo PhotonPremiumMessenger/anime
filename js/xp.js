@@ -278,7 +278,12 @@ function xpPop(amount) {
 
   const pop = document.createElement('div');
   pop.className = 'xp-pop' + (amount < 0 ? ' is-minus' : '');
-  pop.textContent = (amount > 0 ? '+' : '') + amount + ' XP';
+
+  // Крупные суммы читаются только с разрядами: +100 000 000 XP.
+  // Считаем вручную: toLocaleString кладёт неразрывные пробелы,
+  // и на телефоне плашка разъезжается.
+  const pretty = String(Math.abs(Math.round(amount))).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  pop.textContent = (amount > 0 ? '+' : amount < 0 ? '−' : '') + pretty + ' XP';
   layer.appendChild(pop);
 
   // Держим не больше трёх плашек одновременно

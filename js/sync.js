@@ -53,6 +53,12 @@ const SYNC_DELAY = 600;
 let syncPushTimer = 0;
 let syncPendingSettings = {};
 
+// У профиля (XP, аватар, оформление) свой таймер. Раньше он был
+// общим с настройками: если в очереди уже стояла настройка, опыт
+// оставался в памяти и до сервера не доезжал — на другом устройстве
+// баланс оказывался старым.
+let syncProfileTimer = 0;
+
 // Сколько раз подряд пытаемся дослать изменения
 let syncRetries = 0;
 const SYNC_RETRIES = 5;
@@ -431,6 +437,9 @@ function syncPushUserPatch(patch) {
   if (syncApplying) return;
   if (!patch || typeof patch !== 'object') return;
 
+  // Профиль не синхронизируется — значит, и отправлять нечего
+  if (!isAuthorized()) return;
+
   // XP и уровень — в профиль
   if (patch.xp !== undefined) {
     syncPendingProfile = Object.assign({}, syncPendingProfile, {
@@ -445,41 +454,60 @@ function syncPushUserPatch(patch) {
   if (patch.jlpt !== undefined) settingsPatch['profile.jlpt'] = patch.jlpt;
   if (patch.custom !== undefined) settingsPatch['profile.custom'] = patch.custom;
 
+  // Настройки профиля отправляет общий таймер настроек
   Object.keys(settingsPatch).forEach(key => {
-    syncPendingSettings[key] = settingsPatch[key];
+    syncPushSetting(key, settingsPatch[key]);
   });
 
-  if (syncPushTimer) return;
-  syncPushTimer = window.setTimeout(syncFlushProfile, SYNC_DELAY);
+  if (syncProfileTimer) return;
+  syncProfileTimer = window.setTimeout(syncFlushProfile, SYNC_DELAY);
 }
 
 /** Отправляет XP и накопленные настройки профиля. */
 async function syncFlushProfile(keepalive) {
-  syncPushTimer = 0;
+  syncProfileTimer = 0;
 
   const profile = syncPendingProfile;
-  const settings = syncPendingSettings;
-
   syncPendingProfile = null;
-  syncPendingSettings = {};
 
-  if (!(await syncReady())) return;
+  // Настройки отправляет свой таймер; здесь только профиль
+  if (!profile) return;
 
-  if (profile) {
-    await apiRequest('/api/user/profile', {
-      method: 'PUT',
-      body: profile,
-      keepalive: Boolean(keepalive)
-    });
+  if (!(await syncReady())) {
+    // Сервер сейчас недоступен — вернём данные в очередь,
+    // иначе опыт потеряется до перезагрузки страницы
+    syncPendingProfile = Object.assign({}, profile, syncPendingProfile);
+
+    if (!syncProfileTimer) {
+      syncProfileTimer = window.setTimeout(syncFlushProfile, SYNC_DELAY * 2);
+    }
+    return;
   }
 
-  if (Object.keys(settings).length) {
-    await apiRequest('/api/user/settings', {
-      method: 'PUT',
-      body: { patch: settings },
-      keepalive: Boolean(keepalive)
-    });
+  const response = await apiRequest('/api/user/profile', {
+    method: 'PUT',
+    body: profile,
+    keepalive: Boolean(keepalive)
+  });
+
+  // Не дошло — пробуем ещё раз, но не бесконечно
+  if (!response.ok && syncRetries < SYNC_RETRIES) {
+    syncRetries++;
+
+    if (profile.xp !== undefined) {
+      const keep = syncPendingProfile && syncPendingProfile.xp !== undefined
+        ? syncPendingProfile.xp
+        : 0;
+
+      // Не перебиваем более свежее значение, которое уже в очереди
+      if (!keep) syncPendingProfile = Object.assign({}, profile, syncPendingProfile);
+    }
+
+    syncProfileTimer = window.setTimeout(syncFlushProfile, SYNC_DELAY * 2);
+    return;
   }
+
+  syncRetries = 0;
 }
 
 /* ---------- Загрузка с сервера ---------- */
@@ -533,6 +561,7 @@ async function syncPullAll() {
   // Сначала досылаем своё: иначе сервер вернёт старое значение
   // и затрёт только что выбранное на этой странице
   if (syncPushTimer) await syncFlushSettings();
+  if (syncProfileTimer) await syncFlushProfile();
 
   if (!(await syncReady())) return false;
 
@@ -546,6 +575,9 @@ async function syncPullAll() {
   syncApplying = true;
 
   let redraw = false;
+
+  // Опыт приехал другим — верх страницы надо перерисовать
+  let xpRedraw = false;
 
   // Что на сервере пусто, но есть здесь — отправим после синхронизации
   const uplift = {};
@@ -634,11 +666,17 @@ async function syncPullAll() {
       const user = getCurrentUser();
 
       if (user && profile.xp !== undefined) {
-        const users = getUsers().map(item => (
-          item.username === user.username ? Object.assign({}, item, { xp: profile.xp }) : item
-        ));
+        const serverXp = Math.max(0, Number(profile.xp) || 0);
+        const before = Math.max(0, Number(user.xp) || 0);
 
-        writeJSON('anilingo_users', users);
+        if (serverXp !== before) {
+          const users = getUsers().map(item => (
+            item.username === user.username ? Object.assign({}, item, { xp: serverXp }) : item
+          ));
+
+          writeJSON('anilingo_users', users);
+          xpRedraw = true;
+        }
       }
     }
   } finally {
@@ -650,6 +688,14 @@ async function syncPullAll() {
   syncSaveMeta();
 
   if (redraw) syncApplyDesign();
+
+  if (xpRedraw && typeof refreshAniLingoUI === 'function') {
+    refreshAniLingoUI();
+
+    // Профиль рисует уровень и опыт при загрузке — просим пересчитать
+    if (typeof renderProfileLevel === 'function') renderProfileLevel();
+  }
+
   if (dataTaken.length) syncReloadForData();
 
   return true;
@@ -760,7 +806,10 @@ document.addEventListener('DOMContentLoaded', () => {
  */
 function syncFlushBeforeLeave() {
   if (syncPushTimer) syncFlushSettings(true).catch(() => {});
-  if (syncPendingProfile) syncFlushProfile(true).catch(() => {});
+
+  // Опыт в очереди — тоже досылаем: раньше проверялось только
+  // «есть ли готовые данные», а таймер ещё тикал
+  if (syncPendingProfile || syncProfileTimer) syncFlushProfile(true).catch(() => {});
 }
 
 window.addEventListener('pagehide', syncFlushBeforeLeave);
@@ -773,6 +822,7 @@ document.addEventListener('visibilitychange', () => {
 /* ---------- Экспорт ---------- */
 
 window.syncPushSetting = syncPushSetting;
+window.syncFlushNow = syncFlushBeforeLeave;
 window.syncPushUserPatch = syncPushUserPatch;
 window.syncPullAll = syncPullAll;
 window.syncAfterLogin = syncAfterLogin;

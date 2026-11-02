@@ -11,7 +11,10 @@
    одинаково смотрится и в шапке 34 px, и в профиле 180 px —
    размер считается от --av-size.
 
-   Картинки лежат в assets/images/frames/*.webp (512×512, альфа).
+   Два набора:
+     • 3D — нарисованные объёмные кольца (руки, дракон, лёд, неон);
+     • фото — настоящие снимки: сакура, цепь, кружево, розы, лёд.
+   Все лежат в assets/images/frames/*.webp (512×512, альфа).
    ============================================================ */
 
 'use strict';
@@ -116,7 +119,98 @@ const AVATAR_FRAMES = [
     price: 6500,
     scale: 1.4,
     motion: 'spin'
-  }
+  },
+  /* ---------- Фото: снятые «как есть», без 3D ---------- */
+  {
+    id: 'frame-photo-sakura',
+    file: 'sakura',
+    name: 'Сакура вживую',
+    desc: 'Настоящая ветка сакуры, снятая на камеру',
+    price: 3000,
+    scale: 1.25,
+    motion: 'breathe'
+  },
+  {
+    id: 'frame-photo-gold',
+    file: 'gold-chain',
+    name: 'Золотая цепь',
+    desc: 'Тяжёлое плетение из настоящего золота',
+    price: 5500,
+    scale: 1.03,
+    motion: 'spin'
+  },
+  {
+    id: 'frame-photo-lace',
+    file: 'black-lace',
+    name: 'Чёрное кружево',
+    desc: 'Готическое кружево, ткань с фактурой',
+    price: 4000,
+    scale: 1.4,
+    motion: 'breathe'
+  },
+  {
+    id: 'frame-photo-rose',
+    file: 'rose',
+    name: 'Живые розы',
+    desc: 'Букет алых роз с каплями росы',
+    price: 4500,
+    scale: 1.4,
+    motion: 'sway'
+  },
+  {
+    id: 'frame-photo-copper',
+    file: 'copper-wire',
+    name: 'Медная проволока',
+    desc: 'Гнутая медь ручной работы',
+    price: 2500,
+    scale: 1.0,
+    motion: 'breathe'
+  },
+  {
+    id: 'frame-photo-leather',
+    file: 'leather',
+    name: 'Кожа и сталь',
+    desc: 'Клёпаный ремень с пряжками',
+    price: 3500,
+    scale: 1.06,
+    motion: 'breathe'
+  },
+  {
+    id: 'frame-photo-ice',
+    file: 'ice',
+    name: 'Осколки льда',
+    desc: 'Настоящий лёд, снятый на макро',
+    price: 5000,
+    scale: 1.15,
+    motion: 'pulse'
+  },
+  {
+    id: 'frame-photo-feathers',
+    file: 'feathers',
+    name: 'Перья ворона',
+    desc: 'Чёрные и белые перья по кругу',
+    price: 3200,
+    scale: 1.35,
+    motion: 'sway'
+  },
+  {
+    id: 'frame-photo-sand',
+    file: 'sand',
+    name: 'Тёплый песок',
+    desc: 'Ракушки и морское стекло на песке',
+    price: 2800,
+    scale: 1.05,
+    motion: 'breathe'
+  },
+  {
+    id: 'frame-photo-neon',
+    file: 'neon-tube',
+    name: 'Неоновая трубка',
+    desc: 'Настоящий неон: фиолетовый и голубой',
+    price: 6000,
+    scale: 1.0,
+    motion: 'pulse'
+  },
 ];
 
 /** Рамка по id товара или null. */

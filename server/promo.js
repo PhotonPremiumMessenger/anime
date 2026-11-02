@@ -6,10 +6,12 @@
    кодов и награды не могут разойтись.
 
    Правила:
-   • limit: 'user'        — активировать может каждый аккаунт,
-                            но только один раз;
-   • limit: 'global-once' — код живёт до первой активации. Кто
-                            успел, тот и получил; дальше он мёртв.
+   • limit: 'user'   — активировать может каждый аккаунт,
+                       но только один раз;
+   • limit: 'global' — код живёт, пока его не активировали всего
+                       uses раз. Кто успел, тот и получил; после
+                       последней активации код удаляется из памяти
+                       сервера и с сайта целиком.
 
    Награда (reward):
    • xp     — сколько опыта начислить;
@@ -85,13 +87,14 @@ const PROMO_CODES = [
     hidden: true
   },
 
-  /* ---------- Один на весь сайт ---------- */
+  /* ---------- Три активации на весь сайт ---------- */
   {
     code: 'TENNO',
     title: 'Императорский указ',
-    desc: 'Одна активация на весь сайт: 100 000 XP первому',
-    reward: { xp: 100000 },
-    limit: 'global-once',
+    desc: 'Три активации на весь сайт: 100 000 000 XP каждому, кто успеет',
+    reward: { xp: 100000000 },
+    limit: 'global',
+    uses: 3,
     hidden: true
   }
 ];
@@ -102,6 +105,27 @@ function findPromo(code) {
   return PROMO_CODES.find(item => item.code === needle) || null;
 }
 
+/**
+ * Код израсходован полностью: удаляем его из памяти сервера.
+ * После этого его нет ни в списке, ни в поиске — он исчезает
+ * с сайта целиком, как и просили. Записи об активациях в базе
+ * остаются: по ним видно, кто получил награду.
+ */
+function retirePromo(code) {
+  const index = PROMO_CODES.findIndex(item => item.code === code);
+  if (index === -1) return false;
+
+  PROMO_CODES.splice(index, 1);
+  return true;
+}
+
+/** Сколько активаций всего разрешено коду. */
+function promoLimit(promo) {
+  if (!promo) return 0;
+  if (promo.limit === 'global') return Math.max(1, Number(promo.uses) || 1);
+  return Infinity;
+}
+
 /** Коды, которые можно показывать на странице. */
 function publicPromos() {
   return PROMO_CODES.filter(item => !item.hidden);
@@ -110,5 +134,7 @@ function publicPromos() {
 module.exports = {
   PROMO_CODES,
   findPromo,
-  publicPromos
+  publicPromos,
+  retirePromo,
+  promoLimit
 };
