@@ -10,6 +10,7 @@
 'use strict';
 
 const jwt = require('jsonwebtoken');
+const { isAdmin } = require('./admins');
 const { findUserById, getProfile, getSettings } = require('./db');
 
 const JWT_SECRET = process.env.JWT_SECRET || '';
@@ -106,7 +107,9 @@ function publicUser(user) {
     createdAt: user.created_at,
     xp: xp,
     cover: cover,
-    coverKind: coverKind
+    coverKind: coverKind,
+    // Полный доступ: промокоды без ограничений (server/admins.js)
+    admin: isAdmin(user)
   };
 }
 

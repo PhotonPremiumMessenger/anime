@@ -158,7 +158,9 @@ function apiNormalizeUser(user) {
     custom: user.custom || null,
     // Фон профиля: адрес файла на сервере и его тип
     cover: user.cover || '',
-    coverKind: user.coverKind || ''
+    coverKind: user.coverKind || '',
+    // Полный доступ (server/admins.js): промокоды без ограничений
+    admin: Boolean(user.admin)
   };
 }
 
@@ -608,6 +610,26 @@ async function apiPublicProfile(username) {
   return response.data.user;
 }
 
+/* ---------- Полный доступ ---------- */
+
+// Ники, которым на сайте можно всё. Настоящую проверку делает
+// сервер (server/admins.js): здесь список нужен только для
+// подсказок интерфейса и для режима без сервера.
+const ADMIN_NICKNAMES = ['mglochka', 'admin'];
+
+/**
+ * Администратор ли это.
+ * Сначала смотрим флаг с сервера, потом ник — чтобы подсказка
+ * работала и до первого ответа /api/auth/me.
+ */
+function apiIsAdmin(user) {
+  const current = user || getCurrentUser();
+  if (!current) return false;
+  if (current.admin) return true;
+
+  return ADMIN_NICKNAMES.includes(String(current.username || '').trim().toLowerCase());
+}
+
 /* ---------- Фон профиля ---------- */
 
 /**
@@ -758,6 +780,7 @@ window.apiChangeEmailRequest = apiChangeEmailRequest;
 window.apiChangeEmailConfirm = apiChangeEmailConfirm;
 window.apiUploadAvatar = apiUploadAvatar;
 window.apiPublicProfile = apiPublicProfile;
+window.apiIsAdmin = apiIsAdmin;
 window.apiMediaUrl = apiMediaUrl;
 window.apiUploadCover = apiUploadCover;
 window.apiDeleteCover = apiDeleteCover;

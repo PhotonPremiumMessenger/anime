@@ -78,18 +78,80 @@ db.exec(`
     updated_at TEXT    NOT NULL
   );
 
-  -- Активации промокодов: одна запись — один код у одного аккаунта
+  -- Активации промокодов: одна запись — одна активация.
+  -- Повторные активации разрешены только администратору (admin = 1),
+  -- обычному игроку повторный раз не даёт проверка в маршруте.
   CREATE TABLE IF NOT EXISTS promo_redemptions (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id    INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     code       TEXT    NOT NULL,
     reward     TEXT    NOT NULL DEFAULT '{}',
-    created_at TEXT    NOT NULL,
-    UNIQUE (user_id, code)
+    admin      INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT    NOT NULL
   );
 
   CREATE INDEX IF NOT EXISTS idx_promo_code ON promo_redemptions (code);
 `);
+
+/* ---------- Переезд таблицы промокодов ---------- */
+
+/**
+ * Раньше на таблице промокодов стоял UNIQUE (user_id, code):
+ * один аккаунт — одна запись на код. Администратору нужно
+ * активировать коды повторно, поэтому ограничение снято,
+ * а появился столбец admin.
+ *
+ * Переезд делаем сразу после создания схемы и до подготовки
+ * запросов: иначе INSERT с новым столбцом не соберётся на старой
+ * базе. На чистой базе ничего не делает; на старой — один раз
+ * пересобирает таблицу и сохраняет все активации.
+ *
+ * @returns {number} сколько записей перенесено (0 — переезд не нужен)
+ */
+function migratePromoRedemptions() {
+  const columns = db.prepare('PRAGMA table_info(promo_redemptions)').all();
+  if (!columns.length) return 0;
+
+  // Столбец уже есть — переезд сделан раньше
+  if (columns.some(column => column.name === 'admin')) return 0;
+
+  const saved = db.prepare('SELECT COUNT(*) AS total FROM promo_redemptions').get();
+  const total = saved ? Number(saved.total) || 0 : 0;
+
+  db.exec('BEGIN');
+
+  try {
+    db.exec(`
+      CREATE TABLE promo_redemptions_new (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id    INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+        code       TEXT    NOT NULL,
+        reward     TEXT    NOT NULL DEFAULT '{}',
+        admin      INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT    NOT NULL
+      );
+
+      INSERT INTO promo_redemptions_new (id, user_id, code, reward, created_at)
+        SELECT id, user_id, code, reward, created_at FROM promo_redemptions;
+
+      DROP TABLE promo_redemptions;
+      ALTER TABLE promo_redemptions_new RENAME TO promo_redemptions;
+      CREATE INDEX IF NOT EXISTS idx_promo_code ON promo_redemptions (code);
+    `);
+
+    db.exec('COMMIT');
+  } catch (error) {
+    db.exec('ROLLBACK');
+    throw error;
+  }
+
+  return total;
+}
+
+const promoMigrated = migratePromoRedemptions();
+if (promoMigrated) {
+  console.log('[db] Перенесено активаций промокодов:', promoMigrated);
+}
 
 /* ---------- Переезд старых ключей ---------- */
 
@@ -429,12 +491,13 @@ function saveProfile(userId, { xp, level, data }) {
 
 const promoQueries = {
   insert: db.prepare(`
-    INSERT INTO promo_redemptions (user_id, code, reward, created_at)
-    VALUES (?, ?, ?, ?)
+    INSERT INTO promo_redemptions (user_id, code, reward, admin, created_at)
+    VALUES (?, ?, ?, ?, ?)
   `),
-  byUser: db.prepare('SELECT code, reward, created_at FROM promo_redemptions WHERE user_id = ? ORDER BY id DESC'),
+  byUser: db.prepare('SELECT code, reward, admin, created_at FROM promo_redemptions WHERE user_id = ? ORDER BY id DESC'),
   byUserAndCode: db.prepare('SELECT id FROM promo_redemptions WHERE user_id = ? AND code = ?'),
-  countByCode: db.prepare('SELECT COUNT(*) AS total FROM promo_redemptions WHERE code = ?')
+  // Админские активации не тратят общий лимит кода: считаем только чужие
+  countByCode: db.prepare('SELECT COUNT(*) AS total FROM promo_redemptions WHERE code = ? AND admin = 0')
 };
 
 /** Уже активировал ли этот аккаунт такой код. */
@@ -449,23 +512,35 @@ function countPromoUses(code) {
 }
 
 /**
- * Записывает активацию. Возвращает false, если код уже был.
- * Проверку «одна активация на весь сайт» делает маршрут.
+ * Записывает активацию.
+ * @param {number} userId
+ * @param {string} code
+ * @param {object} reward
+ * @param {{admin?: boolean}} [options] — admin: активация не тратит
+ *        общий лимит кода (см. countPromoUses).
+ * @returns {boolean} получилось ли записать
  */
-function redeemPromo(userId, code, reward) {
+function redeemPromo(userId, code, reward, options = {}) {
   try {
-    promoQueries.insert.run(Number(userId), String(code).toUpperCase(), JSON.stringify(reward || {}), nowIso());
+    promoQueries.insert.run(
+      Number(userId),
+      String(code).toUpperCase(),
+      JSON.stringify(reward || {}),
+      options.admin ? 1 : 0,
+      nowIso()
+    );
     return true;
   } catch (error) {
     return false;
   }
 }
 
-/** Все коды аккаунта: [{ code, reward, createdAt }]. */
+/** Все коды аккаунта: [{ code, reward, admin, createdAt }]. */
 function getUserPromos(userId) {
   return promoQueries.byUser.all(Number(userId)).map(row => ({
     code: row.code,
     reward: safeJson(row.reward),
+    admin: Number(row.admin) === 1,
     createdAt: row.created_at
   }));
 }
@@ -489,6 +564,7 @@ module.exports = {
   db,
   DB_PATH,
   migrateLegacyKeys,
+  migratePromoRedemptions,
   nowIso,
   normalizeKey,
   findUserById,

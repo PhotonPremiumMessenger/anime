@@ -12,6 +12,10 @@
    • Остальные коды каждый аккаунт может активировать один раз.
 
    Награда выдаётся здесь: опыт, рамка, значок или тема.
+
+   Администратору (ник из server/admins.js) ограничения не мешают:
+   он активирует любой код сколько угодно раз, включая уже
+   разобранные. Его активации не тратят общий лимит кода.
    ============================================================ */
 
 'use strict';
@@ -58,6 +62,17 @@ function promoMarkUsed(code) {
 /** Активирован ли код этим аккаунтом (по локальной памяти). */
 function promoIsUsed(code) {
   return promoUsedList().includes(String(code).toUpperCase());
+}
+
+/* ---------- Полный доступ ---------- */
+
+/**
+ * Админ ли сейчас за компьютером.
+ * Сервер присылает флаг в аккаунте; если ответа ещё нет,
+ * решает ник (js/api.js → apiIsAdmin).
+ */
+function promoAdminMode() {
+  return typeof apiIsAdmin === 'function' ? apiIsAdmin() : false;
 }
 
 /* ---------- Выдача награды ---------- */
@@ -119,7 +134,10 @@ async function redeemPromo(rawCode) {
     return { ok: false, message: 'Промокоды доступны только аккаунту. Войдите или зарегистрируйтесь' };
   }
 
-  if (promoIsUsed(code)) {
+  // Администратору можно повторно: сервер тоже это разрешает
+  const admin = promoAdminMode();
+
+  if (!admin && promoIsUsed(code)) {
     return { ok: false, message: 'Этот код уже активирован на вашем аккаунте' };
   }
 
@@ -142,12 +160,30 @@ async function redeemPromo(rawCode) {
       return { ok: false, message: message };
     }
 
-    // Код разобрали полностью — сервер говорит, что его больше нет
-    if (response.data && response.data.exhausted) retirePromoLocally(code);
+    const serverAdmin = Boolean(response.data && response.data.admin);
+
+    // Код разобрали полностью — сервер говорит, что его больше нет.
+    // Админские активации код не тратят, поэтому их не трогаем
+    if (!serverAdmin && response.data && response.data.exhausted) retirePromoLocally(code);
+
+    // Сервер подтвердил полный доступ — запоминаем в аккаунте,
+    // чтобы подсказка работала и на других страницах
+    if (serverAdmin && typeof getCurrentUser === 'function' && typeof updateUserRecord === 'function') {
+      const user = getCurrentUser();
+      if (user && !user.admin) updateUserRecord(user.username, { admin: true });
+    }
 
     const promo = response.data.promo || {};
     const reward = applyPromoReward(promo.reward || {});
     promoMarkUsed(code);
+
+    if (serverAdmin) {
+      return {
+        ok: true,
+        message: promo.title || 'Код активирован',
+        reward: (reward || 'Награда уже была у вас') + ' · режим администратора'
+      };
+    }
 
     // Дополнительно сообщаем, сколько активаций осталось у общего кода
     const left = response.data && typeof response.data.left === 'number' ? response.data.left : null;
@@ -172,8 +208,9 @@ async function redeemPromo(rawCode) {
     return { ok: false, message: 'Такого кода нет. Проверьте написание' };
   }
 
-  // Общий код: мест всего несколько на всех
-  if (promo.globalUses) {
+  // Общий код: мест всего несколько на всех.
+  // Админ лимит не тратит и может брать код повторно
+  if (promo.globalUses && !admin) {
     const used = promoUses(code);
     if (used >= promo.globalUses) {
       retirePromoLocally(code);
@@ -186,7 +223,7 @@ async function redeemPromo(rawCode) {
   promoMarkUsed(code);
 
   let left = null;
-  if (promo.globalUses) {
+  if (promo.globalUses && !admin) {
     const used = bumpPromoUses(code);
     left = Math.max(0, promo.globalUses - used);
 
@@ -199,7 +236,8 @@ async function redeemPromo(rawCode) {
   return {
     ok: true,
     message: promo.title || 'Код активирован',
-    reward: (reward || 'Награда уже была у вас') + (left ? ' · осталось активаций: ' + left : '')
+    reward: (reward || 'Награда уже была у вас') + (left ? ' · осталось активаций: ' + left : '') +
+      (admin ? ' · режим администратора' : '')
   };
 }
 
@@ -378,6 +416,7 @@ async function submitPromoCode() {
 
   input.value = '';
   renderPromoHistory();
+  renderPromoAdminNote();
 
   if (typeof showToast === 'function') {
     showToast('Код активирован: ' + result.message, result.reward, 'success', { duration: 6200, icon: 'gift' });
@@ -435,12 +474,32 @@ async function promoHydrate() {
     renderPromoList();
     renderPromoHistory();
   }
+
+  // Ответ сервера мог подтвердить полный доступ
+  renderPromoAdminNote();
+}
+
+/**
+ * Показывает администратору плашку над формой.
+ * Остальным её не видно — и в разметке, и в стилях.
+ */
+function renderPromoAdminNote() {
+  const note = document.getElementById('promoAdminNote');
+  const hint = document.getElementById('promoHint');
+  if (!note) return;
+
+  const admin = promoAdminMode();
+  note.classList.toggle('hidden', !admin);
+
+  // Обычная подсказка про «один раз» админу не подходит
+  if (hint) hint.classList.toggle('hidden', admin);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   if (!document.getElementById('promoForm')) return;
 
   dropRetiredPromos();
+  renderPromoAdminNote();
   renderPromoList();
   renderPromoHistory();
   promoHydrate();
@@ -472,3 +531,5 @@ window.renderPromoList = renderPromoList;
 window.renderPromoHistory = renderPromoHistory;
 window.applyPromoReward = applyPromoReward;
 window.promoRewardText = promoRewardText;
+window.promoAdminMode = promoAdminMode;
+window.renderPromoAdminNote = renderPromoAdminNote;
