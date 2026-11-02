@@ -44,6 +44,13 @@ function fillProfile() {
     el.textContent = username;
   });
 
+  // Плашка ADMIN: видна только владельцу полного доступа
+  const adminTag = document.getElementById('playerAdminTag');
+  if (adminTag) {
+    const admin = typeof apiIsAdmin === 'function' && apiIsAdmin(user);
+    adminTag.classList.toggle('hidden', !admin);
+  }
+
   // Почта в карточке профиля
   const emailEl = document.getElementById('playerEmail');
   if (emailEl) emailEl.textContent = user ? user.email : '';

@@ -19953,3 +19953,78 @@ body.theme-light.has-custom-bg .word-card {
   object-fit: cover;
   pointer-events: none;
 }
+
+/* ============================================================
+   Полный доступ (ADMIN)
+
+   Плашка в профиле и подсказка на странице промокодов.
+   Видны только тому, чей ник есть в server/admins.js.
+   ============================================================ */
+
+.player-admin-tag {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.05));
+  color: var(--text-main);
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  vertical-align: middle;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.player-admin-tag.hidden {
+  display: none;
+}
+
+.promo-admin-note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+  color: var(--text-gray);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.promo-admin-note.hidden {
+  display: none;
+}
+
+.promo-admin-tag {
+  flex: none;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+}
+
+/* На узком экране плашка ADMIN уменьшается, чтобы ник не уезжал */
+@media (max-width: 560px) {
+  .player-admin-tag {
+    margin-left: 6px;
+    padding: 2px 7px;
+    font-size: 9px;
+    letter-spacing: 0.06em;
+  }
+
+  .promo-admin-note {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    font-size: 12px;
+  }
+}
