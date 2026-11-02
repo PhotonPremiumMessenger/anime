@@ -125,6 +125,8 @@ function publicProfileFromServer(name, data) {
   return {
     name: data.username || name,
     avatar: data.avatar || '',
+    cover: data.cover || '',
+    coverKind: data.coverKind || '',
     xp: xp,
     level: Number(data.level) || info.level,
     levelInfo: info,
@@ -154,6 +156,17 @@ function renderPublicProfile() {
   // В этом браузере аккаунта нет, но он есть на сервере — показываем его
   if (!profile && publicRemote.data && publicRemote.name === nickname.toLowerCase()) {
     profile = publicProfileFromServer(nickname, publicRemote.data);
+  }
+
+  // Своя визитка по ссылке: обложку берём из кэша аккаунта,
+  // она там лежит после входа и после загрузки файла
+  if (profile && !profile.cover && typeof getCurrentUser === 'function') {
+    const me = getCurrentUser();
+
+    if (me && me.cover && String(me.username || '').toLowerCase() === String(profile.name).toLowerCase()) {
+      profile.cover = me.cover;
+      profile.coverKind = me.coverKind || '';
+    }
   }
 
   document.body.classList.add('public-profile');
@@ -206,10 +219,24 @@ function renderPublicProfile() {
   const percent = Math.min(100, Math.round(profile.levelInfo.percent || 0));
   const nextNeed = profile.levelInfo.need || 0;
 
+  // Фон профиля с сервера: адрес файла и разметка обложки
+  const coverUrl = profile.cover
+    ? (typeof apiMediaUrl === 'function' ? apiMediaUrl(profile.cover) : profile.cover)
+    : '';
+
+  const coverStyle = coverUrl
+    ? ' style="background-image:url(&quot;' + escapeBio(coverUrl) + '&quot;)"'
+    : '';
+
+  const coverVideo = coverUrl && profile.coverKind === 'video'
+    ? '<video class="public-cover-video" src="' + escapeBio(coverUrl) +
+      '" muted loop autoplay playsinline aria-hidden="true"></video>'
+    : '';
+
   root.innerHTML = `
     <div class="public-layout">
       <aside class="player-card public-card">
-        <div class="public-cover"></div>
+        <div class="public-cover${coverUrl ? ' has-remote-cover' : ''}"${coverStyle}>${coverVideo}</div>
 
         <div class="public-avatar">
           ${typeof avatarMarkup === 'function'
