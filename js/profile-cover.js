@@ -389,7 +389,13 @@ async function pickProfileCover(file) {
       localStorage.setItem(PROFILE_COVER_KIND, 'video');
       try { localStorage.removeItem(PROFILE_COVER_KEY); } catch (error) { /* пусто */ }
 
-      await paintCoverVideo();
+      // Файл уже сохранён: даже если браузер не смог показать ролик
+      // сразу, фон появится после перезагрузки — ошибки не показываем
+      try {
+        await paintCoverVideo();
+      } catch (error) {
+        // рисование не удалось — не повод ругаться
+      }
 
       if (typeof showToast === 'function') showToast('Фон профиля обновлён', 'Видео крутится за аватаркой', 'success', { icon: 'image' });
       return;
