@@ -58,7 +58,10 @@ function fillProfile() {
   const xpText = document.getElementById('xpText');
   const xpFill = document.getElementById('xpFill');
 
-  if (xpText) xpText.textContent = stats.xp + ' / ' + xpMax + ' XP';
+  // Большие суммы читаем с разрядами: 100 000 000, а не 100000000
+  const prettyXP = value => String(Math.round(Number(value) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+
+  if (xpText) xpText.textContent = prettyXP(stats.xp) + ' / ' + prettyXP(xpMax) + ' XP';
   if (xpFill) {
     // Небольшая задержка, чтобы полоска красиво «наполнилась» после загрузки
     setTimeout(() => (xpFill.style.width = percent + '%'), 250);

@@ -5,10 +5,13 @@
    стикеры-звёздочки и рамки-уголки. Всё это чистые CSS-элементы,
    поэтому страница не тяжелеет.
 
-   Волна 12 добавила «вау»-слой: рамку кадра с уголками, штрих-
-   код в углу, катакана-бегущую строку, звук печати и взрыв
-   частиц при нажатии. Всё построено на transform и opacity,
-   поэтому работает на телефоне без лагов.
+   Волна 12 добавила «вау»-слой: взрыв частиц при нажатии.
+   Всё построено на transform и opacity, поэтому работает
+   на телефоне без лагов.
+
+   Рамку кадра с уголками, метку эпизода по центру сверху,
+   штрих-код в углу и катакана-бегущую строку убрали: декор
+   мешал читать и закрывал содержимое.
    ============================================================ */
 
 'use strict';
@@ -41,36 +44,6 @@ const ANIME_SIDE_MARKS = {
   'register': '入門',
   'offline': '放置',
   'privacy': '約束'
-};
-
-// Римские цифры эпизода для верхней метки кадра
-const ANIME_EPISODES = {
-  'index': '第壱話',
-  'lessons': '第弐話',
-  'lesson': '第参話',
-  'anime': '第四話',
-  'tests': '第五話',
-  'grammar': '第六話',
-  'dictionary': '第七話',
-  'video': '第八話',
-  'profile': '第九話',
-  'rating': '第十話',
-  'shop': '第十一話',
-  'favorites': '第十二話',
-  'flashcards': '第十三話',
-  'match': '第十四話',
-  'listening': '第十五話',
-  'speed': '第十六話',
-  'game': '第十七話',
-  'weakspots': '第十八話',
-  'search': '第十九話',
-  'exam': '第二十話',
-  'updates': '第二十一話',
-  'about': '第二十二話',
-  'settings': '第二十三話',
-  'register': '第二十四話',
-  'offline': '第二十五話',
-  'privacy': '第二十六話'
 };
 
 /** Нынешняя страница без пути. */
@@ -210,56 +183,6 @@ function mountEdges() {
    ============================================================ */
 
 /**
- * Рамка кадра: четыре уголка по краям экрана и метка эпизода.
- * Как будто страница — кадр из аниме. Совсем не двигается,
- * поэтому стоит ноль кадров в секунду.
- */
-function mountFrame() {
-  if (document.body.classList.contains('page-offline')) return;
-  if (document.querySelector('.anime-frame')) return;
-
-  const frame = document.createElement('div');
-  frame.className = 'anime-frame';
-  frame.setAttribute('aria-hidden', 'true');
-
-  const episode = ANIME_EPISODES[currentAnimePage()] || '日本語';
-  frame.innerHTML =
-    '<span class="af-corner af-tl"></span>' +
-    '<span class="af-corner af-tr"></span>' +
-    '<span class="af-corner af-bl"></span>' +
-    '<span class="af-corner af-br"></span>' +
-    '<span class="af-episode">' + episode + '</span>' +
-    '<span class="af-code">日本 · ANILINGO · 語</span>';
-
-  document.body.appendChild(frame);
-}
-
-/**
- * Катакана-строка, которая бежит под шапкой один раз после загрузки.
- * Это единственный анимированный декор всего слоя: 12 секунд и
- * слой убирается из DOM, чтобы не занимать память.
- */
-function mountKatakanaRun() {
-  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  if (document.querySelector('.anime-run')) return;
-
-  const words = ['ニホンゴ', 'ガクシュウ', 'アニメ', 'ことば', 'ぶんぽう', 'たんご', 'にほん'];
-  const strip = document.createElement('div');
-  strip.className = 'anime-run';
-  strip.setAttribute('aria-hidden', 'true');
-
-  // На телефоне строка короче, чтобы не тащить через экран километр текста
-  const repeats = window.innerWidth < 760 ? 3 : 6;
-
-  // Собираем длинную строку один раз, дальше её двигает CSS
-  strip.innerHTML = '<span>' + (words.join(' · ') + ' · ').repeat(repeats) + '</span>';
-
-  document.body.appendChild(strip);
-
-  window.setTimeout(() => strip.remove(), 14000);
-}
-
-/**
  * Всплеск частиц при нажатии на главные кнопки.
  * Пять маленьких искр, которые разлетаются за 0.5 секунды, —
  * это compositor-only анимация, поэтому дешёвая.
@@ -336,8 +259,6 @@ document.addEventListener('DOMContentLoaded', () => {
   mountEdges();
 
   // «Волна 12»
-  mountFrame();
-  mountKatakanaRun();
   mountTapBurst();
   mountSectionNumbers();
   mountCardHint();
@@ -351,4 +272,3 @@ document.addEventListener('anime-grid-rendered', () => {
 
 window.mountTilt = mountTilt;
 window.mountEdges = mountEdges;
-window.mountFrame = mountFrame;

@@ -18764,138 +18764,13 @@ body.theme-light .panel-swatch.is-active {
    классом .perf-lite — см. css/perf.css.
    ============================================================ */
 
-/* ---------- 20.1 Рамка кадра: уголки, эпизод, штрих-код ---------- */
-/* Высота шапки: рамка и бегущая строка начинаются сразу под ней */
-:root {
-  --af-top: 64px;
-}
-
-@media (max-width: 760px) {
-  :root {
-    --af-top: 58px;
-  }
-}
-
-/* Верх рамки — под шапкой: она sticky и иначе закрывает уголки */
-.anime-frame {
-  position: fixed;
-  top: var(--af-top);
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 3;
-  pointer-events: none;
-  font-family: var(--font-head);
-}
-
-.af-corner {
-  position: absolute;
-  width: 26px;
-  height: 26px;
-  border: 2px solid hsl(var(--accent-hue) var(--accent-sat) var(--accent-l) / 0.5);
-}
-
-.af-tl { top: 12px; left: 12px; border-right: none; border-bottom: none; }
-.af-tr { top: 12px; right: 12px; border-left: none; border-bottom: none; }
-.af-bl { bottom: 12px; left: 12px; border-right: none; border-top: none; }
-.af-br { bottom: 12px; right: 12px; border-left: none; border-top: none; }
-
-/* Метка эпизода — по центру сверху, как титр в аниме */
-.af-episode {
-  position: absolute;
-  top: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 3px 12px;
-  font-size: 0.62rem;
-  letter-spacing: 3px;
-  color: hsl(var(--accent-hue) var(--accent-sat) var(--accent-l) / 0.7);
-  border: 1px solid hsl(var(--accent-hue) var(--accent-sat) var(--accent-l) / 0.28);
-  border-radius: 999px;
-  background: rgba(9, 9, 10, 0.55);
-}
-
-/* Штрих-код в левом нижнем углу — справа живёт кнопка плеера */
-.af-code {
-  position: absolute;
-  left: 48px;
-  bottom: 14px;
-  font-size: 0.55rem;
-  letter-spacing: 2px;
-  color: hsl(var(--accent-hue) var(--accent-sat) var(--accent-l) / 0.35);
-  writing-mode: vertical-rl;
-}
-
-/* На светлой теме метки темнее, чтобы не пропадали */
-body.theme-light .af-episode {
-  color: hsl(var(--accent-hue) var(--accent-sat) 34%);
-  border-color: rgba(20, 20, 25, 0.18);
-  background: rgba(255, 255, 255, 0.7);
-}
-
-body.theme-light .af-code {
-  color: rgba(20, 20, 25, 0.28);
-}
-
-body.theme-light .af-corner {
-  border-color: rgba(20, 20, 25, 0.22);
-}
-
-/* ---------- 20.2 Катакана-строка под шапкой ---------- */
-.anime-run {
-  position: fixed;
-  top: var(--af-top, 64px);
-  left: 0;
-  right: 0;
-  z-index: 90;
-  height: 22px;
-  overflow: hidden;
-  pointer-events: none;
-  background: linear-gradient(90deg,
-    hsl(var(--accent-hue) var(--accent-sat) 62% / 0.12),
-    hsl(var(--accent-hue) var(--accent-sat) 62% / 0.04));
-  border-bottom: 1px solid hsl(var(--accent-hue) var(--accent-sat) 62% / 0.18);
-  opacity: 0;
-  animation: animeRunFade 14s ease forwards;
-}
-
-.anime-run span {
-  display: block;
-  width: max-content;
-  padding-left: 100vw;
-  font-family: var(--font-body);
-  font-size: 0.6rem;
-  line-height: 22px;
-  letter-spacing: 6px;
-  white-space: nowrap;
-  color: hsl(var(--accent-hue) var(--accent-sat) var(--accent-l) / 0.55);
-  animation: animeRunSlide 14s linear forwards;
-}
-
-@media (max-width: 900px) {
-  .anime-run {
-    height: 18px;
-  }
-
-  .anime-run span {
-    font-size: 0.52rem;
-    line-height: 18px;
-    letter-spacing: 4px;
-  }
-}
-
-
-@keyframes animeRunSlide {
-  from { transform: translateX(0); }
-  to { transform: translateX(-100%); }
-}
-
-@keyframes animeRunFade {
-  0% { opacity: 0; }
-  6% { opacity: 1; }
-  88% { opacity: 1; }
-  100% { opacity: 0; }
-}
+/* ---------- 20.1 Рамка кадра и бегущая строка убраны ---------- */
+/*
+   Уголки по краям экрана, метка эпизода по центру сверху,
+   штрих-код в углу и катакана-строка под шапкой удалены
+   вместе с разметкой (js/anime-style.js). Декор перекрывал
+   содержимое и мешал читать.
+*/
 
 /* ---------- 20.3 Всплеск при нажатии ---------- */
 .anime-burst {
@@ -19016,29 +18891,6 @@ body.theme-light .af-corner {
 
 /* ---------- 20.7 Мобильный и облегчённый режим ---------- */
 @media (max-width: 900px) {
-  .af-corner {
-    width: 18px;
-    height: 18px;
-  }
-
-  /* Метка эпизода на телефоне переезжает в левый нижний угол:
-     сверху её закрыла бы шапка, а по центру она мешает заголовку */
-  .af-episode {
-    top: auto;
-    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-    left: 12px;
-    transform: none;
-    padding: 2px 9px;
-    font-size: 0.58rem;
-    letter-spacing: 2px;
-    background: rgba(9, 9, 10, 0.72);
-  }
-
-  /* Штрих-код на узком экране уводим, чтобы не лез в контент */
-  .af-code {
-    display: none;
-  }
-
   .anime-sec-num {
     top: -30px;
     font-size: 1.8rem;
@@ -19050,21 +18902,14 @@ body.theme-light .af-corner {
   }
 }
 
-/* Раньше облегчённый режим гасил строку и искры целиком.
-   Оба эффекта идут через transform и opacity, поэтому теперь
-   работают и на телефоне: строка — один элемент, искра —
-   один узел на 0.6 секунды. */
+/* Искры идут через transform и opacity, поэтому работают
+   и на телефоне: на нажатие — один узел на 0.6 секунды. */
 
 @media (prefers-reduced-motion: reduce) {
-  .anime-run,
   .anime-burst,
   .anime-card[data-hint]::before {
     animation: none !important;
     transition: none !important;
-  }
-
-  .anime-run {
-    display: none;
   }
 }
 
@@ -19625,4 +19470,459 @@ html.settings-sheet-open {
   .bg-custom.is-video {
     filter: none;
   }
+}
+
+/* ============================================================
+   Кнопка «наверх» (js/scrolltop.js)
+
+   Кружок по центру сверху: появляется после прокрутки и плавно
+   возвращает в начало. Своя иконка — стрелка-торий, нарисованная
+   линиями, поэтому она не «иконочная», а под стиль сайта.
+   ============================================================ */
+
+.scroll-top {
+  position: fixed;
+  top: calc(64px + 14px);
+  left: 50%;
+  z-index: 95;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 1px solid hsl(var(--accent-hue) var(--accent-sat) 64% / 0.34);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 26%, rgba(255, 255, 255, 0.14), transparent 62%),
+    rgba(12, 12, 18, 0.82);
+  color: hsl(var(--accent-hue) var(--accent-sat) 76%);
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, -8px) scale(0.9);
+  transition:
+    opacity 0.24s ease,
+    visibility 0.24s ease,
+    transform 0.24s cubic-bezier(0.2, 0.9, 0.3, 1),
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.32);
+}
+
+.scroll-top.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0) scale(1);
+}
+
+.scroll-top:hover,
+.scroll-top:focus-visible {
+  border-color: hsl(var(--accent-hue) var(--accent-sat) 68% / 0.75);
+  box-shadow:
+    0 10px 26px rgba(0, 0, 0, 0.42),
+    0 0 0 4px hsl(var(--accent-hue) var(--accent-sat) 64% / 0.1);
+  outline: none;
+}
+
+.scroll-top:active {
+  transform: translate(-50%, 0) scale(0.94);
+}
+
+/* Стрелка: три линии, концы скруглены — похоже на ворота-тории */
+.st-arrow {
+  width: 22px;
+  height: 22px;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.st-shaft,
+.st-head,
+.st-base {
+  transition: transform 0.22s ease;
+  transform-origin: 12px 12px;
+}
+
+/* На наведении стрелка чуть подтягивается вверх — живой отклик */
+.scroll-top:hover .st-shaft,
+.scroll-top:hover .st-head {
+  transform: translateY(-2px);
+}
+
+.scroll-top:hover .st-base {
+  opacity: 0.6;
+}
+
+/* Светлая тема */
+body.theme-light .scroll-top {
+  background:
+    radial-gradient(circle at 30% 26%, #ffffff, transparent 62%),
+    rgba(255, 255, 255, 0.9);
+  border-color: hsl(var(--accent-hue) var(--accent-sat) 42% / 0.4);
+  color: hsl(var(--accent-hue) var(--accent-sat) 38%);
+  box-shadow: 0 8px 22px rgba(20, 20, 30, 0.14);
+}
+
+/* Телефон: шапка ниже, кнопку чуть уменьшаем */
+@media (max-width: 760px) {
+  .scroll-top {
+    top: calc(58px + 10px);
+    width: 42px;
+    height: 42px;
+  }
+
+  .st-arrow {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* Облегчённый режим: без размытия подложки */
+.perf-lite .scroll-top {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: rgba(12, 12, 18, 0.94);
+}
+
+.perf-lite body.theme-light .scroll-top,
+body.theme-light.perf-lite .scroll-top {
+  background: rgba(255, 255, 255, 0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-top,
+  .st-shaft,
+  .st-head,
+  .st-base {
+    transition: none;
+  }
+
+  .scroll-top,
+  .scroll-top.is-visible,
+  .scroll-top:active {
+    transform: translate(-50%, 0);
+  }
+
+  .scroll-top:hover .st-shaft,
+  .scroll-top:hover .st-head {
+    transform: none;
+  }
+}
+
+/* ============================================================
+   Профиль: кнопки карточки и фон за аватаркой
+   ============================================================ */
+
+/* Кнопки под аватаром: врозь, ровными колонками, без слипания */
+.player-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 18px 0 4px;
+}
+
+.player-actions-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+}
+
+.player-actions-row .btn {
+  width: 100%;
+  justify-content: center;
+  min-height: 38px;
+  padding-inline: 12px;
+  white-space: nowrap;
+}
+
+/* Фон за аватаркой: кнопка живёт на обложке, справа сверху */
+.profile-cover {
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.profile-cover.has-custom-cover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(8, 8, 12, 0.05), rgba(10, 10, 16, 0.55));
+  pointer-events: none;
+}
+
+.profile-cover-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+/* Затемнение поверх ролика — текст карточки читается */
+.profile-cover.has-video::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(to bottom, rgba(8, 8, 12, 0.1), rgba(10, 10, 16, 0.72));
+  pointer-events: none;
+}
+
+.profile-cover-edit {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 12px 7px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  background: rgba(10, 10, 16, 0.55);
+  color: #f2f2f6;
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.profile-cover-edit svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+}
+
+.profile-cover-edit:hover,
+.profile-cover-edit:focus-visible {
+  background: rgba(20, 20, 30, 0.8);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.profile-cover-edit:active {
+  transform: scale(0.97);
+}
+
+/* На телефоне подпись прячем — остаётся аккуратный кружок с камерой */
+@media (max-width: 640px) {
+  .profile-cover-edit {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .profile-cover-edit span {
+    display: none;
+  }
+}
+
+/* ---------- Окно выбора фона профиля ---------- */
+html.cover-picker-open {
+  overflow: hidden;
+}
+
+.cover-picker {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(6, 6, 10, 0.62);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: coverPickerFade 0.18s ease;
+}
+
+@keyframes coverPickerFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.cover-picker-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 22px;
+  border: 1px solid var(--border-strong, var(--border));
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  text-align: left;
+}
+
+.cover-picker-card h3 {
+  margin: 0 0 6px;
+  font-family: var(--font-head);
+  font-size: 1.1rem;
+}
+
+.cover-picker-note {
+  margin: 0 0 16px;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+.cover-picker-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.cover-picker-actions .btn {
+  flex: 1 1 110px;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.cover-picker-close {
+  margin-top: 14px;
+  width: 100%;
+  justify-content: center;
+}
+
+.perf-lite .cover-picker {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: rgba(6, 6, 10, 0.82);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cover-picker {
+    animation: none;
+  }
+}
+
+/* ============================================================
+   Свой фон → окна плотнее
+
+   Поверх загруженной картинки тонкие стеклянные панели
+   просвечивали так, что текст сливался с фото. Поэтому, когда
+   включён свой фон, все окна получают более плотную подложку.
+   Прозрачность остаётся — видно, что окно «стеклянное», но
+   текст читается на любой картинке и на видео.
+   ============================================================ */
+
+body.has-custom-bg {
+  --bg-card: rgba(16, 16, 23, 0.82);
+  --glass-bg: rgba(16, 16, 23, 0.8);
+  --glass-bg-strong: rgba(20, 20, 28, 0.9);
+  --surface: rgba(16, 16, 23, 0.82);
+  --border: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.2);
+}
+
+/* Основные панели: карточки, настройки, каталог, плеер */
+body.has-custom-bg .settings-menu,
+body.has-custom-bg .settings-content,
+body.has-custom-bg .settings-panel,
+body.has-custom-bg .settings-sheet,
+body.has-custom-bg .player-card,
+body.has-custom-bg .anime-card,
+body.has-custom-bg .test-card,
+body.has-custom-bg .video-card,
+body.has-custom-bg .grammar-card,
+body.has-custom-bg .dict-card,
+body.has-custom-bg .stat-card,
+body.has-custom-bg .speed-card,
+body.has-custom-bg .lesson-card,
+body.has-custom-bg .lesson-side,
+body.has-custom-bg .faq-item,
+body.has-custom-bg .hero-card,
+body.has-custom-bg .auth-card,
+body.has-custom-bg .search,
+body.has-custom-bg .modal-card,
+body.has-custom-bg .player-dock,
+body.has-custom-bg .shop-card,
+body.has-custom-bg .promo-panel,
+body.has-custom-bg .promo-card,
+body.has-custom-bg .promo-history-box,
+body.has-custom-bg .updates-list .update-item,
+body.has-custom-bg .achievement-card,
+body.has-custom-bg .goal-card,
+body.has-custom-bg .word-card,
+body.has-custom-bg .profile-block {
+  background-color: rgba(16, 16, 23, 0.88);
+  backdrop-filter: blur(16px) saturate(120%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+}
+
+/* Светлая тема: тот же приём, только белым */
+body.theme-light.has-custom-bg {
+  --bg-card: rgba(250, 250, 253, 0.9);
+  --glass-bg: rgba(250, 250, 253, 0.88);
+  --glass-bg-strong: rgba(255, 255, 255, 0.94);
+  --surface: rgba(250, 250, 253, 0.9);
+  --border: rgba(20, 20, 30, 0.12);
+  --border-strong: rgba(20, 20, 30, 0.2);
+}
+
+body.theme-light.has-custom-bg .settings-menu,
+body.theme-light.has-custom-bg .settings-content,
+body.theme-light.has-custom-bg .settings-panel,
+body.theme-light.has-custom-bg .player-card,
+body.theme-light.has-custom-bg .anime-card,
+body.theme-light.has-custom-bg .test-card,
+body.theme-light.has-custom-bg .video-card,
+body.theme-light.has-custom-bg .grammar-card,
+body.theme-light.has-custom-bg .dict-card,
+body.theme-light.has-custom-bg .stat-card,
+body.theme-light.has-custom-bg .lesson-card,
+body.theme-light.has-custom-bg .faq-item,
+body.theme-light.has-custom-bg .hero-card,
+body.theme-light.has-custom-bg .auth-card,
+body.theme-light.has-custom-bg .search,
+body.theme-light.has-custom-bg .modal-card,
+body.theme-light.has-custom-bg .player-dock,
+body.theme-light.has-custom-bg .shop-card,
+body.theme-light.has-custom-bg .promo-panel,
+body.theme-light.has-custom-bg .promo-card,
+body.theme-light.has-custom-bg .promo-history-box,
+body.theme-light.has-custom-bg .achievement-card,
+body.theme-light.has-custom-bg .word-card {
+  background-color: rgba(250, 250, 253, 0.93);
+}
+
+/* Облегчённый режим: без размытия, но такой же плотности */
+.perf-lite body.has-custom-bg .settings-menu,
+.perf-lite body.has-custom-bg .settings-content,
+.perf-lite body.has-custom-bg .player-card,
+.perf-lite body.has-custom-bg .anime-card,
+.perf-lite body.has-custom-bg .test-card,
+.perf-lite body.has-custom-bg .lesson-card,
+.perf-lite body.has-custom-bg .faq-item,
+.perf-lite body.has-custom-bg .hero-card,
+.perf-lite body.has-custom-bg .shop-card,
+.perf-lite body.has-custom-bg .promo-card,
+.perf-lite body.has-custom-bg .modal-card {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-color: rgba(14, 14, 20, 0.95);
+}
+
+.perf-lite body.theme-light.has-custom-bg .settings-menu,
+.perf-lite body.theme-light.has-custom-bg .settings-content,
+.perf-lite body.theme-light.has-custom-bg .player-card,
+.perf-lite body.theme-light.has-custom-bg .anime-card,
+.perf-lite body.theme-light.has-custom-bg .lesson-card,
+.perf-lite body.theme-light.has-custom-bg .shop-card,
+.perf-lite body.theme-light.has-custom-bg .promo-card,
+.perf-lite body.theme-light.has-custom-bg .modal-card {
+  background-color: rgba(252, 252, 255, 0.97);
 }

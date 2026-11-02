@@ -1,7 +1,7 @@
 /* ============================================================
    player.js — своя музыка и мини-плеер в углу
    • плейлист из загруженных файлов: сами файлы лежат в IndexedDB
-     (до 2,5 МБ на трек), а в localStorage — только список треков;
+     (до 5 МБ на трек), а в localStorage — только список треков;
    • Spotify по ссылке: трек, альбом, плейлист или подкаст играет
      во встроенном плеере — без скачивания и без сервера;
    • красивый плеер: виниловый диск, живой эквалайзер, обложка,
@@ -17,9 +17,11 @@
 const MP_LIST_KEY = 'anilingo_playlist';   // [{ id, name, kind, stored | data | spotify }]
 const MP_STATE_KEY = 'anilingo_player';    // { trackId, time, playing, volume, muted, hidden, repeat, shuffle }
 
-// Файлы храним в IndexedDB: там нет лимита localStorage (≈5 МБ на домен),
-// поэтому в один трек влезает 2,5 МБ — втрое больше, чем было.
-const MP_MAX_TRACK_BYTES = 2.5 * 1024 * 1024;
+// Файлы храним в IndexedDB: там нет лимита localStorage (≈5 МБ на домен).
+// Лимит поднят до 5 МБ: в такой трек помещается полноценная песня
+// в 320 kbps длиной около четырёх минут. Если браузеру не хватит
+// места, об этом честно скажет ошибка при сохранении.
+const MP_MAX_TRACK_BYTES = 5 * 1024 * 1024;
 const MP_MAX_TRACKS = 24;
 const MP_SPOTIFY_EMBED = 'https://open.spotify.com/embed/';
 
@@ -1265,7 +1267,7 @@ function removeMusicTrack(trackId) {
  *
  * Сам файл уходит в IndexedDB — там нет тесного лимита localStorage.
  * В список попадает только имя и отметка stored, поэтому плейлист
- * может быть длиннее, а треки — тяжелее (до 2,5 МБ).
+ * может быть длиннее, а треки — тяжелее (до 5 МБ).
  */
 function pickCustomMusic(input) {
   const file = input && input.files && input.files[0];
@@ -1280,7 +1282,7 @@ function pickCustomMusic(input) {
   if (file.size > MP_MAX_TRACK_BYTES) {
     if (typeof showToast === 'function') {
       showToast('Файл слишком большой',
-        'Лимит — 2,5 МБ на трек. Длинную песню лучше добавить ссылкой Spotify',
+        'Лимит — 5 МБ на трек. Более длинную песню лучше добавить ссылкой Spotify',
         'error', { duration: 6200 });
     }
     input.value = '';

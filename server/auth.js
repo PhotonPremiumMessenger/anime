@@ -10,7 +10,7 @@
 'use strict';
 
 const jwt = require('jsonwebtoken');
-const { findUserById } = require('./db');
+const { findUserById, getProfile } = require('./db');
 
 const JWT_SECRET = process.env.JWT_SECRET || '';
 
@@ -67,14 +67,30 @@ function requireAuth(req, res, next) {
   return next();
 }
 
-/** Публичное представление пользователя — без хеша пароля. */
+/**
+ * Публичное представление пользователя — без хеша пароля.
+ *
+ * XP отдаём вместе с аккаунтом: иначе на новом устройстве после
+ * входа баланс оказывался нулевым, а первое же начисление опыта
+ * затирало накопленное на сервере.
+ */
 function publicUser(user) {
+  let xp = 0;
+
+  try {
+    const profile = getProfile(user.id);
+    xp = Math.max(0, Number(profile && profile.xp) || 0);
+  } catch (error) {
+    xp = 0;
+  }
+
   return {
     id: user.id,
     username: user.username,
     email: user.email,
     avatar: user.avatar || '',
-    createdAt: user.created_at
+    createdAt: user.created_at,
+    xp: xp
   };
 }
 

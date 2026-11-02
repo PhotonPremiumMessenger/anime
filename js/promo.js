@@ -5,9 +5,10 @@
    • Открытые коды показаны внизу страницы — их можно копировать.
    • Два кода спрятаны по сайту: подсказки есть в пасхалках
      и в офлайн-странице. На странице промокодов их нет.
-   • Код TENNO — один на весь сайт: 100 000 XP получает первый
-     активировавший. Проверка живёт на сервере, поэтому очистка
-     браузера его не «оживит».
+   • Код TENNO — три активации на весь сайт, по 100 000 000 XP.
+     Проверка живёт на сервере, поэтому очистка браузера его не
+     «оживит». Когда три места разобрали, код стирается: его больше
+     нет ни в списках, ни в поиске — он исчезает с сайта целиком.
    • Остальные коды каждый аккаунт может активировать один раз.
 
    Награда выдаётся здесь: опыт, рамка, значок или тема.
@@ -72,7 +73,8 @@ function applyPromoReward(reward) {
   if (prize.xp) {
     if (typeof addXP === 'function') {
       addXP(Number(prize.xp) || 0, 'Промокод');
-      parts.push('+' + Number(prize.xp).toLocaleString('ru-RU') + ' XP');
+      const pretty = String(Math.round(Number(prize.xp))).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+      parts.push('+' + pretty + ' XP');
     }
   }
 
@@ -133,12 +135,29 @@ async function redeemPromo(rawCode) {
       const message = response.data && response.data.message
         ? response.data.message
         : 'Не удалось активировать код';
+
+      // 404 на общий код означает «разобрали» — стираем у себя
+      if (response.status === 404) retirePromoLocally(code);
+
       return { ok: false, message: message };
     }
+
+    // Код разобрали полностью — сервер говорит, что его больше нет
+    if (response.data && response.data.exhausted) retirePromoLocally(code);
 
     const promo = response.data.promo || {};
     const reward = applyPromoReward(promo.reward || {});
     promoMarkUsed(code);
+
+    // Дополнительно сообщаем, сколько активаций осталось у общего кода
+    const left = response.data && typeof response.data.left === 'number' ? response.data.left : null;
+    if (left !== null && left > 0) {
+      return {
+        ok: true,
+        message: promo.title || 'Код активирован',
+        reward: (reward || 'Награда уже была у вас') + ' · осталось активаций: ' + left
+      };
+    }
 
     return {
       ok: true,
@@ -153,13 +172,34 @@ async function redeemPromo(rawCode) {
     return { ok: false, message: 'Такого кода нет. Проверьте написание' };
   }
 
+  // Общий код: мест всего несколько на всех
+  if (promo.globalUses) {
+    const used = promoUses(code);
+    if (used >= promo.globalUses) {
+      retirePromoLocally(code);
+      renderPromoHistory();
+      return { ok: false, message: 'Такого кода нет. Проверьте написание' };
+    }
+  }
+
   const reward = applyPromoReward(promo.reward || {});
   promoMarkUsed(code);
+
+  let left = null;
+  if (promo.globalUses) {
+    const used = bumpPromoUses(code);
+    left = Math.max(0, promo.globalUses - used);
+
+    if (left === 0) {
+      retirePromoLocally(code);
+      window.setTimeout(renderPromoHistory, 0);
+    }
+  }
 
   return {
     ok: true,
     message: promo.title || 'Код активирован',
-    reward: reward || 'Награда уже была у вас'
+    reward: (reward || 'Награда уже была у вас') + (left ? ' · осталось активаций: ' + left : '')
   };
 }
 
@@ -169,12 +209,80 @@ function findLocalPromo(code) {
   return all.find(item => item.code === code) || null;
 }
 
-// Спрятанные коды тоже должны работать без сервера
+// Спрятанные коды тоже должны работать без сервера.
+// Список изменяемый: израсходованный код отсюда удаляется.
 const PROMO_EXTRA = [
   { code: 'SHINIGAMI', title: 'Тетрадь смерти', reward: { xp: 5000, frame: 'frame-hands' } },
   { code: 'YAMETE', title: 'Стоп, это секрет', reward: { xp: 7500, badge: 'badge-samurai' } },
-  { code: 'TENNO', title: 'Императорский указ', reward: { xp: 100000 } }
+  { code: 'TENNO', title: 'Императорский указ', reward: { xp: 100000000 }, globalUses: 3 }
 ];
+
+// Какие общие коды уже разобрали. Список живёт в браузере, чтобы
+// израсходованный код не вернулся после перезагрузки страницы.
+const PROMO_RETIRED_KEY = 'anilingo_promo_retired';
+
+/** Коды, которые израсходованы полностью. */
+function promoRetired() {
+  const saved = readJSON(PROMO_RETIRED_KEY, []);
+  return Array.isArray(saved) ? saved.map(code => String(code).toUpperCase()) : [];
+}
+
+/**
+ * Стирает код из памяти страницы: убирает его из списка и
+ * запоминает, чтобы он не появился снова. Так «императорский»
+ * промокод исчезает с сайта целиком, а не просто скрывается.
+ */
+function retirePromoLocally(code) {
+  const needle = String(code || '').toUpperCase();
+  if (!needle) return;
+
+  for (let i = PROMO_EXTRA.length - 1; i >= 0; i--) {
+    if (PROMO_EXTRA[i].code === needle) PROMO_EXTRA.splice(i, 1);
+  }
+
+  for (let i = PROMO_PUBLIC.length - 1; i >= 0; i--) {
+    if (PROMO_PUBLIC[i].code === needle) PROMO_PUBLIC.splice(i, 1);
+  }
+
+  const list = promoRetired();
+  if (!list.includes(needle)) {
+    list.push(needle);
+    writeJSON(PROMO_RETIRED_KEY, list);
+  }
+}
+
+/** Уже стёртые коды не должны находиться ни в одном списке. */
+function dropRetiredPromos() {
+  promoRetired().forEach(code => {
+    for (let i = PROMO_EXTRA.length - 1; i >= 0; i--) {
+      if (PROMO_EXTRA[i].code === code) PROMO_EXTRA.splice(i, 1);
+    }
+    for (let i = PROMO_PUBLIC.length - 1; i >= 0; i--) {
+      if (PROMO_PUBLIC[i].code === code) PROMO_PUBLIC.splice(i, 1);
+    }
+  });
+}
+
+// Сколько активаций общий код уже получил (локальный режим)
+const PROMO_USES_KEY = 'anilingo_promo_uses';
+
+/** Счётчик общих активаций в этом браузере. */
+function promoUses(code) {
+  const saved = readJSON(PROMO_USES_KEY, {});
+  const key = String(code || '').toUpperCase();
+  return Math.max(0, Number(saved && saved[key]) || 0);
+}
+
+/** Увеличивает счётчик общих активаций. */
+function bumpPromoUses(code) {
+  const saved = readJSON(PROMO_USES_KEY, {});
+  const all = saved && typeof saved === 'object' ? saved : {};
+  const key = String(code || '').toUpperCase();
+
+  all[key] = promoUses(key) + 1;
+  writeJSON(PROMO_USES_KEY, all);
+  return all[key];
+}
 
 /* ---------- Страница промокодов ---------- */
 
@@ -183,7 +291,10 @@ function promoRewardText(reward) {
   const parts = [];
   const prize = reward || {};
 
-  if (prize.xp) parts.push('+' + Number(prize.xp).toLocaleString('ru-RU') + ' XP');
+  if (prize.xp) {
+    const pretty = String(Math.round(Number(prize.xp))).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    parts.push('+' + pretty + ' XP');
+  }
 
   ['frame', 'badge', 'item', 'theme'].forEach(kind => {
     const id = prize[kind];
@@ -312,11 +423,24 @@ async function promoHydrate() {
   // Запоминаем у себя, чтобы история и проверки совпадали с сервером
   response.data.codes.forEach(item => promoMarkUsed(item.code));
   renderPromoHistory();
+
+  // Коды, которые разобрали полностью, стираем и с сайта
+  const listResponse = await apiRequest('/api/promo/list');
+  const retired = listResponse.ok && listResponse.data && Array.isArray(listResponse.data.retired)
+    ? listResponse.data.retired
+    : [];
+
+  if (retired.length) {
+    retired.forEach(code => retirePromoLocally(code));
+    renderPromoList();
+    renderPromoHistory();
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   if (!document.getElementById('promoForm')) return;
 
+  dropRetiredPromos();
   renderPromoList();
   renderPromoHistory();
   promoHydrate();

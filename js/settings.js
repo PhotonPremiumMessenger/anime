@@ -278,7 +278,7 @@ const SETTINGS_CONTENT = {
 
       <div class="settings-group">
         <h4>Своя музыка</h4>
-        <p class="settings-note">Плейлист до 24 треков по 2,5 МБ. Файлы хранятся в IndexedDB этого браузера, а плеер в правом нижнем углу играет их на всех страницах.</p>
+        <p class="settings-note">Плейлист до 24 треков по 5 МБ. Файлы хранятся в IndexedDB этого браузера, а плеер в правом нижнем углу играет их на всех страницах.</p>
 
         <div class="setting-row">
           <div class="setting-info">

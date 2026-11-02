@@ -7,7 +7,7 @@
 
 'use strict';
 
-const VERSION = 'anilingo-v22';
+const VERSION = 'anilingo-v23';
 const STATIC_CACHE = VERSION + '-static';
 const IMAGE_CACHE = VERSION + '-images';
 
@@ -25,6 +25,8 @@ const CORE = [
   'promo.html',
   'js/frames.js',
   'js/promo.js',
+  'js/scrolltop.js',
+  'js/profile-cover.js',
   'game.html',
   'css/style.css',
   'css/perf.css',

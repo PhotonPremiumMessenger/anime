@@ -206,7 +206,19 @@
 
         <!-- ---------- Левая колонка ---------- -->
         <aside class="player-card">
-          <div class="profile-cover"></div>
+          <div class="profile-cover" id="profileCover" aria-hidden="true"></div>
+
+          <!-- Свой фон за аватаркой: картинка или видео -->
+          <button class="profile-cover-edit" type="button" onclick="openProfileCoverPicker()"
+                  title="Свой фон за аватаркой" aria-label="Загрузить фон за аватаркой">
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 16.5V7a2 2 0 0 1 2-2h2.4l1.3-1.6h4.6L15.6 5H18a2 2 0 0 1 2 2v9.5"></path>
+              <circle cx="12" cy="11.5" r="3.4"></circle>
+              <path d="M4 20h16"></path>
+            </svg>
+            <span>Фон профиля</span>
+          </button>
 
           <button class="avatar-round avatar-round--lg player-avatar" type="button"
                   data-avatar-slot aria-label="Сменить аватар" onclick="openAvatarModal()"></button>
@@ -229,14 +241,16 @@
             </div>
           </div>
 
-          <div class="btn-row">
-            <button class="btn btn-outline btn-small" style="flex:1" onclick="openAvatarModal()">Аватар</button>
-            <a class="btn btn-primary btn-small" style="flex:1" href="shop">Магазин</a>
-          </div>
+          <div class="player-actions">
+            <div class="btn-row player-actions-row">
+              <button class="btn btn-outline btn-small" type="button" onclick="openAvatarModal()">Аватар</button>
+              <a class="btn btn-primary btn-small" href="shop">Магазин</a>
+            </div>
 
-          <div class="btn-row">
-            <button class="btn btn-ghost btn-small" style="flex:1" onclick="openCustomPanel()">Оформление</button>
-            <button class="btn btn-ghost btn-small" style="flex:1" onclick="copyProfileLink(getUsername())">Ссылка</button>
+            <div class="btn-row player-actions-row">
+              <button class="btn btn-ghost btn-small" type="button" onclick="openCustomPanel()">Оформление</button>
+              <button class="btn btn-ghost btn-small" type="button" onclick="copyProfileLink(getUsername())">Ссылка</button>
+            </div>
           </div>
 
           <!-- Мини-сетка достижений -->
@@ -760,6 +774,7 @@
   <script src="js/charts.js"></script>
   <script src="js/jlpt.js"></script>
   <script src="js/profile-custom.js"></script>
+  <script src="js/profile-cover.js"></script>
   <script src="js/public.js"></script>
   <script src="js/profile.js"></script>
   <script src="js/design.js"></script>
@@ -784,6 +799,7 @@
   <script src="js/alltime.js"></script>
   <script src="js/mobile.js"></script>
   <script src="js/smoothscroll.js"></script>
+  <script src="js/scrolltop.js"></script>
   <script src="js/anime-style.js"></script>
   <script src="js/collapse.js"></script>
   <script src="js/customize.js"></script>

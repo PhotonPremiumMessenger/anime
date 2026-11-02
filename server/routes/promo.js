@@ -15,9 +15,21 @@
 const express = require('express');
 const db = require('../db');
 const { requireAuth } = require('../auth');
-const { findPromo, publicPromos } = require('../promo');
+const { findPromo, publicPromos, retirePromo, promoLimit } = require('../promo');
 
 const router = express.Router();
+
+// Коды, которые уже разобрали: клиентам сообщаем, чтобы они
+// стёрли их у себя — на сайте от них не должно остаться следа
+const RETIRED_ON_SERVER = [];
+
+// Запоминаем удаление кода из общего списка
+const retireAndRemember = code => {
+  if (!retirePromo(code)) return;
+
+  const needle = String(code).toUpperCase();
+  if (!RETIRED_ON_SERVER.includes(needle)) RETIRED_ON_SERVER.push(needle);
+};
 
 router.use(requireAuth);
 
@@ -40,9 +52,12 @@ router.post('/redeem', (req, res) => {
     return res.status(409).json({ message: 'Этот код уже активирован на вашем аккаунте' });
   }
 
-  // Одноразовый код: смотрим, не забрал ли его кто-то раньше
-  if (promo.limit === 'global-once' && db.countPromoUses(promo.code) > 0) {
-    return res.status(410).json({ message: 'Код уже активирован другим игроком' });
+  // Общий на весь сайт: смотрим, не разобрали ли его раньше
+  const limit = promoLimit(promo);
+  if (Number.isFinite(limit) && db.countPromoUses(promo.code) >= limit) {
+    // Мест не осталось — код больше не существует
+    retireAndRemember(promo.code);
+    return res.status(404).json({ message: 'Такого кода нет. Проверьте написание' });
   }
 
   const saved = db.redeemPromo(req.user.id, promo.code, promo.reward);
@@ -50,8 +65,15 @@ router.post('/redeem', (req, res) => {
     return res.status(409).json({ message: 'Код уже активирован' });
   }
 
+  // Последняя активация — код исчезает с сайта целиком
+  const used = db.countPromoUses(promo.code);
+  const exhausted = Number.isFinite(limit) && used >= limit;
+  if (exhausted) retireAndRemember(promo.code);
+
   return res.json({
     ok: true,
+    exhausted: exhausted,
+    left: Number.isFinite(limit) ? Math.max(0, limit - used) : null,
     promo: {
       code: promo.code,
       title: promo.title,
@@ -66,7 +88,12 @@ router.get('/mine', (req, res) => {
   res.json({ ok: true, codes: db.getUserPromos(req.user.id) });
 });
 
-/** GET /api/promo/list — открытые коды (без спрятанных). */
+/**
+ * GET /api/promo/list — открытые коды и статус закрытых.
+ *
+ * retired — коды, которые израсходованы полностью. Клиент по этому
+ * списку стирает их у себя: на сайте их больше не найти.
+ */
 router.get('/list', (req, res) => {
   res.json({
     ok: true,
@@ -75,7 +102,8 @@ router.get('/list', (req, res) => {
       title: item.title,
       desc: item.desc,
       reward: item.reward
-    }))
+    })),
+    retired: RETIRED_ON_SERVER
   });
 });
 
