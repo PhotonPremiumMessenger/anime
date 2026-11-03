@@ -12,8 +12,12 @@
      озвучки книг, а для слов и коротких фраз;
    • готовый MP3 кладём в память сервера: повторные запросы одного
      и того же слова звук не генерируют;
-   • если Microsoft не ответил за TIMEOUT_MS — отдаём ошибку, а
-     клиент честно говорит об этом пользователю.
+   • если Microsoft не ответил за TIMEOUT_MS, пробуем второй путь —
+     Google Translate (обычный HTTPS). На части хостингов провайдер
+     блокирует WebSocket к speech.platform.bing.com, хотя обычный
+     HTTPS к нему же работает: без второго пути озвучка там мертва;
+   • если не вышло ни там, ни там — отдаём ошибку, а клиент честно
+     говорит об этом пользователю.
 
    У библиотеки @travisvn/edge-tts нет обратного вызова отмены,
    поэтому таймаут сделан гонкой промисов: зависший запрос больше
@@ -36,6 +40,12 @@ const VOICES = {
 const VOICE_LABELS = {
   ru: 'Светлана · ru-RU',
   ja: 'Нанами · ja-JP'
+};
+
+// Подписи запасного пути: голос другой, и лучше это не скрывать
+const FALLBACK_LABELS = {
+  ru: 'Запасной голос · ru',
+  ja: 'Запасной голос · ja'
 };
 
 /* ---------- Пределы ---------- */
@@ -163,6 +173,56 @@ async function edgeSynthesize(text, lang, prosody) {
   return buffer;
 }
 
+/* ---------- Запасной голос: Google Translate ---------- */
+
+// Тот же текст, но по обычному HTTPS — без WebSocket.
+// Голоса: ja и ru. Ключей не нужно.
+const GOOGLE_TTS_URL = 'https://translate.google.com/translate_tts';
+
+// Google не принимает «+10%»: у него своя шкала 0.24–1,
+// где 1 — обычный темп. Медленнее сделать можно, быстрее — нет.
+function googleSpeed(rate) {
+  const value = Number(rate);
+  if (!Number.isFinite(value) || value <= 0) return '1';
+  return String(Math.min(1, Math.max(0.24, value)));
+}
+
+/**
+ * Синтез через Google Translate.
+ * Отдаёт MP3 так же, как Microsoft, поэтому клиенту всё равно,
+ * кто именно прочитал слово.
+ */
+async function googleSynthesize(text, lang, rate) {
+  const query = [
+    'ie=UTF-8',
+    'client=tw-ob',
+    'tl=' + (lang === 'ja' ? 'ja' : 'ru'),
+    'ttsspeed=' + googleSpeed(rate),
+    'q=' + encodeURIComponent(text)
+  ].join('&');
+
+  const response = await fetch(GOOGLE_TTS_URL + '?' + query, {
+    headers: {
+      // Без браузерного User-Agent сервис отвечает 403
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+      Referer: 'https://translate.google.com/'
+    },
+    signal: AbortSignal.timeout(TIMEOUT_MS)
+  });
+
+  if (!response.ok) {
+    throw new Error('Запасной сервис ответил ' + response.status);
+  }
+
+  const buffer = Buffer.from(await response.arrayBuffer());
+
+  if (!buffer.length) {
+    throw new Error('Запасной сервис вернул пустой звук');
+  }
+
+  return buffer;
+}
+
 // Точка подмены: setSynthesizer(fn) — только для тестов
 let synthesizeImpl = edgeSynthesize;
 
@@ -192,6 +252,48 @@ function withTimeout(promise, ms) {
 }
 
 /**
+ * Пробует два пути по очереди: сначала Microsoft (WebSocket),
+ * потом Google (обычный HTTPS).
+ *
+ * Зачем второй: на части хостингов провайдер пропускает HTTPS к
+ * speech.platform.bing.com, но режет WebSocket к нему же — озвучка
+ * висит девять секунд и падает. Подменённый синтезатор в тестах
+ * работает сам по себе, без запасного пути и без сети.
+ *
+ * @returns {Promise<{buffer: Buffer, provider: string, voice: string, label: string}>}
+ */
+async function renderAudio(text, lang, prosody, rate, edgeWork, fallbackWork) {
+  const primary = typeof edgeWork === 'function' ? edgeWork : edgeSynthesize;
+  const fallback = typeof fallbackWork === 'function' ? fallbackWork : googleSynthesize;
+
+  if (typeof edgeWork !== 'function' && synthesizeImpl !== edgeSynthesize) {
+    const buffer = await withTimeout(synthesizeImpl(text, lang, prosody), TIMEOUT_MS);
+    return { buffer, provider: 'custom', voice: VOICES[lang], label: VOICE_LABELS[lang] };
+  }
+
+  let edgeError = null;
+
+  try {
+    const buffer = await withTimeout(primary(text, lang, prosody), TIMEOUT_MS);
+    return { buffer, provider: 'edge', voice: VOICES[lang], label: VOICE_LABELS[lang] };
+  } catch (error) {
+    edgeError = error;
+  }
+
+  try {
+    const buffer = await withTimeout(fallback(text, lang, rate), TIMEOUT_MS);
+    return { buffer, provider: 'google', voice: 'google-' + lang, label: FALLBACK_LABELS[lang] };
+  } catch (fallbackError) {
+    const message = 'Microsoft: ' + String(edgeError && (edgeError.message || edgeError)) +
+      '; Google: ' + String(fallbackError && (fallbackError.message || fallbackError));
+
+    const combined = new Error(message);
+    combined.code = 'TTS_UNAVAILABLE';
+    throw combined;
+  }
+}
+
+/**
  * Готовит озвучку: сначала смотрит в кэш, потом идёт в Microsoft.
  *
  * @param {{text: string, lang?: string, rate?: number}} request
@@ -211,10 +313,11 @@ async function synthesize(request = {}) {
 
   if (saved) {
     return {
-      buffer: saved,
+      buffer: saved.buffer,
       lang: lang,
-      voice: VOICES[lang],
-      label: VOICE_LABELS[lang],
+      voice: saved.voice,
+      label: saved.label,
+      provider: saved.provider,
       cached: true
     };
   }
@@ -224,10 +327,10 @@ async function synthesize(request = {}) {
     throw new Error('Сервис озвучки временно недоступен');
   }
 
-  let buffer;
+  let rendered;
 
   try {
-    buffer = await withTimeout(synthesizeImpl(text, lang, prosody), TIMEOUT_MS);
+    rendered = await renderAudio(text, lang, prosody, request.rate);
   } catch (error) {
     lastFailureAt = Date.now();
     lastError = {
@@ -238,19 +341,20 @@ async function synthesize(request = {}) {
     throw error;
   }
 
-  if (!buffer || !buffer.length) {
+  if (!rendered.buffer || !rendered.buffer.length) {
     lastFailureAt = Date.now();
     throw new Error('Синтезатор вернул пустой звук');
   }
 
   lastFailureAt = 0;
-  cachePut(key, buffer);
+  cachePut(key, rendered);
 
   return {
-    buffer: buffer,
+    buffer: rendered.buffer,
     lang: lang,
-    voice: VOICES[lang],
-    label: VOICE_LABELS[lang],
+    voice: rendered.voice,
+    label: rendered.label,
+    provider: rendered.provider,
     cached: false
   };
 }
@@ -259,44 +363,70 @@ async function synthesize(request = {}) {
 
 /**
  * Проверка связи с сервисом озвучки: делает один настоящий синтез
- * короткого слова и рассказывает, что получилось.
+ * короткого слова и рассказывает, какой путь сработал, а какой нет.
  *
  * В отличие от synthesize() не смотрит в кэш и не соблюдает паузу
  * после сбоя — иначе проверка врала бы «недоступно» ещё 20 секунд.
  *
- * @returns {Promise<{ok: boolean, ms: number, bytes?: number, voice?: string, error?: string, code?: string}>}
+ * @returns {Promise<{ok: boolean, provider: string, ms: number, voice?: string,
+ *                    error?: string, providers: Object}>}
  */
 async function probe(text, lang) {
   const started = Date.now();
   const phrase = cleanText(text) || 'こんにちは';
   const language = pickLang(lang) || detectLang(phrase);
+  const providers = {};
 
-  try {
-    const buffer = await withTimeout(synthesizeImpl(phrase, language, '+0%'), TIMEOUT_MS);
+  /** Один провайдер: замеряет время и запоминает ошибку. */
+  const run = async (name, work) => {
+    const at = Date.now();
 
-    lastError = null;
+    try {
+      const buffer = await work();
+      providers[name] = {
+        ok: Boolean(buffer && buffer.length),
+        ms: Date.now() - at,
+        bytes: buffer ? buffer.length : 0
+      };
+    } catch (error) {
+      providers[name] = {
+        ok: false,
+        ms: Date.now() - at,
+        error: String(error && (error.message || error))
+      };
+    }
 
-    return {
-      ok: Boolean(buffer && buffer.length),
-      ms: Date.now() - started,
-      bytes: buffer ? buffer.length : 0,
-      voice: VOICES[language]
-    };
-  } catch (error) {
-    lastError = {
-      message: String(error && (error.message || error)),
-      code: error && error.code ? String(error.code) : '',
-      at: new Date().toISOString()
-    };
+    return providers[name].ok;
+  };
 
-    return {
-      ok: false,
-      ms: Date.now() - started,
-      voice: VOICES[language],
-      error: lastError.message,
-      code: lastError.code
-    };
+  const edgeOk = await run('edge', () => withTimeout(edgeSynthesize(phrase, language, '+0%'), TIMEOUT_MS));
+
+  // Второй путь проверяем только если первый не сложился:
+  // так проверка не висит вдвое дольше без нужды
+  if (!edgeOk) {
+    await run('google', () => withTimeout(googleSynthesize(phrase, language, 1), TIMEOUT_MS));
   }
+
+  const provider = edgeOk ? 'edge' : (providers.google && providers.google.ok ? 'google' : '');
+  const ok = Boolean(provider);
+
+  lastError = ok
+    ? null
+    : {
+        message: String((providers.edge && providers.edge.error) || '') +
+          (providers.google ? '; Google: ' + providers.google.error : ''),
+        code: 'TTS_UNAVAILABLE',
+        at: new Date().toISOString()
+      };
+
+  return {
+    ok: ok,
+    provider: provider,
+    ms: Date.now() - started,
+    voice: provider === 'google' ? 'google-' + language : VOICES[language],
+    error: ok ? '' : lastError.message,
+    providers: providers
+  };
 }
 
 /** Последняя ошибка синтеза или null. Для диагностики. */
@@ -306,6 +436,8 @@ function getLastError() {
 
 module.exports = {
   probe,
+  renderAudio,
+  googleSynthesize,
   getLastError,
   VOICES,
   VOICE_LABELS,

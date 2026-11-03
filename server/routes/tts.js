@@ -31,7 +31,10 @@ const router = express.Router();
  * видно только «502», а причина неизвестна:
  *
  *   curl -s https://www.anilingo.fun/api/tts/health
- *   {"ok":false,"ms":4002,"voice":"ja-JP-NanamiNeural","error":"…"}
+ *   {"ok":true,"provider":"google","providers":{"edge":{…},"google":{…}}}
+ *
+ * Поле providers показывает оба пути по отдельности: сразу видно,
+ * что именно не работает — Microsoft или запасной сервис.
  *
  * Секретов здесь нет: только текст ошибки от библиотеки.
  */
@@ -82,8 +85,10 @@ router.post('/', async (req, res) => {
     res.set({
       'Content-Type': 'audio/mpeg',
       'Content-Length': String(result.buffer.length),
-      // Голос и попадание в кэш видно в инструментах разработчика
+      // Голос и попадание в кэш видно в инструментах разработчика.
+      // X-TTS-Provider говорит, кто прочитал: edge или запасной google
       'X-TTS-Voice': result.voice,
+      'X-TTS-Provider': result.provider || 'edge',
       'X-TTS-Lang': result.lang,
       'X-TTS-Cache': result.cached ? 'hit' : 'miss',
       // Запросы POST браузер не кэширует, но прокси пусть знает,
