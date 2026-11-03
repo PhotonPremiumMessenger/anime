@@ -20344,6 +20344,13 @@ body.theme-light .translate-popup .tr-speak {
   width: 100%;
 }
 
+/* Состояния прячутся классом .hidden. Правило стоит после
+   .google-state намеренно: так скрытие не зависит от того,
+   как браузер разбирает !important у .hidden */
+.google-state.hidden {
+  display: none;
+}
+
 .google-spinner {
   width: 34px;
   height: 34px;

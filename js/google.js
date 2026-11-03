@@ -172,7 +172,10 @@ function googleShowError(text) {
   const message = document.getElementById('googleErrorText');
 
   if (loading) loading.classList.add('hidden');
-  if (form) form.classList.add('hidden');
+  if (form) {
+    form.classList.add('hidden');
+    form.classList.remove('active');
+  }
   if (box) box.classList.remove('hidden');
   if (message && text) message.textContent = text;
 }
@@ -190,7 +193,10 @@ function googleShowForm(user) {
 
   if (!form) return;
 
+  // .auth-form по умолчанию скрыт (display: none) и показывается
+  // только классом .active — одного снятия .hidden мало
   form.classList.remove('hidden');
+  form.classList.add('active');
 
   // Ник из почты: берём часть до @, если она уже похожа на ник
   const nick = document.getElementById('googleNickname');
