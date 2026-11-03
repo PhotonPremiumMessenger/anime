@@ -159,6 +159,10 @@ GitHub не смог зайти на сервер (ключ, IP или поль�
 4. Без `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` кнопка остаётся, но
    честно говорит, что вход не настроен; обычный вход не меняется.
    Подробности — `server/README.md`, раздел «Вход через Google».
+5. На сервере с nginx адреса `/auth/` нужно проксировать на Express —
+   иначе nginx отдаст по ним `index.html` (страница без стилей и
+   `Unexpected token '<'` в консоли). Блок для конфига —
+   `deploy/nginx-anilingo.conf`.
 
 **Выход:** очищаются данные аккаунта (`settings`, `data.*`, `appearance.*`)
 и сессия (`anilingo_current_user`, `anilingo_token`), редирект на `index.html`.
