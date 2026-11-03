@@ -36,7 +36,8 @@
     'index', 'lessons', 'lesson', 'anime', 'tests', 'grammar', 'dictionary',
     'video', 'profile', 'rating', 'shop', 'settings', 'about', 'exam',
     'flashcards', 'match', 'listening', 'speed', 'game', 'weakspots',
-    'favorites', 'search', 'updates', 'register', 'offline', 'privacy'
+    'favorites', 'search', 'updates', 'register', 'offline', 'privacy',
+    'complete-profile'
   ];
 
   /**

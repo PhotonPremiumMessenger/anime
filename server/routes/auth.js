@@ -3,8 +3,11 @@
 
    Логика та же, что была на статичной версии сайта:
    ник + почта + пароль, подтверждение почты кодом из письма.
-   Никакого OAuth и «Войти через Google» здесь нет и не будет:
-   Google используется только как почтовый сервис в mailer.js.
+
+   Вход через Google тоже заканчивается здесь: после возврата
+   с google.com аккаунт дозаполняется методом
+   /complete-google-profile (см. routes/google.js). Почта и пароль
+   при обычных входе и регистрации не изменились.
    ============================================================ */
 
 'use strict';
@@ -225,6 +228,12 @@ router.post('/login', async (req, res, next) => {
         : 'Пользователь с таким ником не найден');
     }
 
+    // Аккаунт из Google, у которого пароль ещё не придуман:
+    // пароля нет вовсе, поэтому и сверять нечего
+    if (!user.password_hash) {
+      return fail(res, 401, 'Этот аккаунт входит через Google — нажмите «Войти через Google»');
+    }
+
     const matches = await bcrypt.compare(password, user.password_hash);
     if (!matches) {
       return fail(res, 401, 'Неверный пароль');
@@ -248,6 +257,72 @@ router.post('/logout', (req, res) => {
 /** GET /api/auth/me — кто сейчас вошёл. */
 router.get('/me', requireAuth, (req, res) => {
   res.json({ ok: true, user: publicUser(req.user) });
+});
+
+/* ---------- Дозаполнение профиля после входа через Google ---------- */
+
+/**
+ * POST /api/auth/complete-google-profile
+ * { username, password }
+ *
+ * Вызывается со страницы /complete-profile сразу после входа через
+ * Google: у такого аккаунта уже есть почта (её дал Google), но нет
+ * ника и пароля. Почту здесь не принимаем и не меняем.
+ *
+ * Пароль сохраняется обычным bcrypt-хешем — дальше человек сможет
+ * входить и по почте, как все.
+ */
+router.post('/complete-google-profile', requireAuth, async (req, res, next) => {
+  try {
+    const user = req.user;
+
+    // Профиль уже заполнен: повторное нажатие «Готово» не ошибка,
+    // просто возвращаем аккаунт и свежий токен
+    if (!Number(user.needs_profile)) {
+      return res.json({ ok: true, token: signToken(user), user: publicUser(user) });
+    }
+
+    const username = String(req.body.username || '').trim();
+    const password = String(req.body.password || '');
+
+    if (!NICK_RE.test(username)) {
+      return fail(res, 400, 'Ник: 3–20 символов, буквы, цифры, _ или -');
+    }
+
+    if (password.length < 8) {
+      return fail(res, 400, 'Пароль должен быть не короче 8 символов');
+    }
+
+    const busy = db.findUserByUsername(username);
+    if (busy && Number(busy.id) !== Number(user.id)) {
+      return fail(res, 409, 'Этот ник уже занят');
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    let updated;
+
+    try {
+      updated = db.completeGoogleProfile(user.id, {
+        username: username,
+        passwordHash: passwordHash
+      });
+    } catch (error) {
+      // Ник могли занять между проверкой и записью — это та же 409
+      if (String(error && error.message).includes('UNIQUE')) {
+        return fail(res, 409, 'Этот ник уже занят');
+      }
+      throw error;
+    }
+
+    return res.json({
+      ok: true,
+      token: signToken(updated),
+      user: publicUser(updated)
+    });
+  } catch (error) {
+    return next(error);
+  }
 });
 
 /* ---------- Пароль ---------- */
@@ -350,9 +425,13 @@ router.put('/password', requireAuth, async (req, res, next) => {
       return fail(res, 400, 'Новый пароль должен быть не короче 8 символов');
     }
 
-    const matches = await bcrypt.compare(oldPassword, req.user.password_hash);
-    if (!matches) {
-      return fail(res, 401, 'Текущий пароль указан неверно');
+    // У аккаунта из Google пароля ещё может не быть — тогда
+    // старый пароль не спрашиваем, просто задаём новый
+    if (req.user.password_hash) {
+      const matches = await bcrypt.compare(oldPassword, req.user.password_hash);
+      if (!matches) {
+        return fail(res, 401, 'Текущий пароль указан неверно');
+      }
     }
 
     const hash = await bcrypt.hash(newPassword, 10);
@@ -474,7 +553,7 @@ router.delete('/account', requireAuth, async (req, res, next) => {
   try {
     const password = String(req.body.password || '');
 
-    if (password) {
+    if (password && req.user.password_hash) {
       const matches = await bcrypt.compare(password, req.user.password_hash);
       if (!matches) {
         return fail(res, 401, 'Неверный пароль');

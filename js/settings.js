@@ -1317,8 +1317,9 @@ function socialTitle(service) {
 }
 
 /**
- * Открывает привязку аккаунта. Пока без OAuth: ник сохраняется
+ * Открывает привязку аккаунта Discord или Telegram. Ник сохраняется
  * в localStorage и показывается в строке — реально, а не «заглушка».
+ * Вход через Google живёт отдельно, в js/google.js.
  */
 function connectSocial(service) {
   const key = socialSettingKey(service);

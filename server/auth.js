@@ -108,6 +108,12 @@ function publicUser(user) {
     xp: xp,
     cover: cover,
     coverKind: coverKind,
+    // Аккаунт создан через Google и ещё без ника и пароля:
+    // клиент обязан отправить человека на /complete-profile
+    needsProfile: Number(user.needs_profile) === 1,
+    hasPassword: Boolean(user.password_hash),
+    // Вход через Google привязан к аккаунту
+    google: Boolean(user.google_id),
     // Полный доступ: промокоды без ограничений (server/admins.js)
     admin: isAdmin(user)
   };

@@ -12,7 +12,9 @@ Node.js + Express + SQLite. Отвечает за аккаунты, коды п�
 | `db.js` | SQLite через встроенный `node:sqlite`, схема и запросы |
 | `mailer.js` | nodemailer, письма с кодами (`EMAIL_USER` / `EMAIL_PASS`) |
 | `auth.js` | подпись и проверка JWT, middleware `requireAuth` |
+| `google.js` | Passport и стратегия Google, подписанный `state` |
 | `routes/auth.js` | регистрация, вход, коды, пароль, ник, почта |
+| `routes/google.js` | `GET /auth/google` и `/auth/google/callback` |
 | `routes/user.js` | настройки, профиль, выгрузка данных, фон профиля |
 | `routes/promo.js` | промокоды: проверка и выдача награды |
 | `routes/tts.js` | озвучка слов: `POST /api/tts` отдаёт MP3 |
@@ -56,9 +58,49 @@ npm start
 **демо-режиме**: письмо не отправляется, а код возвращается в ответе
 и показывается на экране. Так можно проверить всё, не заводя почту.
 
-`GOOGLE_CLIENT_ID` и `GOOGLE_CLIENT_SECRET` в `.env.example` есть, но
-**не используются** — это заготовка на будущее. Входа через Google на
-сайте нет и не добавляется: Google здесь только почтовый сервис.
+### Вход через Google
+
+Заполните `GOOGLE_CLIENT_ID` и `GOOGLE_CLIENT_SECRET` — и на странице
+входа появится рабочая кнопка «Войти через Google». Без них сайт
+работает как обычно, а кнопка честно сообщает, что вход не настроен.
+
+Где взять ключи (console.cloud.google.com):
+
+1. **APIs & Services → OAuth consent screen** — заполнить форму,
+   тип External, указать почту поддержки.
+2. **Credentials → Create credentials → OAuth client ID** →
+   тип **Web application**.
+3. **Authorized redirect URIs** — ровно тот адрес, куда Google
+   возвращает человека, без слэша на конце:
+
+   ```
+   https://www.anilingo.fun/auth/google/callback
+   http://localhost:3000/auth/google/callback
+   ```
+
+4. Скопировать Client ID и Client secret в `.env`.
+
+Необязательные переменные:
+
+| Переменная | Что это |
+| --- | --- |
+| `GOOGLE_CALLBACK_URL` | адрес коллбэка, если сервер за прокси определяет домен неправильно |
+| `SITE_URL` | куда возвращать человека после входа (`https://www.anilingo.fun`) |
+
+Как это работает:
+
+* `GET /auth/google` уводит на страницу согласия Google. В параметре
+  `state` лежит короткий подписанный JWT с адресом возврата — чужой
+  ответ Google не примут.
+* `GET /auth/google/callback` ищет аккаунт по почте из Google.
+  Нашёлся — обычный JWT на 30 дней, как при входе по паролю.
+  Не нашёлся — создаётся аккаунт с этой почтой, **без пароля**
+  и без ника (`password_hash = NULL`, `needs_profile = 1`).
+* Дальше человек попадает на страницу `complete-profile`, где
+  придумывает ник и пароль. Пароль сохраняется `bcrypt`-хешем
+  (10 раундов), и дальше работает обычный вход по почте.
+* Сессий на сервере нет: `passport.session()` не используется,
+  состояние входа живёт в JWT.
 
 ## Полный доступ (администратор)
 
@@ -105,6 +147,7 @@ GET /api/health → { ok: true, service: 'anilingo', mail: true }
 | POST | `/api/auth/verify-code` | `{ email, code, purpose? }` |
 | POST | `/api/auth/register` | `{ username, email, password }` |
 | POST | `/api/auth/login` | `{ login, password }` |
+| POST | `/api/auth/complete-google-profile` | `{ username, password }`, нужен токен |
 | POST | `/api/auth/logout` | — |
 | GET | `/api/auth/me` | нужен токен |
 | POST | `/api/auth/forgot-password` | `{ email }` |
@@ -120,6 +163,20 @@ GET /api/health → { ok: true, service: 'anilingo', mail: true }
 
 Регистрация возможна только после проверки кода: `register` смотрит,
 что для этой почты есть подтверждённый код.
+
+### Вход через Google
+
+Это адреса для браузера (редиректы), а не для `fetch` — поэтому они
+живут в корне, без `/api`.
+
+| Метод | Адрес | Что делает |
+| --- | --- | --- |
+| GET | `/auth/google?next=/profile` | редирект на страницу согласия Google |
+| GET | `/auth/google/callback` | принимает ответ Google, выдаёт JWT |
+
+После входа человек уезжает на `/complete-profile#token=…&next=…`.
+Хвост после `#` на сервер не уходит, а страница сразу стирает его
+из адресной строки.
 
 ### Озвучка
 
@@ -193,8 +250,9 @@ GET /api/health → { ok: true, service: 'anilingo', mail: true }
 ## База данных
 
 ```sql
-users         (id, username, username_key, email, email_key,
-               password_hash, avatar, email_verified, created_at, updated_at)
+users         (id, username, username_key, email, email_key, password_hash,
+               avatar, email_verified, google_id, needs_profile,
+               created_at, updated_at)
 email_codes   (id, email_key, code, purpose, expires_at, attempts,
                verified, used, created_at)
 user_settings (user_id, key, value, updated_at)   -- PRIMARY KEY (user_id, key)
@@ -206,6 +264,18 @@ user_profile  (user_id, xp, level, data, updated_at)
 бывают кириллицей.
 
 Коды живут 10 минут, дают 5 попыток, на адрес не больше 6 писем в час.
+
+У аккаунта из Google `password_hash` пустой, а `username` — пустая
+строка до знакомства; `username_key` тогда получает служебное
+значение `~google:<почта>`, чтобы не нарушать уникальность.
+`google_id` хранится с частичным уникальным индексом (NULL-ы не
+считаются), поэтому к одной учётной записи Google привязан один
+аккаунт сайта.
+
+Старая база пересобирается сама при первом запуске новой версии:
+`migrateUsersForGoogle()` добавляет поля и снимает `NOT NULL` с
+`username` и `password_hash`, сохраняя `id` и все внешние ссылки.
+В логе появится `[db] Аккаунтов пересобрано под вход через Google: N`.
 
 ## Развёртывание на VPS
 

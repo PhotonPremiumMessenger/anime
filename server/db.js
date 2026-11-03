@@ -6,7 +6,7 @@
    Node. Требуется Node.js 22.5 или новее.
 
    Схема:
-     users         — аккаунты (ник, почта, хеш пароля)
+     users         — аккаунты (ник, почта, хеш пароля, вход через Google)
      email_codes   — коды подтверждения почты (10 минут жизни)
      user_settings — настройки интерфейса и контента, key/value
      user_profile  — XP, уровень и прочая статистика
@@ -34,15 +34,20 @@ db.exec('PRAGMA journal_mode = WAL;');
 /* ---------- Схема ---------- */
 
 db.exec(`
+  -- username и password_hash могут быть пустыми: аккаунт, созданный
+  -- входом через Google, сначала без ника и без пароля — человек
+  -- дозаполнит их на странице /complete-profile (см. migrateUsersForGoogle).
   CREATE TABLE IF NOT EXISTS users (
     id             INTEGER PRIMARY KEY AUTOINCREMENT,
-    username       TEXT    NOT NULL,
+    username       TEXT    NOT NULL DEFAULT '',
     username_key   TEXT    NOT NULL UNIQUE,
     email          TEXT    NOT NULL,
     email_key      TEXT    NOT NULL UNIQUE,
-    password_hash  TEXT    NOT NULL,
+    password_hash  TEXT,
     avatar         TEXT,
     email_verified INTEGER NOT NULL DEFAULT 0,
+    google_id      TEXT,
+    needs_profile  INTEGER NOT NULL DEFAULT 0,
     created_at     TEXT    NOT NULL,
     updated_at     TEXT    NOT NULL
   );
@@ -92,6 +97,100 @@ db.exec(`
 
   CREATE INDEX IF NOT EXISTS idx_promo_code ON promo_redemptions (code);
 `);
+
+/* ---------- Переезд таблицы пользователей под вход через Google ---------- */
+
+/**
+ * Раньше аккаунт было не создать без пароля и ника: оба столбца
+ * объявлены NOT NULL. Для входа через Google нужен аккаунт с почтой,
+ * без пароля (password_hash = NULL) и без ника, пока человек его
+ * не придумает. Менять NOT NULL на месте SQLite не умеет, поэтому
+ * таблица пересобирается один раз и данные переносятся как есть.
+ *
+ * Переезд ничего не делает на чистой базе и на уже пересобранной —
+ * проверка по наличию столбца google_id и по «мягкому» password_hash.
+ *
+ * @returns {number} сколько аккаунтов перенесено (0 — переезд не нужен)
+ */
+function migrateUsersForGoogle() {
+  const columns = db.prepare('PRAGMA table_info(users)').all();
+  if (!columns.length) return 0;
+
+  const hasGoogle = columns.some(column => column.name === 'google_id');
+  const password = columns.find(column => column.name === 'password_hash');
+  const passwordNullable = password ? !Number(password.notnull) : true;
+
+  if (hasGoogle && passwordNullable) {
+    db.exec(`
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google
+        ON users (google_id) WHERE google_id IS NOT NULL
+    `);
+    return 0;
+  }
+
+  const saved = db.prepare('SELECT COUNT(*) AS total FROM users').get();
+  const total = saved ? Number(saved.total) || 0 : 0;
+
+  const googleExpr = hasGoogle ? 'google_id' : 'NULL';
+  const needsExpr = columns.some(column => column.name === 'needs_profile') ? 'needs_profile' : '0';
+
+  // Внешние ключи на время пересборки выключаем: иначе DROP TABLE
+  // сработает как удаление строк и каскадом снесёт настройки,
+  // прогресс и промокоды всех аккаунтов. Включаем сразу после.
+  db.exec('PRAGMA foreign_keys = OFF');
+
+  try {
+    db.exec('BEGIN');
+
+    db.exec(`
+      CREATE TABLE users_google_migration (
+        id             INTEGER PRIMARY KEY AUTOINCREMENT,
+        username       TEXT    NOT NULL DEFAULT '',
+        username_key   TEXT    NOT NULL UNIQUE,
+        email          TEXT    NOT NULL,
+        email_key      TEXT    NOT NULL UNIQUE,
+        password_hash  TEXT,
+        avatar         TEXT,
+        email_verified INTEGER NOT NULL DEFAULT 0,
+        google_id      TEXT,
+        needs_profile  INTEGER NOT NULL DEFAULT 0,
+        created_at     TEXT    NOT NULL,
+        updated_at     TEXT    NOT NULL
+      );
+
+      INSERT INTO users_google_migration
+        (id, username, username_key, email, email_key, password_hash, avatar,
+         email_verified, google_id, needs_profile, created_at, updated_at)
+        SELECT id, username, username_key, email, email_key, password_hash, avatar,
+               email_verified, ${googleExpr}, ${needsExpr}, created_at, updated_at
+          FROM users;
+
+      DROP TABLE users;
+      ALTER TABLE users_google_migration RENAME TO users;
+    `);
+
+    db.exec('COMMIT');
+  } catch (error) {
+    db.exec('ROLLBACK');
+    throw error;
+  } finally {
+    db.exec('PRAGMA foreign_keys = ON');
+  }
+
+  // Один Google-аккаунт на одну запись. NULL-ы индекс не проверяет,
+  // поэтому обычным аккаунтам без Google это ничем не мешает
+  db.exec(`
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google
+      ON users (google_id) WHERE google_id IS NOT NULL
+  `);
+
+  return total;
+}
+
+const usersMigrated = migrateUsersForGoogle();
+if (usersMigrated) {
+  console.log('[db] Аккаунтов пересобрано под вход через Google:', usersMigrated);
+}
 
 /* ---------- Переезд таблицы промокодов ---------- */
 
@@ -215,14 +314,22 @@ const userQueries = {
   byId: db.prepare('SELECT * FROM users WHERE id = ?'),
   byUsername: db.prepare('SELECT * FROM users WHERE username_key = ?'),
   byEmail: db.prepare('SELECT * FROM users WHERE email_key = ?'),
+  byGoogleId: db.prepare('SELECT * FROM users WHERE google_id = ?'),
   insert: db.prepare(`
-    INSERT INTO users (username, username_key, email, email_key, password_hash, avatar, email_verified, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO users (username, username_key, email, email_key, password_hash, avatar, email_verified, google_id, needs_profile, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `),
   updatePassword: db.prepare('UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?'),
   updateEmail: db.prepare('UPDATE users SET email = ?, email_key = ?, updated_at = ? WHERE id = ?'),
   updateUsername: db.prepare('UPDATE users SET username = ?, username_key = ?, updated_at = ? WHERE id = ?'),
   updateAvatar: db.prepare('UPDATE users SET avatar = ?, updated_at = ? WHERE id = ?'),
+  setGoogleId: db.prepare('UPDATE users SET google_id = ?, updated_at = ? WHERE id = ?'),
+  // Дозаполнение профиля после входа через Google: ник и пароль
+  completeGoogle: db.prepare(`
+    UPDATE users
+       SET username = ?, username_key = ?, password_hash = ?, needs_profile = 0, updated_at = ?
+     WHERE id = ?
+  `),
   remove: db.prepare('DELETE FROM users WHERE id = ?')
 };
 
@@ -242,22 +349,85 @@ function findUserByEmail(email) {
 }
 
 /** Создаёт аккаунт и возвращает его запись. */
-function createUser({ username, email, passwordHash, avatar }) {
+function createUser({ username, email, passwordHash, avatar, googleId, needsProfile }) {
   const time = nowIso();
 
+  // У аккаунта из Google ника ещё нет — вместо пустого ключа
+  // подставляем запасной, иначе UNIQUE не даст создать второй такой
+  const usernameValue = String(username || '').trim();
+  const usernameKey = usernameValue ? normalizeKey(usernameValue) : pendingUsernameKey(email);
+
   const result = userQueries.insert.run(
-    String(username).trim(),
-    normalizeKey(username),
+    usernameValue,
+    usernameKey,
     String(email).trim(),
     normalizeKey(email),
-    passwordHash,
+    passwordHash || null,
     avatar || null,
     1,
+    googleId || null,
+    needsProfile ? 1 : 0,
     time,
     time
   );
 
   return findUserById(result.lastInsertRowid);
+}
+
+/**
+ * Пользователь по Google-идентификатору или null.
+ * Пригодится, если человек когда-нибудь сменит почту в Google:
+ * аккаунт всё равно останется его.
+ */
+function findUserByGoogleId(googleId) {
+  if (!googleId) return null;
+  return userQueries.byGoogleId.get(String(googleId)) || null;
+}
+
+/**
+ * Ключ для поиска по нику у аккаунта, который ник ещё не придумал.
+ * Столбец username_key объявлен UNIQUE, поэтому пустую строку
+ * поставить нельзя: занято символами, которых в обычных никах
+ * не бывает (NICK_RE разрешает только буквы, цифры, _ и -).
+ */
+function pendingUsernameKey(email) {
+  return '~google:' + normalizeKey(email);
+}
+
+/**
+ * Аккаунт, созданный входом через Google: почта есть, пароля и ника
+ * пока нет. Дальше человек заполняет их на /complete-profile.
+ */
+function createGoogleUser({ email, googleId }) {
+  return createUser({
+    username: '',
+    email: email,
+    passwordHash: null,
+    googleId: googleId,
+    needsProfile: true
+  });
+}
+
+/** Привязывает Google-идентификатор к существующему аккаунту. */
+function setUserGoogleId(id, googleId) {
+  userQueries.setGoogleId.run(String(googleId), nowIso(), Number(id));
+  return findUserById(id);
+}
+
+/**
+ * Дозаполняет профиль после входа через Google: ник и пароль.
+ * needs_profile снимается — второй раз страница не появится.
+ */
+function completeGoogleProfile(id, { username, passwordHash }) {
+  userQueries.completeGoogle.run(
+    String(username).trim(),
+    normalizeKey(username),
+    passwordHash,
+    nowIso(),
+    Number(id)
+  );
+
+  return findUserById(id);
 }
 
 /**
@@ -570,7 +740,12 @@ module.exports = {
   findUserById,
   findUserByUsername,
   findUserByEmail,
+  findUserByGoogleId,
   createUser,
+  createGoogleUser,
+  setUserGoogleId,
+  completeGoogleProfile,
+  pendingUsernameKey,
   setUserAvatar,
   deleteUser,
   issueCode,
