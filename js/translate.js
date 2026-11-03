@@ -126,10 +126,51 @@ function getTranslatePopup() {
     popup.id = 'translatePopup';
     popup.className = 'translate-popup';
     popup.innerHTML = `
-      <div class="tr-source"></div>
-      <div class="tr-result"></div>
+      <div class="tr-row tr-row-top">
+        <div class="tr-source"></div>
+        <button class="tr-speak" type="button" data-speak="source" title="Прослушать выделенное"
+                aria-label="Прослушать выделенное">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 9.5h3.4L12 5.6v12.8l-4.6-3.9H4z"></path>
+            <path d="M16 9a4 4 0 0 1 0 6"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="tr-row">
+        <div class="tr-result"></div>
+        <button class="tr-speak" type="button" data-speak="result" title="Прослушать перевод"
+                aria-label="Прослушать перевод">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 9.5h3.4L12 5.6v12.8l-4.6-3.9H4z"></path>
+            <path d="M16 9a4 4 0 0 1 0 6"></path>
+          </svg>
+        </button>
+      </div>
+
       <div class="tr-status"></div>
     `;
+
+    // Динамики: язык определяем по самому тексту — японец читается
+    // Нанами, русский перевод — Светланой (js/tts.js)
+    popup.querySelectorAll('[data-speak]').forEach(button => {
+      button.addEventListener('click', event => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const isSource = button.dataset.speak === 'source';
+        const target = popup.querySelector(isSource ? '.tr-source' : '.tr-result');
+        const text = target ? target.textContent.trim() : '';
+
+        if (!text || text === '—' || text === 'Переводим…') return;
+        if (typeof speakText !== 'function') return;
+
+        speakText(text);
+      });
+    });
+
     document.body.appendChild(popup);
   }
 

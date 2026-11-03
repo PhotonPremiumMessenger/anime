@@ -256,7 +256,17 @@ function renderDictionary() {
         <span class="dict-level">${word.level}</span>
       </div>
       <div class="dict-romaji"></div>
-      <div class="dict-ru"></div>
+      <div class="dict-ru-row">
+        <div class="dict-ru"></div>
+        <button class="speak-mini" type="button" data-ru title="Прослушать перевод по-русски"
+                aria-label="Прослушать перевод по-русски">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 9.5h3.4L12 5.6v12.8l-4.6-3.9H4z"></path>
+            <path d="M16 9a4 4 0 0 1 0 6"></path>
+          </svg>
+        </button>
+      </div>
       <div class="dict-card-foot">
         <span class="dict-tag"></span>
         <button class="speak-btn" type="button" title="Прослушать">🔊</button>
@@ -280,6 +290,16 @@ function renderDictionary() {
       event.stopPropagation();
       speakJapanese(word.jp);
     });
+
+    // Перевод читает русский голос — так же по клику на динамик
+    const ruButton = card.querySelector('[data-ru]');
+    if (ruButton) {
+      ruButton.addEventListener('click', event => {
+        event.stopPropagation();
+        if (typeof speakRussian === 'function') speakRussian(word.ru);
+        else if (typeof speakText === 'function') speakText(word.ru, { lang: 'ru' });
+      });
+    }
 
     grid.appendChild(card);
   });

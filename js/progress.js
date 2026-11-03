@@ -229,81 +229,12 @@ function completeLesson(lessonId, correct, total) {
 // Полный сброс прогресса объявлен в js/backup.js (с подтверждением и очисткой
 // всех ключей) — там же и кнопка в настройках. Здесь не дублируем.
 
-/* ---------- Озвучка слов (Web Speech API) ---------- */
+/* ---------- Озвучка ---------- */
 
-/** Сбрасывает закэшированный голос: нужен после смены в настройках. */
-function resetJapaneseVoice() {
-  japaneseVoice = null;
-}
-
-// Голос японского выбираем один раз и запоминаем
-let japaneseVoice = null;
-
-/** Есть ли в браузере синтез речи. */
-function isSpeechSupported() {
-  return 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
-}
-
-/** Ищет японский голос среди установленных. */
-function pickJapaneseVoice() {
-  if (!isSpeechSupported()) return null;
-
-  const voices = window.speechSynthesis.getVoices();
-  return voices.find(voice => /^ja([-_]JP)?$/i.test(voice.lang)) ||
-         voices.find(voice => /ja/i.test(voice.lang)) ||
-         null;
-}
-
-// Голоса подгружаются асинхронно — обновляем ссылку, когда они готовы
-if (isSpeechSupported()) {
-  japaneseVoice = pickJapaneseVoice();
-  window.speechSynthesis.onvoiceschanged = () => {
-    japaneseVoice = pickJapaneseVoice();
-  };
-}
-
-/**
- * Озвучивает японский текст.
- * @param {string} text
- */
-function speakJapanese(text) {
-  const clean = String(text || '').trim();
-  if (!clean) return;
-
-  if (!isSpeechSupported()) {
-    if (typeof showToast === 'function') {
-      showToast('Озвучка недоступна', 'Браузер не поддерживает Web Speech API', 'warning');
-    }
-    return;
-  }
-
-  // Останавливаем предыдущую озвучку, чтобы не наслаивалась
-  window.speechSynthesis.cancel();
-
-  const utterance = new SpeechSynthesisUtterance(clean);
-  utterance.lang = 'ja-JP';
-
-  // Скорость и тон берём из настроек (вкладка «Звук» → выбор голоса)
-  utterance.rate = typeof getSpeechRate === 'function' ? getSpeechRate() : 0.9;
-  utterance.pitch = typeof getSpeechPitch === 'function' ? getSpeechPitch() : 1;
-
-  if (!japaneseVoice) {
-    // Сначала смотрим голос, выбранный пользователем
-    const chosen = typeof getSelectedVoice === 'function' ? getSelectedVoice() : null;
-    japaneseVoice = chosen && /^ja/i.test(chosen.lang) ? chosen : pickJapaneseVoice();
-  }
-  if (japaneseVoice) utterance.voice = japaneseVoice;
-
-  window.speechSynthesis.speak(utterance);
-
-  // Если японского голоса нет, браузер прочитает текст своим — предупреждаем один раз
-  if (!japaneseVoice && !window.__anilingoVoiceWarned) {
-    window.__anilingoVoiceWarned = true;
-    if (typeof showToast === 'function') {
-      showToast('Японский голос не найден', 'Установите японский язык в системе — озвучка станет точнее', 'info');
-    }
-  }
-}
+// Раньше здесь жил Web Speech API: голос зависел от системы, и на
+// телефоне без японского языка выходила каша. Теперь озвучка
+// приходит с сервера (js/tts.js, POST /api/tts) — функции
+// speakJapanese(), speakRussian() и isSpeechSupported() объявлены там.
 
 /* Экспорт в глобальную область */
 window.getProgress = getProgress;
@@ -314,6 +245,3 @@ window.hasAchievement = hasAchievement;
 window.getStats = getStats;
 window.completeLesson = completeLesson;
 window.countCompletedLessons = countCompletedLessons;
-window.speakJapanese = speakJapanese;
-window.resetJapaneseVoice = resetJapaneseVoice;
-window.isSpeechSupported = isSpeechSupported;

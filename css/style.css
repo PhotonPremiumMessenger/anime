@@ -20028,3 +20028,182 @@ body.theme-light.has-custom-bg .word-card {
     font-size: 12px;
   }
 }
+
+/* ============================================================
+   Озвучка Microsoft Edge TTS
+
+   Блок голосов в настройках, маленькие динамики у русского
+   перевода и кнопки в попапе перевода. Иконки — SVG, поэтому
+   они наследуют цвет и не зависят от эмодзи в системе.
+   ============================================================ */
+
+/* ---------- Блок «Голоса» в настройках ---------- */
+
+.voice-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.voice-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.voice-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.voice-item-info b {
+  font-family: var(--font-head);
+  font-size: 0.8667rem;
+  color: var(--text-main);
+}
+
+.voice-item-info span {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+}
+
+.voice-listen {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-gray);
+  transition: var(--transition);
+}
+
+.voice-listen svg {
+  width: 17px;
+  height: 17px;
+}
+
+.voice-listen:hover {
+  color: var(--text-main);
+  border-color: hsl(var(--accent-hue) var(--accent-sat) 64% / 0.5);
+  background: var(--accent-soft);
+  transform: translateY(-1px);
+}
+
+.voice-listen:active {
+  transform: scale(0.94);
+}
+
+/* ---------- Динамик у русского перевода в словаре ---------- */
+
+.dict-ru-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.dict-ru-row .dict-ru {
+  flex: 1;
+  min-width: 0;
+}
+
+.speak-mini {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-dim);
+  transition: var(--transition);
+}
+
+.speak-mini svg {
+  width: 14px;
+  height: 14px;
+}
+
+.speak-mini:hover {
+  color: var(--text-main);
+  border-color: hsl(var(--accent-hue) var(--accent-sat) 64% / 0.45);
+  background: var(--accent-soft);
+}
+
+.speak-mini:active {
+  transform: scale(0.92);
+}
+
+/* ---------- Попап перевода ---------- */
+
+.translate-popup .tr-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.translate-popup .tr-row-top {
+  margin-bottom: 4px;
+}
+
+.translate-popup .tr-row .tr-source,
+.translate-popup .tr-row .tr-result {
+  flex: 1;
+  min-width: 0;
+}
+
+.translate-popup .tr-row .tr-source {
+  margin-bottom: 0;
+}
+
+.translate-popup .tr-speak {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-dim);
+  transition: var(--transition);
+}
+
+.translate-popup .tr-speak svg {
+  width: 14px;
+  height: 14px;
+}
+
+.translate-popup .tr-speak:hover {
+  color: var(--text-main);
+  border-color: hsl(var(--accent-hue) var(--accent-sat) 64% / 0.45);
+  background: var(--accent-soft);
+}
+
+.translate-popup .tr-speak:active {
+  transform: scale(0.92);
+}
+
+body.theme-light .voice-item,
+body.theme-light .voice-listen,
+body.theme-light .speak-mini,
+body.theme-light .translate-popup .tr-speak {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+@media (max-width: 560px) {
+  .voice-list {
+    grid-template-columns: 1fr;
+  }
+}

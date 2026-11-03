@@ -243,7 +243,7 @@ const SETTINGS_CONTENT = {
         <div class="setting-row">
           <div class="setting-info">
             <div class="setting-name">Голос озвучки</div>
-            <div class="setting-desc">Выбор голоса, скорость и тон для японских слов</div>
+            <div class="setting-desc">Нанами читает японский, Светлана — русский. Скорость настраивается</div>
           </div>
         </div>
         <div class="voice-picker-wrap" id="voicePicker"></div>

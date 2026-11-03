@@ -28,6 +28,7 @@ const { isMailConfigured } = require('./mailer');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 const promoRoutes = require('./routes/promo');
+const ttsRoutes = require('./routes/tts');
 const uploads = require('./uploads');
 
 // Один раз переименовываем ключи старого названия в новые.
@@ -76,6 +77,16 @@ const apiLimiter = rateLimit({
   message: { message: 'Слишком много запросов. Попробуйте позже' }
 });
 
+// Озвучка — самый «дорогой» маршрут: каждый промах кэша идёт
+// во внешний сервис. Поэтому свой лимит, с запасом на урок
+const ttsLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 240,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Слишком много запросов озвучки. Подождите немного' }
+});
+
 // Отдельно жёстче — на письма и вход, чтобы не перебирали пароли
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -105,6 +116,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/user', apiLimiter, userRoutes);
 app.use('/api/promo', apiLimiter, promoRoutes);
+app.use('/api/tts', ttsLimiter, ttsRoutes);
 
 /**
  * GET /api/public/user/:username — чужая визитка без входа.
