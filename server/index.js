@@ -29,6 +29,8 @@ const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 const promoRoutes = require('./routes/promo');
 const ttsRoutes = require('./routes/tts');
+const googleRoutes = require('./routes/google');
+const google = require('./google');
 const uploads = require('./uploads');
 
 // Один раз переименовываем ключи старого названия в новые.
@@ -41,6 +43,10 @@ const migrated = db.migrateLegacyKeys();
 if (migrated) {
   console.log('[db] Переименовано ключей со старого названия:', migrated);
 }
+
+// Вход через Google: стратегия регистрируется один раз.
+// Без ключей в .env просто выключается — остальной вход работает
+google.setup();
 
 const app = express();
 
@@ -62,6 +68,10 @@ const ORIGINS = String(process.env.CORS_ORIGIN || '*')
 app.set('trust proxy', 1);
 
 app.use(express.json({ limit: '256kb' }));
+
+// Passport нужен только для Google. Сессий у нас нет: состояние
+// входа живёт в JWT, поэтому app.use(passport.session()) не зовём
+app.use(google.passport.initialize());
 
 app.use(cors({
   origin: ORIGINS.includes('*') ? true : ORIGINS,
@@ -109,6 +119,8 @@ app.get('/api/health', (req, res) => {
     service: 'anilingo',
     version: '1.0.0',
     mail: isMailConfigured(),
+    // Настроен ли вход через Google (есть ли ключи в .env)
+    google: google.isConfigured(),
     time: new Date().toISOString()
   });
 });
@@ -117,6 +129,10 @@ app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/user', apiLimiter, userRoutes);
 app.use('/api/promo', apiLimiter, promoRoutes);
 app.use('/api/tts', ttsLimiter, ttsRoutes);
+
+// Вход через Google — в корне, а не под /api: сюда браузер приходит
+// редиректом с google.com. Лимит тот же, что у входа по паролю
+app.use('/auth', authLimiter, googleRoutes);
 
 /**
  * GET /api/public/user/:username — чужая визитка без входа.

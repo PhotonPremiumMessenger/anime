@@ -386,6 +386,77 @@ async function apiLogin(nickname, password) {
   };
 }
 
+/* ---------- Вход через Google ---------- */
+
+/**
+ * Запоминает токен, не трогая кэш профиля.
+ *
+ * Нужно для аккаунта, созданного входом через Google: ник ещё
+ * не придуман, и показывать такого пользователя в шапке нельзя.
+ * Токен при этом уже рабочий — им закрыт метод дозаполнения.
+ */
+function apiSaveToken(token) {
+  try {
+    localStorage.setItem(CACHE_TOKEN_KEY, String(token || ''));
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+/** Кто владелец токена — по данным сервера, а не кэша. */
+async function apiMe() {
+  const response = await apiRequest('/api/auth/me', { method: 'GET' });
+
+  if (!response.ok || !response.data.user) {
+    return {
+      ok: false,
+      data: { message: response.data.message || 'Сессия не найдена. Войдите снова' }
+    };
+  }
+
+  return { ok: true, data: { user: response.data.user } };
+}
+
+/** Вход по токену: кладём пользователя в кэш, как при обычном входе. */
+function apiAcceptSession(user, token) {
+  const cached = apiCacheUser(user, token);
+
+  if (typeof syncAfterLogin === 'function') syncAfterLogin();
+
+  return cached;
+}
+
+/**
+ * Дозаполнение профиля после входа через Google.
+ * { username, password } — почту берём из аккаунта, её дал Google.
+ */
+async function apiCompleteGoogleProfile(username, password) {
+  const response = await apiRequest('/api/auth/complete-google-profile', {
+    method: 'POST',
+    body: { username: username, password: password }
+  });
+
+  if (!response.ok) {
+    return {
+      ok: false,
+      status: response.status,
+      data: { message: response.data.message || 'Не удалось сохранить профиль' }
+    };
+  }
+
+  apiAcceptSession(response.data.user, response.data.token);
+
+  return {
+    ok: true,
+    data: {
+      token: response.data.token,
+      username: response.data.user.username,
+      avatar: response.data.user.avatar
+    }
+  };
+}
+
 /**
  * Выход из аккаунта.
  * Данные на сервере остаются, локальный кэш очищается —
@@ -772,6 +843,10 @@ window.apiVerifyCode = apiVerifyCode;
 window.apiRegister = apiRegister;
 window.apiLogin = apiLogin;
 window.apiLogout = apiLogout;
+window.apiSaveToken = apiSaveToken;
+window.apiMe = apiMe;
+window.apiAcceptSession = apiAcceptSession;
+window.apiCompleteGoogleProfile = apiCompleteGoogleProfile;
 window.apiDeleteAccount = apiDeleteAccount;
 window.apiResetPassword = apiResetPassword;
 window.apiChangePassword = apiChangePassword;
