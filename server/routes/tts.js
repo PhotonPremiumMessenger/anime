@@ -2,6 +2,7 @@
    routes/tts.js — озвучка слов и фраз
 
      POST /api/tts  { text, lang: 'ja' | 'ru', rate?: 0.5–1.5 }
+     GET  /api/tts/health  — проверка связи с сервисом озвучки
 
    Ответ — готовый MP3 (Content-Type: audio/mpeg), а не JSON.
    Браузер получает звук сразу и играет его без задержки.
@@ -21,6 +22,30 @@ const express = require('express');
 const tts = require('../tts');
 
 const router = express.Router();
+
+/**
+ * GET /api/tts/health
+ *
+ * Проверка связи с сервисом озвучки: делает один короткий синтез
+ * и показывает, что именно не получилось. Нужна, когда в браузере
+ * видно только «502», а причина неизвестна:
+ *
+ *   curl -s https://www.anilingo.fun/api/tts/health
+ *   {"ok":false,"ms":4002,"voice":"ja-JP-NanamiNeural","error":"…"}
+ *
+ * Секретов здесь нет: только текст ошибки от библиотеки.
+ */
+router.get('/health', async (req, res) => {
+  const lang = tts.pickLang(req.query.lang) || 'ja';
+  const result = await tts.probe(tts.cleanText(req.query.text), lang);
+
+  return res.json(Object.assign({
+    service: 'tts',
+    cache: tts.cacheSize(),
+    lastError: tts.getLastError(),
+    time: new Date().toISOString()
+  }, result));
+});
 
 /**
  * POST /api/tts
@@ -72,7 +97,8 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ message: 'Не удалось прочитать текст для озвучки' });
     }
 
-    console.error('[tts]', error && (error.message || error));
+    // Подробная причина в лог pm2: по одной строке «502» чинить нельзя
+    console.error('[tts] синтез не удался:', error && (error.stack || error.message || error));
 
     return res.status(502).json({
       message: 'Озвучка сейчас недоступна. Проверьте связь и попробуйте ещё раз'
