@@ -290,6 +290,33 @@ npm start
 За `nginx` обязательно `proxy_set_header X-Forwarded-For $remote_addr;`,
 иначе лимиты запросов посчитают всех одним IP.
 
+**Проксировать нужно и `/auth/`.** Это адреса входа через Google:
+по ним браузер ходит редиректом, а не `fetch`, поэтому они живут в
+корне, а не под `/api/`. Если `/auth/` не проксировать, nginx отдаст
+по этим адресам `index.html` — страница откроется без стилей, а в
+консоли посыпятся `Unexpected token '<'` (вместо js приходит HTML).
+
+```nginx
+location /auth/ {
+    proxy_pass http://127.0.0.1:3000;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+```
+
+Готовый конфиг целиком — `deploy/nginx-anilingo.conf`.
+
+Проверка после правки (`sudo nginx -t && sudo systemctl reload nginx`):
+
+```bash
+curl -sI https://www.anilingo.fun/auth/google | head -3
+# должно быть: HTTP/2 302 и Location: https://accounts.google.com/o/oauth2/v2/auth?…
+# если видно 200 и text/html — nginx всё ещё отдаёт index.html
+```
+
 Для автозапуска — `pm2 start index.js --name anilingo-api`.
 
 ## Проверка, что всё работает
