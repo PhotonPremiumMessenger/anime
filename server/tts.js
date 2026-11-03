@@ -68,6 +68,10 @@ const cache = new Map();
 // Когда последний раз сервис не ответил (0 — всё хорошо)
 let lastFailureAt = 0;
 
+// Что именно сломалось в последний раз: пригодится в /api/tts/health
+// и в логах, чтобы не гадать «502 и 502»
+let lastError = null;
+
 /** Кладёт звук в кэш и следит за размером. */
 function cachePut(key, buffer) {
   if (cache.has(key)) cache.delete(key);
@@ -226,6 +230,11 @@ async function synthesize(request = {}) {
     buffer = await withTimeout(synthesizeImpl(text, lang, prosody), TIMEOUT_MS);
   } catch (error) {
     lastFailureAt = Date.now();
+    lastError = {
+      message: String(error && (error.message || error)),
+      code: error && error.code ? String(error.code) : '',
+      at: new Date().toISOString()
+    };
     throw error;
   }
 
@@ -246,7 +255,58 @@ async function synthesize(request = {}) {
   };
 }
 
+/* ---------- Диагностика ---------- */
+
+/**
+ * Проверка связи с сервисом озвучки: делает один настоящий синтез
+ * короткого слова и рассказывает, что получилось.
+ *
+ * В отличие от synthesize() не смотрит в кэш и не соблюдает паузу
+ * после сбоя — иначе проверка врала бы «недоступно» ещё 20 секунд.
+ *
+ * @returns {Promise<{ok: boolean, ms: number, bytes?: number, voice?: string, error?: string, code?: string}>}
+ */
+async function probe(text, lang) {
+  const started = Date.now();
+  const phrase = cleanText(text) || 'こんにちは';
+  const language = pickLang(lang) || detectLang(phrase);
+
+  try {
+    const buffer = await withTimeout(synthesizeImpl(phrase, language, '+0%'), TIMEOUT_MS);
+
+    lastError = null;
+
+    return {
+      ok: Boolean(buffer && buffer.length),
+      ms: Date.now() - started,
+      bytes: buffer ? buffer.length : 0,
+      voice: VOICES[language]
+    };
+  } catch (error) {
+    lastError = {
+      message: String(error && (error.message || error)),
+      code: error && error.code ? String(error.code) : '',
+      at: new Date().toISOString()
+    };
+
+    return {
+      ok: false,
+      ms: Date.now() - started,
+      voice: VOICES[language],
+      error: lastError.message,
+      code: lastError.code
+    };
+  }
+}
+
+/** Последняя ошибка синтеза или null. Для диагностики. */
+function getLastError() {
+  return lastError;
+}
+
 module.exports = {
+  probe,
+  getLastError,
   VOICES,
   VOICE_LABELS,
   MAX_TEXT,
