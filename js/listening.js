@@ -218,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (typeof isSpeechSupported === 'function' && !isSpeechSupported()) {
     document.getElementById('listeningStage').innerHTML =
-      '<div class="empty-state">Браузер не поддерживает озвучку. Попробуй Chrome, Edge или Safari.</div>';
+      '<div class="empty-state">Озвучка сейчас недоступна: сервер не отвечает. Проверь связь и обнови страницу.</div>';
     return;
   }
 

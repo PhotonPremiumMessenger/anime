@@ -364,7 +364,7 @@ function toggleVideoPlay() {
     startVideoTimer();
   } else {
     stopVideoTimer();
-    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    if (typeof stopSpeech === 'function') stopSpeech();
   }
 
   updateVideoControls();
@@ -453,7 +453,7 @@ function speakCurrentSlide() {
 function toggleVideoSpeech() {
   videoState.speech = !videoState.speech;
 
-  if (!videoState.speech && window.speechSynthesis) window.speechSynthesis.cancel();
+  if (!videoState.speech && typeof stopSpeech === 'function') stopSpeech();
 
   const speechBtn = document.getElementById('videoSpeechBtn');
   if (speechBtn) speechBtn.textContent = videoState.speech ? '🔊' : '🔇';
@@ -486,7 +486,7 @@ function formatVideoTime(seconds) {
 /** Закрывает плеер и возвращает каталог. */
 function closeVideo() {
   stopVideoTimer();
-  if (window.speechSynthesis) window.speechSynthesis.cancel();
+  if (typeof stopSpeech === 'function') stopSpeech();
 
   videoState.lesson = null;
   videoState.playing = false;
