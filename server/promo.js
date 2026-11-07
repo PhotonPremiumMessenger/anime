@@ -11,7 +11,14 @@
    • limit: 'global' — код живёт, пока его не активировали всего
                        uses раз. Кто успел, тот и получил; после
                        последней активации код удаляется из памяти
-                       сервера и с сайта целиком.
+                       сервера и с сайта целиком;
+   • burn: true      — одноразовый код без архива. После первой же
+                       активации он стирается из памяти сервера
+                       насовсем: его нет ни в списке, ни в поиске,
+                       ни в архиве администратора. После перезапуска
+                       сервера он тоже не возвращается — в базе
+                       остаётся запись об активации, и по ней код
+                       считается израсходованным (см. burnSpentPromos).
 
    Награда (reward):
    • xp     — сколько опыта начислить;
@@ -92,14 +99,17 @@ const PROMO_CODES = [
     hidden: true
   },
 
-  /* ---------- Три активации на весь сайт ---------- */
+  /* ---------- Одна активация на весь сайт ---------- */
   {
     code: 'TENNO',
     title: 'Императорский указ',
-    desc: 'Три активации на весь сайт: 100 000 000 XP каждому, кто успеет',
+    desc: 'Одна активация на весь сайт: 100 000 000 XP тому, кто успеет первым',
     reward: { xp: 100000000 },
     limit: 'global',
-    uses: 3,
+    uses: 1,
+    // После активации код стирается с сервера целиком — даже
+    // администратору он больше не достанется
+    burn: true,
     hidden: true
   }
 ];
@@ -143,6 +153,49 @@ function retirePromo(code) {
   return true;
 }
 
+/**
+ * Стирает код насовсем: он исчезает и из активного списка, и из
+ * архива. Так уходит одноразовый код с флагом burn — после первой
+ * активации его больше нет нигде.
+ *
+ * @returns {boolean} был ли такой код в списке
+ */
+function burnPromo(code) {
+  const needle = String(code || '').trim().toUpperCase();
+  const index = PROMO_CODES.findIndex(item => item.code === needle);
+  if (index === -1) return false;
+
+  PROMO_CODES.splice(index, 1);
+  RETIRED_PROMOS.delete(needle);
+
+  return true;
+}
+
+/**
+ * Убирает одноразовые коды, которые уже активировали, — вызывается
+ * при старте сервера. Без этого после перезапуска burn-код вернулся
+ * бы из кода программы, хотя награда уже выдана.
+ *
+ * @param {string[]} redeemedCodes — коды, по которым есть активации в базе
+ * @returns {number} сколько кодов убрано
+ */
+function burnSpentPromos(redeemedCodes) {
+  const spent = new Set((redeemedCodes || []).map(code => String(code).toUpperCase()));
+  let burned = 0;
+
+  for (let i = PROMO_CODES.length - 1; i >= 0; i--) {
+    const promo = PROMO_CODES[i];
+    if (!promo.burn) continue;
+    if (!spent.has(promo.code)) continue;
+
+    PROMO_CODES.splice(i, 1);
+    RETIRED_PROMOS.delete(promo.code);
+    burned++;
+  }
+
+  return burned;
+}
+
 /** Код уже разобрали и убрали с сайта. */
 function isRetiredPromo(code) {
   const needle = String(code || '').trim().toUpperCase();
@@ -167,6 +220,8 @@ module.exports = {
   findPromo,
   publicPromos,
   retirePromo,
+  burnPromo,
+  burnSpentPromos,
   isRetiredPromo,
   promoLimit
 };
