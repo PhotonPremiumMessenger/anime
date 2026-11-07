@@ -666,6 +666,7 @@ const promoQueries = {
   `),
   byUser: db.prepare('SELECT code, reward, admin, created_at FROM promo_redemptions WHERE user_id = ? ORDER BY id DESC'),
   byUserAndCode: db.prepare('SELECT id FROM promo_redemptions WHERE user_id = ? AND code = ?'),
+  distinctCodes: db.prepare('SELECT DISTINCT code FROM promo_redemptions'),
   // Админские активации не тратят общий лимит кода: считаем только чужие
   countByCode: db.prepare('SELECT COUNT(*) AS total FROM promo_redemptions WHERE code = ? AND admin = 0')
 };
@@ -703,6 +704,17 @@ function redeemPromo(userId, code, reward, options = {}) {
   } catch (error) {
     return false;
   }
+}
+
+/**
+ * Все коды, по которым в базе есть активации. Нужно при старте:
+ * одноразовый код, который уже активировали, не должен вернуться
+ * в список после перезапуска сервера.
+ *
+ * @returns {string[]} коды в верхнем регистре
+ */
+function listRedeemedPromoCodes() {
+  return promoQueries.distinctCodes.all().map(row => String(row.code).toUpperCase());
 }
 
 /** Все коды аккаунта: [{ code, reward, admin, createdAt }]. */
@@ -761,6 +773,7 @@ module.exports = {
   saveProfile,
   hasRedeemedPromo,
   countPromoUses,
+  listRedeemedPromoCodes,
   redeemPromo,
   getUserPromos,
   wipeUserData

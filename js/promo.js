@@ -5,10 +5,10 @@
    • Открытые коды показаны внизу страницы — их можно копировать.
    • Два кода спрятаны по сайту: подсказки есть в пасхалках
      и в офлайн-странице. На странице промокодов их нет.
-   • Код TENNO — три активации на весь сайт, по 100 000 000 XP.
-     Проверка живёт на сервере, поэтому очистка браузера его не
-     «оживит». Когда три места разобрали, код стирается: его больше
-     нет ни в списках, ни в поиске — он исчезает с сайта целиком.
+   • Код TENNO — одна активация на весь сайт: 100 000 000 XP тому,
+     кто успеет первым. Проверка живёт на сервере, поэтому очистка
+     браузера его не «оживит». Сразу после активации код стирается
+     насовсем: его больше нет ни в списках, ни в поиске.
    • Остальные коды каждый аккаунт может активировать один раз.
 
    Награда выдаётся здесь: опыт, рамка, значок или тема.
@@ -210,7 +210,7 @@ async function redeemPromo(rawCode) {
 
   // Общий код: мест всего несколько на всех.
   // Админ лимит не тратит и может брать код повторно
-  if (promo.globalUses && !admin) {
+  if (promo.globalUses && (!admin || promo.burn)) {
     const used = promoUses(code);
     if (used >= promo.globalUses) {
       retirePromoLocally(code);
@@ -223,7 +223,7 @@ async function redeemPromo(rawCode) {
   promoMarkUsed(code);
 
   let left = null;
-  if (promo.globalUses && !admin) {
+  if (promo.globalUses && (!admin || promo.burn)) {
     const used = bumpPromoUses(code);
     left = Math.max(0, promo.globalUses - used);
 
@@ -252,7 +252,7 @@ function findLocalPromo(code) {
 const PROMO_EXTRA = [
   { code: 'SHINIGAMI', title: 'Тетрадь смерти', reward: { xp: 5000, frame: 'frame-hands' } },
   { code: 'YAMETE', title: 'Стоп, это секрет', reward: { xp: 7500, badge: 'badge-samurai' } },
-  { code: 'TENNO', title: 'Императорский указ', reward: { xp: 100000000 }, globalUses: 3 }
+  { code: 'TENNO', title: 'Императорский указ', reward: { xp: 100000000 }, globalUses: 1, burn: true }
 ];
 
 // Какие общие коды уже разобрали. Список живёт в браузере, чтобы

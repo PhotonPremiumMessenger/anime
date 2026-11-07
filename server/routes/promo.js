@@ -16,7 +16,7 @@ const express = require('express');
 const db = require('../db');
 const { requireAuth } = require('../auth');
 const { isAdmin } = require('../admins');
-const { findPromo, publicPromos, retirePromo, promoLimit } = require('../promo');
+const { findPromo, publicPromos, retirePromo, burnPromo, promoLimit, PROMO_CODES } = require('../promo');
 
 const router = express.Router();
 
@@ -25,12 +25,34 @@ const router = express.Router();
 const RETIRED_ON_SERVER = [];
 
 // Запоминаем удаление кода из общего списка
-const retireAndRemember = code => {
-  if (!retirePromo(code)) return;
-
+const remember = code => {
   const needle = String(code).toUpperCase();
   if (!RETIRED_ON_SERVER.includes(needle)) RETIRED_ON_SERVER.push(needle);
 };
+
+const retireAndRemember = code => {
+  if (!retirePromo(code)) return;
+  remember(code);
+};
+
+// Одноразовый код: стираем насовсем, без архива
+const burnAndRemember = code => {
+  if (!burnPromo(code)) return;
+  remember(code);
+};
+
+/**
+ * Коды, которых больше нет на сайте: израсходованные на этом запуске
+ * плюс те, что уже активировали по базе (одноразовые коды живут в
+ * коде программы, а база помнит, что награда выдана). Клиент по
+ * этому списку стирает их у себя.
+ */
+function retiredCodes() {
+  const known = new Set(PROMO_CODES.map(promo => promo.code));
+  const fromDb = db.listRedeemedPromoCodes().filter(code => !known.has(code));
+
+  return Array.from(new Set(RETIRED_ON_SERVER.concat(fromDb)));
+}
 
 router.use(requireAuth);
 
@@ -75,6 +97,24 @@ router.post('/redeem', (req, res) => {
     return res.status(409).json({ message: 'Код уже активирован' });
   }
 
+  // Одноразовый код стирается сразу после активации — и у админа тоже
+  if (promo.burn) {
+    burnAndRemember(promo.code);
+
+    return res.json({
+      ok: true,
+      admin: Boolean(admin),
+      exhausted: true,
+      left: 0,
+      promo: {
+        code: promo.code,
+        title: promo.title,
+        desc: promo.desc,
+        reward: promo.reward
+      }
+    });
+  }
+
   // Админ не тратит места: код остаётся живым для остальных
   if (admin) {
     return res.json({
@@ -117,8 +157,9 @@ router.get('/mine', (req, res) => {
 /**
  * GET /api/promo/list — открытые коды и статус закрытых.
  *
- * retired — коды, которые израсходованы полностью. Клиент по этому
- * списку стирает их у себя: на сайте их больше не найти.
+ * retired — коды, которые израсходованы полностью (в том числе
+ * одноразовые вроде TENNO). Клиент по этому списку стирает их у
+ * себя: на сайте их больше не найти.
  */
 router.get('/list', (req, res) => {
   res.json({
@@ -129,7 +170,7 @@ router.get('/list', (req, res) => {
       desc: item.desc,
       reward: item.reward
     })),
-    retired: RETIRED_ON_SERVER
+    retired: retiredCodes()
   });
 });
 

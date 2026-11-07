@@ -44,6 +44,15 @@ if (migrated) {
   console.log('[db] Переименовано ключей со старого названия:', migrated);
 }
 
+// Одноразовые коды (TENNO) живут в коде программы, но награда
+// хранится в базе. После перезапуска убираем те, что уже активировали,
+// иначе израсходованный код снова появился бы в списке.
+const promo = require('./promo');
+const burnedPromos = promo.burnSpentPromos(db.listRedeemedPromoCodes());
+if (burnedPromos) {
+  console.log('[promo] Израсходованных одноразовых кодов убрано:', burnedPromos);
+}
+
 // Вход через Google: стратегия регистрируется один раз.
 // Без ключей в .env просто выключается — остальной вход работает
 google.setup();
